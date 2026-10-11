@@ -4,7 +4,7 @@
   imports = [
     ./foot.nix
     ./git.nix
-    ./nixvim.nix
+    ./neovim.nix
     ./starship.nix
   ];
 }

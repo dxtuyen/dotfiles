@@ -14,9 +14,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Nixvim's Home Manager module manages both the Neovim package and config.
-    # Keep its own nixpkgs input: Nixvim recommends against following ours.
-    nixvim.url = "git+https://github.com/nix-community/nixvim";
   };
 
   outputs =

@@ -1,4 +1,4 @@
-{ inputs, userName, ... }:
+{ userName, ... }:
 
 # Main Home Manager entry point for this user.
 
@@ -10,7 +10,6 @@
   };
 
   imports = [
-    inputs.nixvim.homeModules.nixvim
     ./xdg.nix
     ./packages.nix
     ./shell
