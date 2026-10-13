@@ -15,41 +15,24 @@ in
       spacing = 4;
       "modules-left" = [
         "sway/workspaces"
-        # Focused window title.
-        "sway/window"
-        "sway/mode"
         "custom/away-windows"
+        "sway/mode"
       ];
       "modules-center" = [
         "custom/study"
         "clock"
       ];
       "modules-right" = [
-        "custom/inhibit"
-        "group/devices"
-        "group/hardware"
-        "group/power"
+        "group/status"
         "tray"
       ];
-      "group/devices" = {
+      "group/status" = {
         orientation = "horizontal";
         modules = [
+          "custom/inhibit"
           "bluetooth"
           "network"
           "pulseaudio"
-          "backlight"
-        ];
-      };
-      "group/hardware" = {
-        orientation = "horizontal";
-        modules = [
-          "cpu"
-          "memory"
-        ];
-      };
-      "group/power" = {
-        orientation = "horizontal";
-        modules = [
           "power-profiles-daemon"
           "battery"
         ];
@@ -67,8 +50,6 @@ in
         tooltip-format-disabled = "Wi-Fi disabled";
       };
       bluetooth = {
-        # Keep the status label after the icon as plain text.
-        # Show connected-device details in the tooltip.
         format = faSpan "";
         "format-disabled" = "${faSpan ""} Disabled";
         "format-off" = "${faSpan ""} Off";
@@ -92,14 +73,6 @@ in
           "5" = [ ];
         };
       };
-      "sway/window" = {
-        format = "{title}";
-        "max-length" = 60;
-        tooltip = true;
-        # Click the title to open the window menu.
-        "on-click" = "~/.local/bin/window-menu";
-      };
-
       # Reuse the Mod+= list for both the label and tooltip.
       "custom/away-windows" = {
         "exec" = "~/.local/bin/window-menu --away --waybar";
@@ -114,7 +87,7 @@ in
         "on-click" = "~/.local/bin/window-menu --away";
       };
       pulseaudio = {
-        format = "{volume}% ${faSpan "{icon}"}";
+        format = "${faSpan "{icon}"} {volume}%";
         "format-muted" = "muted";
         "format-icons".default = [
           ""
@@ -124,38 +97,15 @@ in
         "on-click" = "foot --app-id=wiremix -T 'Audio' wiremix";
       };
       "power-profiles-daemon" = {
-        # Show the profile name in the tooltip.
         format = faSpan "{icon}";
         tooltip = true;
-        "tooltip-format" = "{profile}";
+        "tooltip-format" = "Power profile: {profile}";
         "on-click" = "~/.local/bin/power-profile-menu";
         "format-icons" = {
           performance = "";
           balanced = "";
           "power-saver" = "";
         };
-      };
-      cpu = {
-        format = "${faSpan ""} {usage}%";
-        states = {
-          warning = 70;
-          critical = 90;
-        };
-      };
-      memory = {
-        format = "${faSpan ""} {}%";
-        states = {
-          warning = 80;
-          critical = 95;
-        };
-      };
-      backlight = {
-        format = "${faSpan "{icon}"} {percent}%";
-        "format-icons" = [
-          ""
-          ""
-          ""
-        ];
       };
       battery = {
         states = {
@@ -206,15 +156,29 @@ in
 
       /* Catppuccin colors for pills, text, and accents. */
       @define-color pill rgba(30, 30, 46, 0.80);   /* Catppuccin base */
-      @define-color pill-hover rgba(49, 50, 68, 1); /* Catppuccin surface0 */
       @define-color edge rgba(69, 71, 90, 0.45);    /* Catppuccin surface1 */
       @define-color txt #bac2de;                    /* Catppuccin subtext1 */
       @define-color txt-strong #cdd6f4;             /* Catppuccin text */
       @define-color muted #7f849c;                   /* Catppuccin overlay1 */
 
-      @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
-      #workspaces { background: @pill; border: 1px solid @edge; border-radius: 10px; margin: 4px 0 4px 4px; padding: 0 10px; }
+      #workspaces, #tray, #mode,
+      #custom-away-windows, #clock, #custom-study,
+      #status {
+        background: @pill;
+        border: 1px solid @edge;
+        border-radius: 10px;
+        padding: 0 9px;
+        margin: 4px 3px;
+      }
+      box#status > widget > * {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        margin: 0;
+        padding: 0 6px;
+      }
+      #workspaces { margin-left: 4px; padding: 0 10px; }
       #workspaces button { padding: 0 7px; color: @txt; font-size: 15px; border-bottom: 2px solid transparent;
         background-color: rgba(0, 0, 0, 0); }
       #workspaces button:hover, #workspaces button:active {
@@ -229,42 +193,20 @@ in
       #workspaces button.persistent.empty { color: #6c7086; }
       /* Keep the focused empty workspace highlighted. */
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
-      #window { background: @pill-hover; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 0 4px 5px; color: @txt-strong; font-weight: bold; }
-      #custom-inhibit, #tray, #mode, #custom-away-windows,
-      box#devices, box#hardware, box#power {
-        background: @pill;
-        border: 1px solid @edge;
-        border-radius: 10px;
-        padding: 0 4px;
-        margin: 4px 2px;
-      }
-      box#devices > widget > *,
-      box#hardware > widget > *,
-      box#power > widget > * {
-        padding: 0 6px;
-        margin: 0;
-        border: none;
-        background: transparent;
-      }
-      #tray { padding: 0 8px; margin: 4px 4px 4px 2px; }
-      #mode { color: #89b4fa; background: @pill; border: 1px solid rgba(137, 180, 250, 0.5); border-radius: 10px; padding: 0 10px; margin: 4px 5px; }
-      #clock { color: @txt; font-weight: bold; background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 10px 4px 5px; }
-      #custom-study { background: @pill; border: 1px solid @edge; border-radius: 10px; padding: 0 10px; margin: 4px 5px; font-weight: bold; }
+      #tray { padding: 0 8px; }
+      #mode { color: #89b4fa; }
+      #clock, #custom-study { font-weight: bold; }
       #custom-study.running { color: #89b4fa; }
       #custom-study.paused { color: #fab387; }
       #custom-study.idle { color: @muted; }
       #custom-inhibit.running { color: #89b4fa; }
-      /* Add vertical padding to the icon-only pill. */
-      #custom-inhibit { padding: 2px 10px; margin: 4px 4px 4px 2px; }
-      #power-profiles-daemon { padding: 0 4px; }
-      #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
-      #bluetooth.connected { color: #a6e3a1; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
+      #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
+      #bluetooth.connected { color: #a6e3a1; }
       #network.disconnected, #network.disabled { color: #f38ba8; }
-      #battery.warning, #cpu.warning, #memory.warning { color: #fab387; }
+      #battery.warning { color: #fab387; }
       #battery.critical { color: #f38ba8; }
-      #cpu.critical, #memory.critical { color: #f38ba8; animation: blink 1s linear infinite; }
       #battery.charging { color: #a6e3a1; font-weight: bold; }
       #battery.plugged { color: #a6e3a1; }
       #pulseaudio.muted { color: @muted; }
