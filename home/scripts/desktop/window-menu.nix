@@ -52,6 +52,7 @@ in
       first_only = "--first" in sys.argv[1:]
       waybar_only = "--waybar" in sys.argv[1:]
       after_kill = "--after-kill" in sys.argv[1:]
+      after_open = "--after-open" in sys.argv[1:]
 
       tree = json.loads(subprocess.run(
           [swaymsg, "-t", "get_tree"], check=True, capture_output=True, text=True
@@ -141,7 +142,7 @@ in
           if waybar_only:
               print(json.dumps({"text": "", "tooltip": "No away windows"}))
               sys.exit(0)
-          if not after_kill:
+          if not (after_kill or after_open):
               subprocess.run([
                   shutil.which("notify-send") or "notify-send",
                   ("Scratchpad" if stashed_only else "Away"),
@@ -314,22 +315,22 @@ in
               # Shift+Delete kills the selected window.
               "-kb-delete-entry", "",
               "-kb-custom-1", "Shift+Delete",
-              # Shift+Enter moves the selected window here.
+              # Shift+Enter opens the selected window and reopens this menu.
               "-kb-accept-alt", "",
               "-kb-custom-2", "Shift+Return",
               "-mesg",
               # Show key hints for the selected list mode.
-              ("Enter: show on this workspace · Shift+Delete: kill this window"
+              ("Enter: show on this workspace · Shift+Enter: show and keep menu · Shift+Delete: kill"
                if stashed_only else
-               "Enter: bring here · Shift+Delete: kill"
+               "Enter: bring here · Shift+Enter: bring and keep menu · Shift+Delete: kill"
                if away_only else
-               "Enter: jump to window · Shift+Enter: pull here · Shift+Delete: kill"),
+               "Enter: jump to window · Shift+Enter: pull here and keep menu · Shift+Delete: kill"),
           ],
           input=b"\n".join(rows) + (b"\n" if rows else b""),
           capture_output=True,
           check=False,
       )
-      # Rofi exit codes: 0 = Enter, 10 = close, 11 = move here.
+      # Rofi exit codes: 0 = Enter, 10 = kill, 11 = Shift+Enter.
       if choice.returncode not in (0, 10, 11):
           sys.exit(0)
       try:
@@ -370,6 +371,11 @@ in
               window["id"], window_ws.get(window["id"]), current_ws,
               stashed=is_stashed, pull=pull_here):
           subprocess.run([swaymsg, command], check=True)
+      if choice.returncode == 11:
+          # Keep the menu available for another selection after opening this window.
+          os.execv(sys.executable, [
+              sys.executable, __file__, *sys.argv[1:], "--after-open",
+          ])
     '';
   };
 
