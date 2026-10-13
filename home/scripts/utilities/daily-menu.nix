@@ -44,12 +44,12 @@
           "🔊 Audio"*) exec foot --app-id=wiremix -T "Audio" wiremix ;;
           "⚡ Power Profile"*) exec ~/.local/bin/power-profile-menu ;;
           "🔒 Lock"*) exec ~/.local/bin/lock-screen ;;
-          "⏾ Suspend"*) notify-send -a power -i "system-suspend" -t 2000 "Power" "Suspending..."; exec systemctl suspend ;;
-          "⏾ Hibernate"*) notify-send -a power -i "system-suspend" -t 2000 "Power" "Hibernating..." ; exec systemctl hibernate ;;
+          "⏾ Suspend"*) exec systemctl suspend ;;
+          "⏾ Hibernate"*) exec systemctl hibernate ;;
           "↻ Reload Sway"*) exec swaymsg reload ;;
           "⏻ Exit Sway"*) exec swaymsg exit ;;
-          "↻ Reboot"*) notify-send -a power -i "system-reboot" -t 2000 "Power" "Rebooting..."; exec systemctl reboot ;;
-          "⏻ Poweroff"*) notify-send -a power -i "system-shutdown" -t 2000 "Power" "Powering off..."; exec systemctl poweroff ;;
+          "↻ Reboot"*) exec systemctl reboot ;;
+          "⏻ Poweroff"*) exec systemctl poweroff ;;
         esac
       '';
     };
