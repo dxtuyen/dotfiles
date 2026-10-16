@@ -3,6 +3,9 @@
 This repository has one NixOS host and one Home Manager user. The directories
 separate machine configuration from the user's desktop and commands.
 
+For a Vietnamese walkthrough of system modules, services, state locations, and
+maintenance, see the [system guide](system-guide.md).
+
 ## Configuration path
 
 ```text

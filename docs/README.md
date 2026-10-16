@@ -6,6 +6,7 @@ Tài liệu gồm sơ đồ kiến trúc, hướng dẫn tìm hiểu cấu hình
 
 | Nhu cầu | Tài liệu |
 |---|---|
+| Hiểu tổng thể module, service, workflow và dữ liệu | [Hướng dẫn hệ thống](system-guide.md) |
 | Hiểu luồng module và desktop | [Sơ đồ kiến trúc](architecture.md) |
 | Tìm hiểu repo và cách bắt đầu | [README chính](../README.md) |
 | Luyện cài NixOS trong môi trường riêng | [Cài đặt bằng QEMU/KVM](06-Luyen-Tap-VM.md) |

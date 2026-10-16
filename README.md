@@ -34,7 +34,7 @@ This repository is designed around one machine and one user. It can be adapted f
 
 NixOS modules describe the machine and system services. Home Manager describes the user environment. Within Home Manager, `programs/` configures individual programs, `desktop/` groups the graphical session, and `features/` keeps related scripts and services with the workflow they support. Longer Python and shell programs live in source files next to their small Nix installation modules.
 
-For the module import path and the links between Sway, Waybar, scripts, and services, see [Architecture](docs/architecture.md).
+For a walkthrough of the modules, services, data locations, and maintenance flow, see the [system guide](docs/system-guide.md). The shorter [architecture map](docs/architecture.md) traces the module import path and desktop workflows.
 
 ## Use this configuration
 
@@ -61,6 +61,7 @@ nix fmt
 ## Documentation
 
 - [Documentation index](docs/README.md) — choose an installation path.
+- [System guide](docs/system-guide.md) — understand modules, services, workflows, and state.
 - [QEMU practice guide](docs/06-Luyen-Tap-VM.md) — install the flake in an isolated virtual machine.
 - [Personal laptop installation notes](docs/personal/cai-laptop.md) — hardware-specific notes for the author's laptop.
 
