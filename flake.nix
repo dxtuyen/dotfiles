@@ -15,12 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Pin Lotus to the latest upstream release instead of waiting for nixpkgs.
-    lotus = {
-      url = "github:LotusInputMethod/fcitx5-lotus/v5.0.4";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
   };
 
   outputs =
@@ -51,7 +45,6 @@
         };
         modules = [
           home-manager.nixosModules.home-manager
-          inputs.lotus.nixosModules.fcitx5-lotus
           ./hosts/laptop
         ];
       };
