@@ -19,19 +19,22 @@ This repository is designed around one machine and one user. It can be adapted f
 .
 ├── flake.nix                 # Inputs, formatter, and the laptop build target
 ├── hosts/laptop/             # Host entry point and generated hardware settings
-├── modules/nixos/            # System, desktop, development, and laptop modules
+├── modules/nixos/            # Core, desktop, input, laptop, and service modules
+├── pkgs/                     # Local package definitions
 ├── home/                     # Home Manager user environment
 │   ├── shell/                # Bash and shell tools
 │   ├── programs/             # User program configuration
 │   ├── desktop/              # Graphical session and desktop integration
 │   ├── features/             # Multi-part user workflows and integrations
-│   ├── scripts/              # Shared user commands
+│   ├── scripts/              # User commands; larger scripts use native .py/.sh files
 │   ├── packages.nix          # User package selection
 │   └── assets/               # Static user-level assets
 └── docs/                     # Usage and installation guides
 ```
 
-NixOS modules describe the machine and system services. Home Manager describes the user environment. Within Home Manager, `programs/` configures individual programs, `desktop/` groups the graphical session, and `features/` keeps related scripts and services with the workflow they support.
+NixOS modules describe the machine and system services. Home Manager describes the user environment. Within Home Manager, `programs/` configures individual programs, `desktop/` groups the graphical session, and `features/` keeps related scripts and services with the workflow they support. Longer Python and shell programs live in source files next to their small Nix installation modules.
+
+For the module import path and the links between Sway, Waybar, scripts, and services, see [Architecture](docs/architecture.md).
 
 ## Use this configuration
 

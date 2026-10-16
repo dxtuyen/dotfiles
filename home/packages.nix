@@ -1,34 +1,7 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 
 let
-  swayview = pkgs.stdenvNoCC.mkDerivation {
-    pname = "swayview";
-    version = "0.1.8";
-    src = pkgs.fetchurl {
-      url = "https://github.com/agejevasv/swayview/releases/download/v0.1.8/swayview-v0.1.8-x86_64-linux.tar.gz";
-      hash = "sha256:124szx38lxln3i88rqzvai1q69vvvg74mhhz4mqgfj9qg51g1ira";
-    };
-    nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-    buildInputs = [
-      pkgs.libxkbcommon
-      pkgs.wayland
-      pkgs.fontconfig
-      pkgs.freetype
-      pkgs.stdenv.cc.cc.lib
-    ];
-    sourceRoot = "swayview-v0.1.8-x86_64-linux";
-    installPhase = ''
-      install -Dm755 swayview $out/bin/swayview
-      install -Dm644 LICENSE $out/share/licenses/swayview/LICENSE
-    '';
-    meta = {
-      description = "Workspace overview and switcher for Sway";
-      homepage = "https://github.com/agejevasv/swayview";
-      license = lib.licenses.mit;
-      mainProgram = "swayview";
-      platforms = lib.platforms.linux;
-    };
-  };
+  swayview = pkgs.callPackage ../pkgs/swayview.nix { };
 in
 
 # User packages from the nixos-unstable revision pinned in flake.lock.

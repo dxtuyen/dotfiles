@@ -2,8 +2,8 @@
 
 {
   imports = [
-    ./module.nix
-    ./countdown.nix
+    ./services.nix
+    ./menu.nix
     ./engine.nix
     ./sleep-watch.nix
   ];

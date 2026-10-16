@@ -2,8 +2,9 @@
   description = "Doxuan Tuyen's reproducible NixOS laptop";
 
   inputs = {
-    # Rolling release (nixos-unstable), gated by a test suite + trivial rollback
-    # generations — following matklad's "Use NixOS-unstable" trick.
+    # Rolling release (nixos-unstable), checked through CI evaluation and
+    # protected by NixOS generations for rollback — following matklad's
+    # "Use NixOS-unstable" trick.
     # "Unstable" is a misnomer: it is actually a fairly stable continuous release.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -37,7 +38,7 @@
       formatter.${system} = pkgs.writeShellApplication {
         name = "nixfmt";
         text = ''
-          ${pkgs.findutils}/bin/find . -type f -name '*.nix' -print0 \
+          ${pkgs.findutils}/bin/find . -path ./.git -prune -o -type f -name '*.nix' -print0 \
             | ${pkgs.findutils}/bin/xargs --no-run-if-empty -0 ${pkgs.nixfmt}/bin/nixfmt "$@"
         '';
       };

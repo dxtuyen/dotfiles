@@ -19,7 +19,7 @@ in
         "sway/mode"
       ];
       "modules-center" = [
-        "custom/study"
+        "custom/countdown"
         "clock"
       ];
       "modules-right" = [
@@ -124,7 +124,7 @@ in
         ];
       };
       # Countdown status and controls.
-      "custom/study" = {
+      "custom/countdown" = {
         exec = "~/.local/bin/countdown-engine status";
         signal = 8;
         return-type = "json";
@@ -163,7 +163,7 @@ in
 
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
       #workspaces, #tray, #mode,
-      #custom-away-windows, #clock, #custom-study,
+      #custom-away-windows, #clock, #custom-countdown,
       #status {
         background: @pill;
         border: 1px solid @edge;
@@ -195,10 +195,10 @@ in
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #tray { padding: 0 8px; }
       #mode { color: #89b4fa; }
-      #clock, #custom-study { font-weight: bold; }
-      #custom-study.running { color: #89b4fa; }
-      #custom-study.paused { color: #fab387; }
-      #custom-study.idle { color: @muted; }
+      #clock, #custom-countdown { font-weight: bold; }
+      #custom-countdown.running { color: #89b4fa; }
+      #custom-countdown.paused { color: #fab387; }
+      #custom-countdown.idle { color: @muted; }
       #custom-inhibit.running { color: #89b4fa; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }

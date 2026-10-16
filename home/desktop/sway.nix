@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   wayland.windowManager.sway = {
@@ -251,7 +251,7 @@
       ExecStartPre = "-${pkgs.procps}/bin/pkill -f 'swayidle -w timeout 300'";
       # Commands started by swayidle need these tools on PATH.
       Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
+        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin:%h/.local/bin"
       ];
       Restart = "on-failure";
       RestartSec = 3;

@@ -5,7 +5,7 @@
 {
   programs.starship = {
     enable = true;
-    # Bash integration (already enabled in default.nix).
+    # Integrate the prompt with Bash.
     enableBashIntegration = true;
 
     settings = {

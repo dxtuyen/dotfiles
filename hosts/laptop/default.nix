@@ -10,8 +10,10 @@
     ../../modules/nixos/core.nix
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/development.nix
+    ../../modules/nixos/input-method.nix
     ../../modules/nixos/laptop.nix
     ../../modules/nixos/system-tweaks.nix
+    ../../modules/nixos/virtualisation.nix
   ];
 
   networking.hostName = "laptop";

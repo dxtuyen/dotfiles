@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 # Countdown: focus state, idle inhibition, and auto-pause when the machine sleeps.
 # Menu is `countdown`, internal engine is `countdown-engine` (formerly `study`, `pomodoro`).
@@ -16,7 +16,7 @@
       Type = "simple";
       # PATH for dbus-monitor + countdown-engine.
       Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
+        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin:%h/.local/bin"
       ];
       Restart = "on-failure";
       RestartSec = 3;
@@ -43,7 +43,7 @@
       Type = "simple";
       # PATH for child commands (lock-screen, swaymsg).
       Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/doxuantuyen/bin:%h/.local/bin"
+        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin:%h/.local/bin"
       ];
       # "always" so it restarts if anything touches this instance.
       Restart = "always";

@@ -6,7 +6,7 @@
     ./screenshot.nix
     ./screenshot-menu.nix
     ./toggle-touchpad.nix
-    ./window-menu.nix
+    ./window-management.nix
     ./wlsunset-apply.nix
     ./wlsunset-menu.nix
   ];

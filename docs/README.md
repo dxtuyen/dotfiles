@@ -1,11 +1,12 @@
 # Tài liệu
 
-Tài liệu được chia theo mục đích: tìm hiểu cấu hình, luyện cài đặt an toàn trong máy ảo, hoặc tham khảo quy trình riêng cho laptop của tác giả.
+Tài liệu gồm sơ đồ kiến trúc, hướng dẫn tìm hiểu cấu hình, quy trình luyện cài đặt trong máy ảo và ghi chú riêng cho laptop của tác giả.
 
 ## Chọn hướng dẫn
 
 | Nhu cầu | Tài liệu |
 |---|---|
+| Hiểu luồng module và desktop | [Sơ đồ kiến trúc](architecture.md) |
 | Tìm hiểu repo và cách bắt đầu | [README chính](../README.md) |
 | Luyện cài NixOS trong môi trường riêng | [Cài đặt bằng QEMU/KVM](06-Luyen-Tap-VM.md) |
 | Cài lại laptop của tác giả | [Ghi chú cài laptop cá nhân](personal/cai-laptop.md) |

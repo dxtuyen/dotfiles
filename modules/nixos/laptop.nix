@@ -28,6 +28,9 @@ let
   };
 in
 {
+  # Load Intel KMS early so the console does not resize under tuigreet.
+  boot.initrd.kernelModules = [ "i915" ];
+
   # Compressed swap in RAM (zstd): faster than SSD swap, less disk wear.
   zramSwap = {
     enable = true;

@@ -26,12 +26,12 @@
 #   • Never leave 0 generations — the systemd-boot builder refuses to run and
 #     exits 1 when the generation list is empty.
 #
-# Usage:  sudo bash scripts/reset-generations.sh [flake-dir] [host]
-#         defaults: flake-dir = parent dir of the script, host = laptop
+# Usage:  sudo bash home/shell/scripts/reset-generations.sh [flake-dir] [host]
+#         defaults: flake-dir = repository root inferred from this script, host = laptop
 
 set -euo pipefail
 
-FLAKE="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+FLAKE="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 HOST="${2:-laptop}"
 PROFILE=/nix/var/nix/profiles/system
 GEN_DIR=/nix/var/nix/profiles
