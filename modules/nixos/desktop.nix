@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   userName,
@@ -11,6 +12,19 @@ let
   fcitxAddons = config.i18n.inputMethod.fcitx5.addons;
   fcitxAddonDirs = lib.makeSearchPath "lib/fcitx5" fcitxAddons;
   fcitxDataDirs = lib.makeSearchPath "share/fcitx5" fcitxAddons;
+  # The upstream flake's v5.0.3 tag still declares v5.0.2 in its Nix
+  # package expression, so pin both the real source tag and derivation version.
+  lotusPackage =
+    inputs.lotus.packages.${pkgs.stdenv.hostPlatform.system}.fcitx5-lotus.overrideAttrs
+      (_: {
+        version = "5.0.3";
+        src = pkgs.fetchFromGitHub {
+          owner = "LotusInputMethod";
+          repo = "fcitx5-lotus";
+          tag = "v5.0.3";
+          hash = "sha256-XTyXzO0rF0zkW9li0sFBSAf+qakU9uFxl1CrQVlbMms=";
+        };
+      });
 in
 {
 
@@ -72,9 +86,17 @@ in
     enable = true;
     type = "fcitx5";
     fcitx5.addons = with pkgs; [
-      qt6Packages.fcitx5-unikey
       fcitx5-gtk
     ];
+  };
+
+  # Lotus uses its uinput server for direct key replacement without preedit.
+  # The upstream module manages its package, udev rules, and systemd service.
+  boot.kernelModules = [ "uinput" ];
+  services.fcitx5-lotus = {
+    enable = true;
+    users = [ userName ];
+    package = lotusPackage;
   };
 
   environment.sessionVariables = {

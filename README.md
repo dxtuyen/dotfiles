@@ -8,7 +8,7 @@ This repository is designed around one machine and one user. It can be adapted f
 
 - **Operating system:** NixOS unstable, pinned through `flake.lock`
 - **Desktop:** Sway, Waybar, Mako, and Foot
-- **Input:** Fcitx5 with UniKey
+- **Input:** Fcitx5 with Lotus
 - **Shell:** Bash with Starship, fzf, zoxide, and direnv
 - **User configuration:** Home Manager, integrated into the NixOS flake
 - **Laptop features:** zram, hibernation, battery charge thresholds, key remapping, and firmware updates
