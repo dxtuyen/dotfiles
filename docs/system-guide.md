@@ -36,7 +36,7 @@ NixOS quản lý kernel, driver, user, mạng và dịch vụ cấp máy. Home M
 
 - [flake.nix](../flake.nix) chọn x86_64-linux, xuất cấu hình laptop và formatter nix fmt.
 - [flake.lock](../flake.lock) ghi chính xác revision của Nixpkgs, Home Manager và Lotus để lần dựng sau dùng cùng đầu vào.
-- Home Manager theo cùng đầu vào Nixpkgs với NixOS. Module Lotus được lấy từ flake riêng; modules/nixos/input-method.nix ghim lại mã nguồn Lotus v5.0.3.
+- Home Manager theo cùng đầu vào Nixpkgs với NixOS. Module Lotus được lấy từ flake riêng; modules/nixos/input-method.nix ghim lại mã nguồn Lotus v5.0.4.
 - system.stateVersion và home.stateVersion hiện là 26.05. Đây là mốc tương thích của cấu hình đã cài, không phải phiên bản Nixpkgs đang chạy. Không tăng giá trị này chỉ để cập nhật package.
 - [hosts/laptop/hardware-configuration.nix](../hosts/laptop/hardware-configuration.nix) được sinh từ phần cứng và filesystem của máy cài đặt. Khi cài máy khác, phải tạo lại file này và kiểm tra UUID, mount point, swap.
 

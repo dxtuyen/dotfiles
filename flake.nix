@@ -17,7 +17,7 @@
 
     # Pin Lotus to the latest upstream release instead of waiting for nixpkgs.
     lotus = {
-      url = "github:LotusInputMethod/fcitx5-lotus/v5.0.3";
+      url = "github:LotusInputMethod/fcitx5-lotus/v5.0.4";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

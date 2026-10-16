@@ -13,17 +13,16 @@ let
   fcitxAddonDirs = lib.makeSearchPath "lib/fcitx5" fcitxAddons;
   fcitxDataDirs = lib.makeSearchPath "share/fcitx5" fcitxAddons;
 
-  # The v5.0.3 tag still declares v5.0.2 in its Nix expression; pin the
-  # source and derivation version together until the upstream package is fixed.
+  # Keep the source and derivation version aligned with the pinned release.
   lotusPackage =
     inputs.lotus.packages.${pkgs.stdenv.hostPlatform.system}.fcitx5-lotus.overrideAttrs
       (_: {
-        version = "5.0.3";
+        version = "5.0.4";
         src = pkgs.fetchFromGitHub {
           owner = "LotusInputMethod";
           repo = "fcitx5-lotus";
-          tag = "v5.0.3";
-          hash = "sha256-XTyXzO0rF0zkW9li0sFBSAf+qakU9uFxl1CrQVlbMms=";
+          tag = "v5.0.4";
+          hash = "sha256-E1A9PviA9V4I8f/3iLsiLA1nb4EM+nh+WG8sXwbudCA=";
         };
       });
 in
