@@ -21,4 +21,4 @@ jobs:
 
       # Check the flake (skip builds).
       - name: Check Nix flake
-        run: nix flake check --no-build --show-trace
+        run: nix flake check --no-build --show-trace --no-eval-cache
