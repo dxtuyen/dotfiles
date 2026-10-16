@@ -93,6 +93,7 @@
     unzip
     zip
     htop
+    btop
     file # Inspect file types.
   ];
 }
