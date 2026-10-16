@@ -14,61 +14,7 @@ let
 
   cfg = config.services.fcitx5-lotus;
 
-  lotusPython = pkgs.python3.withPackages (
-    ps: with ps; [
-      dbus-python
-      pyqt6
-      qtpy
-    ]
-  );
-
-  lotusPackage = pkgs.stdenv.mkDerivation {
-    pname = "fcitx5-lotus";
-    version = "5.0.4";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "LotusInputMethod";
-      repo = "fcitx5-lotus";
-      tag = "v5.0.4";
-      hash = "sha256-E1A9PviA9V4I8f/3iLsiLA1nb4EM+nh+WG8sXwbudCA=";
-    };
-
-    nativeBuildInputs = with pkgs; [
-      cmake
-      gettext
-      hicolor-icon-theme
-      kdePackages.extra-cmake-modules
-      pkg-config
-      qt6.wrapQtAppsHook
-    ];
-
-    buildInputs = with pkgs; [
-      acl
-      fcitx5
-      kdePackages.extra-cmake-modules
-      libevdev
-      libinput
-      lotusPython
-      qt6.qtbase
-      qt6.qtsvg
-      udev
-    ];
-
-    strictDeps = true;
-    __structuredAttrs = true;
-    dontWrapQtApps = true;
-
-    cmakeFlags = [
-      "-DLOTUS_ALT_EXECUTABLE_PREFIX=/nix/store/"
-      "-DLOTUS_SETFACL_EXECUTABLE=${pkgs.acl}/bin/setfacl"
-    ];
-
-    postFixup = ''
-      patchShebangs $out/share/fcitx5-lotus/settings-gui
-      wrapQtApp $out/bin/fcitx5-lotus-settings \
-        --prefix XDG_DATA_DIRS : "${pkgs.hicolor-icon-theme}/share"
-    '';
-  };
+  lotusPackage = pkgs.callPackage ../../pkgs/fcitx5-lotus.nix { };
 
   effectiveUsers = lib.unique cfg.users;
   invalidUsers = builtins.filter (
