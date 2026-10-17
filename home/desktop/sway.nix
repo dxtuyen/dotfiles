@@ -64,14 +64,14 @@
 
       # Floating rules
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
-      for_window [app_id="wiremix"] floating enable, border pixel 2, resize set width 50 ppt height 60 ppt
-      for_window [app_id="bluetui"] floating enable, border pixel 2, resize set 750 px 500 px
+      for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
+      for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       # Match common Obsidian app_id variants across package formats.
-      for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, border pixel 2, resize set width 1000 px height 700 px, move position center
-      for_window [title="htop"] floating enable, border pixel 2, resize set width 50 ppt height 70 ppt
+      for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
+      for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict popup; Mod+g toggles it and closing hides it to the tray.
-      for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, border pixel 2, resize set width 50 ppt height 65 ppt
+      for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
       # Sioyek: new windows open on the focused workspace.
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
@@ -79,16 +79,16 @@
       for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
 
       # Thunar popup; Mod+Shift+Space toggles it back to tiling.
-      for_window [app_id="(?i)^thunar$"] floating enable, border pixel 2, resize set width 40 ppt height 65 ppt
+      for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
       # Yazi popup, toggled with Mod+y. Popup keys can hide or restore it.
-      for_window [app_id="(?i)^yazi-popup$"] floating enable, border pixel 2, resize set 1000 px 700 px
+      for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
       # Keep the shell session alive while the terminal is hidden in the scratchpad.
       for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
 
       # Wi-Fi popup.
-      for_window [app_id="wifitui"] floating enable, border pixel 2, resize set 750 px 500 px
+      for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
 
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable
@@ -101,13 +101,13 @@
       for_window [title="Save File"] floating enable
 
       # Center file choosers opened by xdg-desktop-portal-gtk.
-      for_window [app_id="(?i)^xdg-desktop-portal-gtk$"] floating enable, border pixel 2, move position center
+      for_window [app_id="(?i)^xdg-desktop-portal-gtk$"] floating enable, move position center
 
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
       # Center Chrome PWAs from the Default profile. Add another profile suffix if needed.
-      for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, border pixel 2, resize set width 1000 px height 700 px, move position center
+      for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
 
       # Inhibit idle
       for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
