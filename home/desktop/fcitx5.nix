@@ -3,6 +3,13 @@
 # Vietnamese input: Fcitx5 + Lotus.
 {
   xdg.configFile = {
+    # Disable Fcitx5's single-Shift temporary input-method switch.
+    "fcitx5/config" = {
+      text = ''
+        [Hotkey/AltTriggerKeys]
+      '';
+      force = true;
+    };
     "fcitx5/profile".text = ''
       [Groups/0]
       Name=Default
