@@ -1,11 +1,9 @@
 { ... }:
 
-# utilities — one engine, two keys, split by how destructive an entry is:
-#   $mod+p       -> utilities            (daily tools, most-used first)
-#   $mod+Shift+p -> utilities --power    (session + power, safe -> destructive)
-# Nothing needs a divider or a usage ranking: each list is pure by meaning, and
-# both orders are stable so muscle memory sticks (Enter without typing lands on
-# Idle in the first menu and Lock in the second — never on a destructive item).
+# Utilities menu launchers:
+#   $mod+u       -> daily tools
+#   $mod+p       -> session and power actions
+#   $mod+Shift+p -> same power menu, retained as an alias
 {
   home.file = {
     ".local/bin/utilities" = {

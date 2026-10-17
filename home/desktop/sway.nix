@@ -118,7 +118,8 @@
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
-      # Mod+p opens utilities; Mod+c starts Countdown; Mod+q closes the focused window.
+      # Mod+u opens utilities; Mod+p opens power actions; Mod+o toggles Obsidian.
+      # Mod+c starts Countdown; Mod+q closes the focused window.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       # Toggle Sway's workspace overview and switcher.
       bindsym $mod+Tab exec pkill -x swayview || swayview
@@ -187,11 +188,13 @@
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).
       bindsym $mod+Shift+b exec systemctl --user kill --signal=SIGUSR1 --kill-whom=main waybar.service
-      # Mod+p opens daily utilities.
-      bindsym $mod+p exec ~/.local/bin/utilities
-      # Mod+Shift+p opens session and power actions.
-      # Open Chrome from the app launcher or a link.
+      # Mod+u opens daily utilities; Mod+p opens session and power actions.
+      bindsym $mod+u exec ~/.local/bin/utilities
+      # Mod+o launches Obsidian, or toggles its window into/out of the scratchpad.
+      bindsym $mod+o exec ~/.local/bin/obsidian-toggle
+      # Mod+c starts Countdown.
       bindsym $mod+c exec ~/.local/bin/countdown
+      bindsym $mod+p exec ~/.local/bin/utilities --power
       bindsym $mod+Shift+p exec ~/.local/bin/utilities --power
       # Quick language tools: Mod+t translates Vietnamese to English; Shift reverses it;
       # Ctrl+t fixes English. Optional context prefixes: [phi], [sci], [lit], [cas].
