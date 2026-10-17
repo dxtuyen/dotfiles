@@ -37,6 +37,14 @@ def stashed(window):
     return (window.get("scratchpad_state") not in (None, "none")
             and not window.get("visible"))
 
+obsidian_app_id = re.compile(r"(?:md(?:\.obsidian)?\.obsidian|obsidian)", re.I)
+
+def is_obsidian(window):
+    properties = window.get("window_properties") or {}
+    identities = (window.get("app_id"), properties.get("class"))
+    return any(identity and obsidian_app_id.fullmatch(identity)
+               for identity in identities)
+
 def collect_windows(node, ws=None):
     # Track workspace ancestry; hidden windows live under __i3_scratch.
     #
@@ -88,7 +96,13 @@ if away_only:
     focus_rank = {con_id: index for index, con_id in enumerate(focus_order)}
     found = sorted(
         enumerate(found),
-        key=lambda item: (focus_rank.get(item[1][0].get("id"), len(focus_rank)), item[0]),
+        # Obsidian is normally summoned with Mod+o, so keep it last in Mod+m's
+        # away-window list while preserving MRU order for every other window.
+        key=lambda item: (
+            is_obsidian(item[1][0]),
+            focus_rank.get(item[1][0].get("id"), len(focus_rank)),
+            item[0],
+        ),
     )
     found = [pair for _, pair in found]
 elif stashed_only:
