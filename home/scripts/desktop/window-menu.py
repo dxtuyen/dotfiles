@@ -45,7 +45,7 @@ def is_obsidian(window):
     return any(identity and obsidian_app_id.fullmatch(identity)
                for identity in identities)
 
-def collect_windows(node, ws=None):
+def collect_windows(node, ws=None, in_floating_group=False, split_path=()):
     # Track workspace ancestry; hidden windows live under __i3_scratch.
     #
     # Stashed means `in scratchpad and not visible`. Comparing
@@ -56,10 +56,27 @@ def collect_windows(node, ws=None):
     if node.get("type") == "workspace":
         ws = node.get("name") or ws
     node_type = node.get("type")
-    if node_type in ("con", "floating_con"):
+    floating = in_floating_group or node_type == "floating_con"
+    children = node.get("nodes", []) + node.get("floating_nodes", [])
+    properties = node.get("window_properties") or {}
+    # Sway also represents split/tabbed/stacked layout containers as `con`.
+    # Only offer real client windows in the picker, never those structural
+    # containers (which otherwise appear as phantom "Window" rows).
+    is_client = (
+        node_type in ("con", "floating_con")
+        and not children
+        and bool(node.get("app_id") or node.get("window") is not None
+                 or properties or node.get("pid"))
+    )
+    if node_type in ("con", "floating_con") and children:
+        layout = node.get("layout")
+        if layout == "splith":
+            split_path = (*split_path, "horizontal")
+        elif layout == "splitv":
+            split_path = (*split_path, "vertical")
+    if is_client:
         state = node.get("scratchpad_state")
         in_scratch = state not in (None, "none")
-        floating = node_type == "floating_con"
         hidden = stashed(node)
         elsewhere = (
             floating and ws is not None
@@ -67,19 +84,19 @@ def collect_windows(node, ws=None):
         )
         if stashed_only:
             if hidden:
-                yield (node, ws)
+                yield (node, ws, floating, split_path)
         elif normal_only:
             # Keep this list limited to regular tiled windows.
             if not in_scratch and not floating:
-                yield (node, ws)
+                yield (node, ws, floating, split_path)
         elif away_only:
             if hidden or elsewhere:
-                yield (node, ws)
+                yield (node, ws, floating, split_path)
         elif not hidden:
-            yield (node, ws)
+            yield (node, ws, floating, split_path)
     for key in ("nodes", "floating_nodes"):
         for child in node.get(key, []):
-            yield from collect_windows(child, ws)
+            yield from collect_windows(child, ws, floating, split_path)
 
 found = list(collect_windows(tree))
 
@@ -113,8 +130,12 @@ elif stashed_only:
     )
     found = [pair for _, pair in found]
 
-windows = [window for window, _ in found]
-window_ws = {window["id"]: ws for window, ws in found}
+windows = [item[0] for item in found]
+window_ws = {window["id"]: ws for window, ws, _, _ in found}
+window_context = {
+    window["id"]: (floating, split_path)
+    for window, _, floating, split_path in found
+}
 if not windows:
     if first_only:
         sys.exit(0)
@@ -134,6 +155,7 @@ if not windows:
 if first_only:
     window = windows[0]
     criteria = f"[con_id={window['id']}]"
+    floating = window_context.get(window["id"], (False, ()))[0]
     if (stashed(window)
             or window_ws.get(window["id"]) == "__i3_scratch"):
         subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
@@ -142,7 +164,9 @@ if first_only:
             [swaymsg, f"{criteria} move container to workspace current"],
             check=True,
         )
-        subprocess.run([swaymsg, f"{criteria} focus"], check=True)
+    if floating:
+        subprocess.run([swaymsg, f"{criteria} floating enable"], check=True)
+    subprocess.run([swaymsg, f"{criteria} focus"], check=True)
     sys.exit(0)
 
 icon_dirs = [
@@ -265,22 +289,54 @@ def window_row(window):
 
 rendered = [window_row(window) for window in windows]
 labels = [label for label, _ in rendered]
-counts = {}
-for label in labels:
-    counts[label] = counts.get(label, 0) + 1
+groups = {}
+for index, label in enumerate(labels):
+    groups.setdefault(label, []).append(index)
 
-# Number duplicates within each label group.
+# Keep ordinary rows clean; add context only when duplicate labels need help.
 rows = []
-seen = {}
-for label, row in rendered:
-    seen[label] = seen.get(label, 0) + 1
-    if counts[label] > 1:
-        label_bytes, separator, icon = row.partition(b"\0")
-        row = label_bytes + f" ({seen[label]})".encode("utf-8") + (separator + icon if separator else b"")
-    rows.append(row)
+display_labels = labels.copy()
+for label, indices in groups.items():
+    workspaces = {window_ws.get(windows[i]["id"]) for i in indices}
+    floating_states = {
+        window_context.get(windows[i]["id"], (False, ()))[0]
+        for i in indices
+    }
+    split_paths = {
+        window_context.get(windows[i]["id"], (False, ()))[1]
+        for i in indices
+    }
+    for position, index in enumerate(indices, start=1):
+        display_label, row = rendered[index]
+        if len(indices) > 1:
+            window = windows[index]
+            contexts = []
+            if away_only and len(workspaces) > 1:
+                ws = window_ws.get(window["id"])
+                contexts.append(
+                    "scratchpad" if ws == "__i3_scratch"
+                    else f"workspace {ws}" if ws is not None
+                    else "workspace ?"
+                )
+            if len(floating_states) > 1:
+                is_floating = window_context.get(window["id"], (False, ()))[0]
+                contexts.append("floating" if is_floating else "tiled")
+            if len(split_paths) > 1:
+                split_path = window_context.get(window["id"], (False, ()))[1]
+                if split_path:
+                    contexts.append("split " + "/".join(split_path))
+            display_label = f"{display_label} ({position})"
+            if contexts:
+                display_label += " [" + " · ".join(contexts) + "]"
+            label_bytes, separator, icon = row.partition(b"\0")
+            row = display_label.encode("utf-8") + (separator + icon if separator else b"")
+        display_labels[index] = display_label
+        rows.append((index, row))
+rows.sort(key=lambda item: item[0])
+rows = [row for _, row in rows]
 
 if waybar_only:
-    labels = [label for label, _ in rendered]
+    labels = display_labels
     count = len(windows)
     plural = "s" if count != 1 else ""
     print(json.dumps({
@@ -332,27 +388,34 @@ if choice.returncode == 10:
 # Reuse the focused workspace captured above.
 SCRATCH_WS = "__i3_scratch"
 
-def enter_command(con_id, ws_of, ws_current, stashed=False, pull=False):
+def enter_command(con_id, ws_of, ws_current, stashed=False, pull=False,
+                  floating=False):
     """Build the focus or move command for a selected row."""
     criteria = f"[con_id={con_id}]"
     # `scratchpad show` toggles, so use it only for hidden windows.
-    if stashed or ws_of == SCRATCH_WS:
-        return [f"{criteria} scratchpad show"]
+    from_scratchpad = stashed or ws_of == SCRATCH_WS
+    if from_scratchpad:
+        commands = [f"{criteria} scratchpad show"]
+    else:
+        commands = []
     want_pull = pull or stashed_only or away_only
-    if want_pull:
-        if ws_of is not None and ws_current is not None and ws_of != ws_current:
-            return [
-                f"{criteria} move container to workspace current",
-                f"{criteria} focus",
-            ]
-    return [f"{criteria} focus"]
+    if (not from_scratchpad and want_pull and ws_of is not None
+            and ws_current is not None and ws_of != ws_current):
+        commands.append(f"{criteria} move container to workspace current")
+    # A child of a floating split is tiled inside its floating parent. When
+    # pulled out on its own, restore floating mode before focusing that client.
+    if floating:
+        commands.append(f"{criteria} floating enable")
+    commands.append(f"{criteria} focus")
+    return commands
 
 pull_here = choice.returncode == 11
 # Use the same hidden-window test as the list builder.
 is_stashed = stashed(window)
 for command in enter_command(
         window["id"], window_ws.get(window["id"]), current_ws,
-        stashed=is_stashed, pull=pull_here):
+        stashed=is_stashed, pull=pull_here,
+        floating=window_context.get(window["id"], (False, ()))[0]):
     subprocess.run([swaymsg, command], check=True)
 if choice.returncode == 11:
     # Keep the menu available for another selection after opening this window.
