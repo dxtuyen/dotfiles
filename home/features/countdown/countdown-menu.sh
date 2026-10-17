@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Countdown menu: start, pause, reset, or add time.
+# Countdown menu: enter a duration to start, or manage the active session.
 set -u
 
 ENGINE="$HOME/.local/bin/countdown-engine"
@@ -14,6 +14,23 @@ STATE_DIR="${XDG_RUNTIME_DIR:-$HOME/.local/state}"
 format_time() {
   local secs=$1
   printf "%02d:%02d" $((secs / 60)) $((secs % 60))
+}
+
+ask_minutes() {
+  local prompt="${1:-Countdown — minutes (1–480)}"
+  local minutes
+  minutes=$(rofi -dmenu -p "$prompt" \
+    -mesg "Enter minutes (1–480) · Enter to start · Esc to cancel" \
+    -theme-str 'window { width: 28%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "Enter minutes…"; }')
+  if [ -z "$minutes" ]; then
+    exit 0
+  fi
+  if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
+    notify-send -a countdown -i "dialog-error" -t 4000 \
+      "Countdown" "Invalid minutes: $minutes (need 1–480)"
+    exit 1
+  fi
+  echo "$minutes"
 }
 
 # Finalize or recover the timer before building the menu.
@@ -47,50 +64,25 @@ else
   r=0
 fi
 
-# Show start options when idle, or timer controls while running.
-if [ -n "$DURATION" ]; then
-  if [ "$RUNNING" = "true" ]; then
-    ITEMS=("⏸ $(format_time "$r")")
-  else
-    ITEMS=("▶ $(format_time "$r")")
-  fi
-  ITEMS+=("↺ Reset")
-  ITEMS+=("＋ Add minutes...")
-else
-  ITEMS=("⌨ Minutes (1–480)...")
-  ITEMS+=("⏱ 30 min")
-  ITEMS+=("⏱ 60 min")
-  ITEMS+=("⏱ 120 min")
+# When idle, open the duration input directly. Enter starts the countdown.
+if [ -z "$DURATION" ]; then
+  m=$(ask_minutes) || exit $?
+  [ -n "$m" ] || exit 0
+  exec "$ENGINE" start "$m"
 fi
 
-choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
-  -mesg "⌨ start 1–480 · ⏱ 30/60/120 min · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
+if [ "$RUNNING" = "true" ]; then
+  ITEMS=("⏸ $(format_time "$r")")
+else
+  ITEMS=("▶ $(format_time "$r")")
+fi
+ITEMS+=("↺ Reset")
+ITEMS+=("＋ Add minutes...")
 
-# Cancel silently; reject invalid durations.
-ask_minutes() {
-  local prompt="${1:-Countdown — minutes (1–480)}"
-  local minutes
-  minutes=$(rofi -dmenu -p "$prompt")
-  if [ -z "$minutes" ]; then
-    exit 0
-  fi
-  if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-    notify-send -a countdown -i "dialog-error" -t 4000 \
-      "Countdown" "Invalid minutes: $minutes (need 1–480)"
-    exit 1
-  fi
-  echo "$minutes"
-}
+choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
+  -mesg "⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
 case "$choice" in
-  "⌨ Minutes (1–480)...")
-    m=$(ask_minutes) || exit $?
-    [ -n "$m" ] || exit 0
-    exec "$ENGINE" start "$m"
-    ;;
-  "⏱ 30 min") exec "$ENGINE" start 30 ;;
-  "⏱ 60 min") exec "$ENGINE" start 60 ;;
-  "⏱ 120 min") exec "$ENGINE" start 120 ;;
   "⏸ "*) exec "$ENGINE" toggle ;;
   "▶ "*) exec "$ENGINE" toggle ;;
   "↺ Reset") exec "$ENGINE" reset ;;
