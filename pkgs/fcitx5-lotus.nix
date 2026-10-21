@@ -27,13 +27,13 @@ let
 in
 stdenv.mkDerivation {
   pname = "fcitx5-lotus";
-  version = "5.0.4";
+  version = "5.0.6";
 
   src = fetchFromGitHub {
     owner = "LotusInputMethod";
     repo = "fcitx5-lotus";
-    tag = "v5.0.4";
-    hash = "sha256-E1A9PviA9V4I8f/3iLsiLA1nb4EM+nh+WG8sXwbudCA=";
+    tag = "v5.0.6";
+    hash = "sha256-8j+eQ8Uje3Zi5MegN++GPDa+xUCYeiFxPm9Jm1VYMBM=";
   };
 
   nativeBuildInputs = [
