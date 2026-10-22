@@ -20,10 +20,10 @@ in
       ];
       "modules-center" = [
         "group/countdown"
-        "clock"
       ];
       "modules-right" = [
         "group/status"
+        "clock"
         "tray"
       ];
       "group/status" = {
