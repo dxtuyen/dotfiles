@@ -139,6 +139,7 @@ in
         format = faSpan "{text}";
         escape = true;
         "on-click" = "~/.local/bin/countdown-engine control-click";
+        "on-click-right" = "~/.local/bin/countdown-engine reset";
       };
       "custom/countdown" = {
         exec = "~/.local/bin/countdown-engine status-time";
@@ -146,6 +147,7 @@ in
         return-type = "json";
         "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown";
+        "on-click-right" = "~/.local/bin/countdown-engine reset";
       };
       # Idle-inhibition status.
       "custom/inhibit" = {
