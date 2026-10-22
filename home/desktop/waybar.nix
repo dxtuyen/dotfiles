@@ -160,7 +160,7 @@ in
         "on-click" = "~/.local/bin/countdown-engine inhibit-toggle";
       };
       clock = {
-        format = "{:%I:%M %p}";
+        format = "{:%H:%M}";
         tooltip-format = "{:%d %B %Y}";
         locale = "en_US.UTF-8";
       };
@@ -182,8 +182,7 @@ in
 
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
       #workspaces, #tray, #mode,
-      #custom-away-windows, #clock, #countdown,
-      #status {
+      #custom-away-windows, #clock, #countdown, #status {
         background: @pill;
         border: 1px solid @edge;
         border-radius: 10px;
