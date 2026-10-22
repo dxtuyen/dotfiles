@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Countdown menu: enter a duration to start/restart, or manage the active session.
+# Countdown menu: enter a duration to start, or manage the active session.
 set -u
 
 ENGINE="$HOME/.local/bin/countdown-engine"

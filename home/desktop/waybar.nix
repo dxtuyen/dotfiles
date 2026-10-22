@@ -19,8 +19,7 @@ in
         "sway/mode"
       ];
       "modules-center" = [
-        "custom/countdown-control"
-        "custom/countdown"
+        "group/countdown"
         "clock"
       ];
       "modules-right" = [
@@ -124,18 +123,28 @@ in
           ""
         ];
       };
-      # Keep the clickable play/pause control separate from the menu/time.
+      # Countdown control and menu time share one pill but keep separate clicks.
+      "group/countdown" = {
+        orientation = "horizontal";
+        modules = [
+          "custom/countdown-control"
+          "custom/countdown"
+        ];
+      };
       "custom/countdown-control" = {
         exec = "~/.local/bin/countdown-engine status-control";
         signal = 10;
         interval = "once";
         "return-type" = "json";
-        "on-click" = "~/.local/bin/countdown-engine toggle";
+        format = faSpan "{text}";
+        escape = true;
+        "on-click" = "~/.local/bin/countdown-engine control-click";
       };
       "custom/countdown" = {
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
+        "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown";
       };
       # Idle-inhibition status.
@@ -171,7 +180,7 @@ in
 
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
       #workspaces, #tray, #mode,
-      #custom-away-windows, #clock, #custom-countdown, #custom-countdown-control,
+      #custom-away-windows, #clock, #countdown,
       #status {
         background: @pill;
         border: 1px solid @edge;
@@ -179,7 +188,7 @@ in
         padding: 0 9px;
         margin: 4px 3px;
       }
-      box#status > widget > * {
+      box#status > widget > *, box#countdown > widget > * {
         background: transparent;
         border: none;
         border-radius: 0;
@@ -203,7 +212,7 @@ in
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #tray { padding: 0 8px; }
       #mode { color: #89b4fa; }
-      #clock, #custom-countdown, #custom-countdown-control { font-weight: bold; }
+      #clock, #countdown { font-weight: bold; }
       #custom-countdown.running { color: #89b4fa; }
       #custom-countdown.paused { color: #fab387; }
       #custom-countdown.idle { color: @muted; }

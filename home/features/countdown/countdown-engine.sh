@@ -465,20 +465,29 @@ case "${1:-status}" in
       "$text" "$class" "$tooltip"
     ;;
 
+  control-click)
+    "$0" status >/dev/null
+    read_state
+    if [ -z "$DURATION" ]; then
+      exec "$HOME/.local/bin/countdown"
+    fi
+    exec "$0" toggle
+    ;;
+
   status-control)
     # Reuse status recovery/expiry handling, then show the action for the state.
     "$0" status >/dev/null
     read_state
     if [ -z "$DURATION" ]; then
-      text="⏱"
+      text=""
       class="idle"
-      tooltip="No active Countdown session"
+      tooltip="Start a Countdown session"
     elif [ "$RUNNING" = "true" ]; then
-      text="⏸"
+      text=""
       class="running"
       tooltip="Pause Countdown"
     else
-      text="▶"
+      text=""
       class="paused"
       tooltip="Resume Countdown"
     fi
@@ -492,15 +501,15 @@ case "${1:-status}" in
     read_state
     remaining=$(get_remaining)
     if [ -z "$DURATION" ]; then
-      text="🍅"
+      text=""
       class="idle"
-      tooltip="No active Countdown session"
+      tooltip=""
     elif [ "$RUNNING" = "true" ]; then
-      text="🍅 $(format_time "$remaining")"
+      text="$(format_time "$remaining")"
       class="running"
       tooltip="Running · $(format_time "$remaining") remaining"
     else
-      text="🍅 $(format_time "$remaining")"
+      text="$(format_time "$remaining")"
       class="paused"
       tooltip="Paused · $(format_time "$remaining") remaining"
     fi
