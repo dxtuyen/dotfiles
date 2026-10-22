@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Countdown menu: enter a duration to start, or manage the active session.
+# Countdown menu: enter a duration to start/restart, or manage the active session.
 set -u
 
 ENGINE="$HOME/.local/bin/countdown-engine"
@@ -80,7 +80,19 @@ ITEMS+=("↺ Reset")
 ITEMS+=("＋ Add minutes...")
 
 choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
-  -mesg "⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
+  -kb-accept-custom 'Shift+Return' \
+  -mesg "Type 1–480 + Shift+Enter to restart · Enter selects a menu item · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
+
+# Rofi's custom input lets a duration replace the current session directly,
+# whether it is running or paused.
+if [[ "$choice" =~ ^[0-9]+$ ]]; then
+  if ! [[ "$choice" =~ ^[1-9][0-9]*$ ]] || [ "$choice" -gt 480 ]; then
+    notify-send -a countdown -i "dialog-error" -t 4000 \
+      "Countdown" "Invalid minutes: $choice (need 1–480)"
+    exit 1
+  fi
+  exec "$ENGINE" start "$choice"
+fi
 
 case "$choice" in
   "⏸ "*) exec "$ENGINE" toggle ;;

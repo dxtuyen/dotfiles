@@ -10,6 +10,7 @@
   kdePackages,
   libevdev,
   libinput,
+  libnotify,
   pkg-config,
   python3,
   qt6,
@@ -27,13 +28,13 @@ let
 in
 stdenv.mkDerivation {
   pname = "fcitx5-lotus";
-  version = "5.0.6";
+  version = "6.0.0";
 
   src = fetchFromGitHub {
     owner = "LotusInputMethod";
     repo = "fcitx5-lotus";
-    tag = "v5.0.6";
-    hash = "sha256-8j+eQ8Uje3Zi5MegN++GPDa+xUCYeiFxPm9Jm1VYMBM=";
+    tag = "v6.0.0";
+    hash = "sha256-zWOnjTaifwhzIk9QLksf/g3EF/SOg1vJmM4IQ5P1+H8=";
   };
 
   nativeBuildInputs = [
@@ -51,6 +52,7 @@ stdenv.mkDerivation {
     kdePackages.extra-cmake-modules
     libevdev
     libinput
+    libnotify
     pythonEnv
     qt6.qtbase
     qt6.qtsvg
