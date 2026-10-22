@@ -80,7 +80,8 @@ ITEMS+=("↺ Reset")
 ITEMS+=("＋ Add minutes...")
 
 choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
-  -mesg "Type 1–480 + Ctrl+Enter to restart · Enter selects a menu item · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
+  -kb-accept-alt '' -kb-accept-custom 'Shift+Return' \
+  -mesg "Type 1–480 + Shift+Enter to restart · Enter selects a menu item · ⏸/▶ pause/resume · ↺ reset · ＋ add minutes")
 
 # Rofi's custom input lets a duration replace the current session directly,
 # whether it is running or paused.
