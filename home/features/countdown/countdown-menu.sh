@@ -72,26 +72,14 @@ if [ -z "$DURATION" ]; then
 fi
 
 if [ "$RUNNING" = "true" ]; then
-  ITEMS=("⏸ $(format_time "$r")")
+  ITEMS=("⏸ Pause")
 else
-  ITEMS=("▶ $(format_time "$r")")
+  ITEMS=("▶ Resume")
 fi
 ITEMS+=("↺ Reset")
 ITEMS+=("＋ Add minutes...")
 
-choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown" \
-  -kb-accept-alt '' -kb-accept-custom 'Shift+Return')
-
-# Rofi's custom input lets a duration replace the current session directly,
-# whether it is running or paused.
-if [[ "$choice" =~ ^[0-9]+$ ]]; then
-  if ! [[ "$choice" =~ ^[1-9][0-9]*$ ]] || [ "$choice" -gt 480 ]; then
-    notify-send -a countdown -i "dialog-error" -t 4000 \
-      "Countdown" "Invalid minutes: $choice (need 1–480)"
-    exit 1
-  fi
-  exec "$ENGINE" start "$choice"
-fi
+choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown · $(format_time "$r")")
 
 case "$choice" in
   "⏸ "*) exec "$ENGINE" toggle ;;
