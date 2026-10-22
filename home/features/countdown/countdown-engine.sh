@@ -174,13 +174,14 @@ maybe_log_current() {
 }
 
 notify_waybar() {
-  # Signal 8 = clock, signal 7 = eye icon; called on state transitions.
+  # Signal 8 = countdown time, 10 = play/pause control, 7 = idle inhibition.
   pkill -RTMIN+8 waybar 2>/dev/null || true
+  pkill -RTMIN+10 waybar 2>/dev/null || true
   pkill -RTMIN+7 waybar 2>/dev/null || true
 }
 
 notify_clock() {
-  # Only refresh the clock every second (the eye icon only changes on state transitions).
+  # Refresh only the countdown time every second.
   pkill -RTMIN+8 waybar 2>/dev/null || true
 }
 
@@ -459,6 +460,49 @@ case "${1:-status}" in
         "Focus" "Focus session finished! $finished_duration min 🍅"
       log_history "countdown" "$finished_duration"
       notify_waybar
+    fi
+    printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+      "$text" "$class" "$tooltip"
+    ;;
+
+  status-control)
+    # Reuse status recovery/expiry handling, then show the action for the state.
+    "$0" status >/dev/null
+    read_state
+    if [ -z "$DURATION" ]; then
+      text="⏱"
+      class="idle"
+      tooltip="No active Countdown session"
+    elif [ "$RUNNING" = "true" ]; then
+      text="⏸"
+      class="running"
+      tooltip="Pause Countdown"
+    else
+      text="▶"
+      class="paused"
+      tooltip="Resume Countdown"
+    fi
+    printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
+      "$text" "$class" "$tooltip"
+    ;;
+
+  status-time)
+    # Refresh the visible time every second; state transitions are recovered by status.
+    "$0" status >/dev/null
+    read_state
+    remaining=$(get_remaining)
+    if [ -z "$DURATION" ]; then
+      text="🍅"
+      class="idle"
+      tooltip="No active Countdown session"
+    elif [ "$RUNNING" = "true" ]; then
+      text="🍅 $(format_time "$remaining")"
+      class="running"
+      tooltip="Running · $(format_time "$remaining") remaining"
+    else
+      text="🍅 $(format_time "$remaining")"
+      class="paused"
+      tooltip="Paused · $(format_time "$remaining") remaining"
     fi
     printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
       "$text" "$class" "$tooltip"

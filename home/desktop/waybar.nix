@@ -19,6 +19,7 @@ in
         "sway/mode"
       ];
       "modules-center" = [
+        "custom/countdown-control"
         "custom/countdown"
         "clock"
       ];
@@ -123,9 +124,16 @@ in
           ""
         ];
       };
-      # Countdown status and controls.
+      # Keep the clickable play/pause control separate from the menu/time.
+      "custom/countdown-control" = {
+        exec = "~/.local/bin/countdown-engine status-control";
+        signal = 10;
+        interval = "once";
+        "return-type" = "json";
+        "on-click" = "~/.local/bin/countdown-engine toggle";
+      };
       "custom/countdown" = {
-        exec = "~/.local/bin/countdown-engine status";
+        exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
         "on-click" = "~/.local/bin/countdown";
@@ -163,7 +171,7 @@ in
 
       window#waybar { background: rgba(0, 0, 0, 0); color: @txt; }
       #workspaces, #tray, #mode,
-      #custom-away-windows, #clock, #custom-countdown,
+      #custom-away-windows, #clock, #custom-countdown, #custom-countdown-control,
       #status {
         background: @pill;
         border: 1px solid @edge;
@@ -195,10 +203,13 @@ in
       #workspaces button.persistent.empty.focused { background-color: rgba(137, 180, 250, 0.16); }
       #tray { padding: 0 8px; }
       #mode { color: #89b4fa; }
-      #clock, #custom-countdown { font-weight: bold; }
+      #clock, #custom-countdown, #custom-countdown-control { font-weight: bold; }
       #custom-countdown.running { color: #89b4fa; }
       #custom-countdown.paused { color: #fab387; }
       #custom-countdown.idle { color: @muted; }
+      #custom-countdown-control.running { color: #89b4fa; }
+      #custom-countdown-control.paused { color: #fab387; }
+      #custom-countdown-control.idle { color: @muted; }
       #custom-inhibit.running { color: #89b4fa; }
       #custom-inhibit.manual { color: #fab387; }
       #custom-inhibit.idle { color: @muted; }
