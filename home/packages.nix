@@ -40,6 +40,7 @@ in
     jq
     fastfetch
     libreoffice
+    mysql-workbench
     # Development tools.
     vscode
     python3

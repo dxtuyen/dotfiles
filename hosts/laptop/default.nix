@@ -8,6 +8,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/core.nix
+    ../../modules/nixos/database.nix
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/development.nix
     ../../modules/nixos/input-method.nix
