@@ -8,7 +8,7 @@
         #! /usr/bin/env bash
         # Restore the saved display mode.
         "$HOME/.local/bin/wlsunset-apply"
-        # Wallpaper stays on reload (the awww daemon keeps showing it); sway
+        # swaybg keeps the static wallpaper visible while Sway reloads; Sway
         # re-reads the wallust color include -> syncs the palette if missing.
         swaymsg reload
       '';

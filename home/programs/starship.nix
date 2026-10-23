@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
-# Starship: just path + git + long-running commands + the ❯ character.
+let
+  theme = import ../theme.nix;
+in
+
+# A compact two-line prompt using the shared Gruvbox palette.
 
 {
   programs.starship = {
@@ -9,16 +13,15 @@
     enableBashIntegration = true;
 
     settings = {
-      # Blank line between prompts (Starship default).
+      # Separate each command's output from the next prompt with one blank line.
       add_newline = true;
 
       # Line 1: path + git + command time; line 2: ❯.
       format = "$directory$git_branch$git_status$cmd_duration\n$character";
 
       directory = {
-        # Catppuccin Mocha blue
-        style = "bold #89b4fa";
-        read_only_style = "#f38ba8";
+        style = "bold ${theme.blue}";
+        read_only_style = theme.red;
         truncation_length = 3;
         truncate_to_repo = true;
         home_symbol = "~";
@@ -26,20 +29,20 @@
       };
 
       git_branch = {
-        symbol = "";
-        style = "#cba6f7";
+        symbol = " ";
+        style = theme.purple;
         format = "[$symbol$branch]($style) ";
       };
 
       git_status = {
         format = "([$all_status$ahead_behind]($style) )";
-        style = "#6c7086";
+        style = theme.gray;
 
-        modified = "[✱](#fab387)";
-        deleted = "[✖](#f38ba8)";
-        untracked = "[?](#89b4fa)";
-        renamed = "[»](#cba6f7)";
-        conflicted = "[=](#f38ba8)";
+        modified = "[✱](${theme.yellow})";
+        deleted = "[✖](${theme.red})";
+        untracked = "[?](${theme.blue})";
+        renamed = "[»](${theme.purple})";
+        conflicted = "[=](${theme.red})";
 
         # Hide rarely used statuses to keep the prompt short.
         stashed = "";
@@ -51,14 +54,14 @@
 
       cmd_duration = {
         min_time = 2000; # only show when a command runs >= 2s
-        style = "#fab387";
+        style = theme.orange;
         format = "[ $duration]($style) ";
       };
 
       character = {
-        success_symbol = "[❯](bold #a6e3a1)";
-        error_symbol = "[❯](bold #f38ba8)";
-        vicmd_symbol = "[❮](bold #94e2d5)";
+        success_symbol = "[❯](bold ${theme.green})";
+        error_symbol = "[❯](bold ${theme.red})";
+        vicmd_symbol = "[❮](bold ${theme.aqua})";
       };
     };
   };

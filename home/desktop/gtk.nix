@@ -1,8 +1,9 @@
-# Cursor + GTK theme (adw-gtk3-dark) + icons (Papirus-Dark).
-# Most elements paint themselves with Catppuccin Mocha; GTK alone uses neutral
-# adw-gtk3-dark: catppuccin/gtk is archived, tokyonight-gtk-theme was removed
-# from nixpkgs, and it makes GTK3 apps look like GTK4/libadwaita apps.
+# Gruvbox GTK and icon themes with the existing Bibata cursor.
 { pkgs, ... }:
+
+let
+  papirusGruvbox = import ./icon-theme.nix { inherit pkgs; };
+in
 
 {
   home.pointerCursor = {
@@ -18,12 +19,12 @@
   gtk = {
     enable = true;
     theme = {
-      name = "adw-gtk3-dark";
-      package = pkgs.adw-gtk3;
+      name = "gruvbox-dark";
+      package = pkgs.gruvbox-dark-gtk;
     };
     iconTheme = {
       name = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
+      package = papirusGruvbox;
     };
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = 1;

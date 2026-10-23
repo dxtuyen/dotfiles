@@ -13,6 +13,5 @@ result-*
 .venv/
 venv/
 
-# Wallpapers live OUTSIDE the repo: ~/Pictures/wallpapers (copy/rm manually, no rebuild).
-# This line blocks accidentally cp-ing images into ~/nix-config/wallpapers and git add-ing them.
-wallpapers/
+# Ignore only a root-level scratch wallpaper folder; managed assets live in home/assets/wallpapers.
+/wallpapers/

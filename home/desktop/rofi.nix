@@ -1,12 +1,16 @@
 { ... }:
 
+let
+  theme = import ../theme.nix;
+in
+
 {
   xdg.configFile."rofi/config.rasi".text = ''
     configuration {
       modi: "drun,run,window";
       show-icons: true;
       drun-display-format: "{name}";
-      font: "JetBrains Mono 11";
+      font: "JetBrains Mono 12";
       location: 0;
       disable-history: false;
       hover-select: false;
@@ -14,21 +18,20 @@
       me-accept-entry: "MousePrimary";
     }
 
-    @theme "catppuccin-mocha"
+    @theme "gruvbox-dark"
   '';
 
-  xdg.configFile."rofi/catppuccin-mocha.rasi".text = ''
+  xdg.configFile."rofi/gruvbox-dark.rasi".text = ''
     * {
-      bg:                 #1e1e2e;
-      bg-soft:            #181825;
-      surface:            #313244;
-      surface-hover:      #45475a;
-      selected:           #585b70;
-      fg:                 #cdd6f4;
-      muted:              #a6adc8;
-      blue:               #89b4fa;
-      lavender:           #b4befe;
-      red:                #f38ba8;
+      bg:                 ${theme.bg0};
+      surface:            ${theme.bg1};
+      surface-hover:      ${theme.bg2};
+      selected:           ${theme.bg3};
+      fg:                 ${theme.fg1};
+      muted:              ${theme.fg3};
+      accent:             ${theme.neutralYellow};
+      aqua:               ${theme.aqua};
+      red:                ${theme.red};
       background-color:   transparent;
       text-color:         @fg;
       margin:             0;
@@ -39,32 +42,32 @@
     window {
       width:              42%;
       transparency:       "real";
-      border:             2px;
-      border-color:       @blue;
-      border-radius:      16px;
+      border:             1px;
+      border-color:       @accent;
+      border-radius:      8px;
       background-color:   @bg;
     }
 
     mainbox {
-      padding:            18px;
-      spacing:            14px;
+      padding:            16px;
+      spacing:            10px;
       background-color:   @bg;
-      border-radius:      14px;
+      border-radius:      7px;
     }
 
     inputbar {
-      padding:            13px 16px;
-      spacing:            10px;
+      padding:            11px 14px;
+      spacing:            9px;
       border:             1px;
-      border-color:       @surface;
-      border-radius:      11px;
-      background-color:   @bg-soft;
+      border-color:       @surface-hover;
+      border-radius:      7px;
+      background-color:   @surface;
       children:           [ "prompt", "entry" ];
     }
 
     prompt {
-      text-color:         @blue;
-      font:               "JetBrains Mono Bold 11";
+      text-color:         @accent;
+      font:               "JetBrains Mono Bold 12";
     }
 
     entry {
@@ -89,13 +92,13 @@
       fixed-height:       true;
       cycle:              true;
       scrollbar:          true;
-      spacing:            5px;
+      spacing:            4px;
       background-color:   transparent;
     }
 
     element {
-      padding:            9px 12px;
-      border-radius:      9px;
+      padding:            8px 10px;
+      border-radius:      6px;
       background-color:   transparent;
       text-color:         @fg;
     }
@@ -105,7 +108,7 @@
     }
 
     element normal.active {
-      text-color:         @lavender;
+      text-color:         @aqua;
     }
 
     element normal.urgent {
@@ -113,23 +116,23 @@
     }
 
     element selected.normal {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @fg;
     }
 
     element selected.active {
-      background-color:   @selected;
-      text-color:         @lavender;
+      background-color:   @surface-hover;
+      text-color:         @aqua;
     }
 
     element selected.urgent {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @red;
     }
 
     element-icon {
-      size:               26px;
-      margin:             0 12px 0 0;
+      size:               24px;
+      margin:             0 10px 0 0;
       background-color:   transparent;
     }
 

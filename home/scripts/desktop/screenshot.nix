@@ -1,6 +1,10 @@
 { ... }:
 
 {
+  home.activation.screenshotDirs = ''
+    mkdir -p "$HOME/Pictures/Screenshots"
+  '';
+
   home.file = {
     ".local/bin/screenshot" = {
       executable = true;

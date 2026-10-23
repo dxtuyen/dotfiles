@@ -1,17 +1,15 @@
-# Yazi runs in the terminal; Mod+y opens its popup.
-# Its config files are merged with Yazi's defaults.
+# Yazi runs in Foot; Mod+y opens its popup.
 { pkgs, ... }:
 
 {
   home.packages = [ pkgs.yazi ];
 
-  # Behavior, keybindings, and theme.
   xdg.configFile = {
     "yazi/yazi.toml".source = ./yazi.toml;
     "yazi/keymap.toml".source = ./keymap.toml;
     "yazi/theme.toml".source = ./theme.toml;
+    "yazi/gruvbox-dark.tmTheme".source = ./gruvbox-dark.tmTheme;
   };
 
-  # Use smart-enter to enter directories and open files with their default app.
   xdg.configFile."yazi/plugins/smart-enter.yazi".source = pkgs.yaziPlugins.smart-enter;
 }

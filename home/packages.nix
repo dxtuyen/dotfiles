@@ -17,7 +17,6 @@ in
     wl-clipboard
     swaylock
     swayidle
-    awww # Wallpaper daemon with animated transitions.
     libnotify
     wiremix # PipeWire mixer (terminal UI).
     brightnessctl

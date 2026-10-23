@@ -32,7 +32,7 @@ imports the user-level modules.
 | Waybar modules | `home/desktop/waybar.nix` | Countdown engine and window-management commands |
 | Window picker and away-window indicator | `home/scripts/desktop/window-management.nix` | `window-menu.py`, `sway-window-events.py`, and a user service |
 | Countdown menu and timer | `home/features/countdown/default.nix` | `menu.nix` / `countdown-menu.sh`, `engine.nix` / `countdown-engine.sh`, `sleep-watch.nix` / `countdown-sleep-watch.sh`, and `services.nix` |
-| Wallpaper workflow | `home/features/wallpaper/default.nix` | Selection, setting, thumbnails, and daemon files in the same feature |
+| Wallpaper workflow | `home/features/wallpaper/default.nix` | One fixed Gruvbox wallpaper rendered by swaybg for the Sway session |
 
 The Nix modules install scripts and declare the services that run them. Longer
 Python and Bash implementations live in adjacent source files so editors can

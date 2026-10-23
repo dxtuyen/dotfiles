@@ -1,5 +1,9 @@
 { config, pkgs, ... }:
 
+let
+  theme = import ../theme.nix;
+in
+
 {
   wayland.windowManager.sway = {
     enable = true;
@@ -22,9 +26,6 @@
       set $term foot
       set $menu rofi -show drun
 
-      # Choose a different random wallpaper when Sway starts.
-      exec ~/.local/bin/wallpaper-set
-
       # Applets & daemons
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
       # Restore the selected night light mode.
@@ -39,12 +40,16 @@
         drag enabled
         dwt enabled
       }
+      # Keep the physical layout explicit; Fcitx handles Vietnamese input separately.
+      input type:keyboard {
+        xkb_layout us
+      }
       seat * hide_cursor 10000
       seat * xcursor_theme Bibata-Modern-Classic 24
 
-      # Catppuccin Mocha styling
-      gaps inner 7
-      gaps outer 4
+      # Gruvbox Dark styling
+      gaps inner 5
+      gaps outer 3
       gaps top 0
       default_border pixel 2
       default_floating_border pixel 2
@@ -54,13 +59,13 @@
       # Keep Sway's default activation behavior: mark requests urgent without stealing focus.
       smart_borders off
 
-      # Use a bright blue border for the focused window and muted borders elsewhere.
-      client.focused           #89b4fa #313244 #cdd6f4 #cba6f7 #89b4fa
-      client.focused_inactive  #6c7086 #1e1e2e #cdd6f4 #6c7086 #6c7086
-      client.unfocused         #585b70 #1e1e2e #6c7086 #585b70 #585b70
-      client.urgent            #fab387 #1e1e2e #fab387 #6c7086 #fab387
-      client.placeholder       #1e1e2e #1e1e2e #cdd6f4 #6c7086 #6c7086
-      client.background        #1e1e2e
+      # Keep focus and split direction in the same Gruvbox yellow family; the transient split cue is brighter.
+      client.focused           ${theme.neutralYellow} ${theme.bg1} ${theme.fg0} ${theme.yellow} ${theme.neutralYellow}
+      client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
+      client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
+      client.urgent            ${theme.red} ${theme.bg0} ${theme.red} ${theme.bg3} ${theme.red}
+      client.placeholder       ${theme.bg0} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
+      client.background        ${theme.bg0}
 
       # Floating rules
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
@@ -125,9 +130,6 @@
       bindsym $mod+Tab exec pkill -x swayview || swayview
       bindsym $mod+q kill
 
-      # Mod+r selects a random wallpaper; Mod+Shift+w opens the wallpaper menu.
-      bindsym $mod+r exec ~/.local/bin/wallpaper-set
-      bindsym $mod+Shift+w exec ~/.local/bin/wallpaper-menu
       # Toggle the Yazi popup.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session

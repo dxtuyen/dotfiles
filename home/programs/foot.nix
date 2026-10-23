@@ -1,15 +1,15 @@
-# Foot — default terminal, Catppuccin Mocha, native Wayland. Chosen because it supports
-# **sixel** -> yazi shows real images in the preview pane; the nixpkgs build compiles
-# with `--sixel` + terminfo (`TERM=foot`).
-#
-# 📌 `alpha`: foot makes the background translucent itself (vanilla Sway has no
-# compositor-level blur, so this is the only such effect). 0.8 = 80% opaque.
+# Foot — Gruvbox Dark, native Wayland. SIXEL support lets Yazi show image previews.
 #
 # ⚠️ COLOR SYNTAX: single = `RRGGBB` (6 hex digits, NO `#`); pairs (cursor, jump-labels,
 # scrollback-indicator, search-box-*) = TWO hex colors separated by WHITESPACE, order is
 # `text-color background-color`. On a syntax error foot prints `err: config.c:...`;
 # verify with `foot -C` without opening a window.
 { ... }:
+
+let
+  theme = import ../theme.nix;
+  hex = color: builtins.substring 1 6 color;
+in
 
 {
   programs.foot = {
@@ -18,9 +18,8 @@
     # Generates $XDG_CONFIG_HOME/foot/foot.ini.
     settings = {
       main = {
-        # Matches the old Alacritty font + size.
-        font = "JetBrainsMono Nerd Font:size=11";
-        pad = "10x8";
+        font = "JetBrainsMono Nerd Font:size=12";
+        pad = "14x10";
       };
 
       scrollback.lines = 10000;
@@ -40,39 +39,39 @@
       # Declare only the 16 ANSI colors + background/foreground/cursor; the 256-color
       # table (term-colors 16-255) keeps foot's defaults. Add more here if wanted.
       colors-dark = {
-        # Alpha 0.8 means 80% opaque / 20% transparent.
-        alpha = 0.8;
-        background = "1e1e2e";
-        foreground = "cdd6f4";
-        cursor = "1e1e2e f5e0dc"; # text `1e1e2e` on cursor background `f5e0dc`
-        "selection-foreground" = "cdd6f4";
-        "selection-background" = "585b70";
+        # Opaque background keeps text and file previews clear against the wallpaper.
+        alpha = 1.0;
+        background = hex theme.bg0;
+        foreground = hex theme.fg1;
+        cursor = "${hex theme.bg0} ${hex theme.yellow}";
+        "selection-foreground" = hex theme.fg1;
+        "selection-background" = hex theme.bg2;
 
-        # ANSI 0-7 (Catppuccin Mocha: crust/surface + accent colors)
-        regular0 = "45475a";
-        regular1 = "f38ba8";
-        regular2 = "a6e3a1";
-        regular3 = "f9e2af";
-        regular4 = "89b4fa";
-        regular5 = "cba6f7";
-        regular6 = "94e2d5";
-        regular7 = "bac2de";
+        # ANSI 0-7 (Gruvbox standard/neutral palette)
+        regular0 = hex theme.bg0;
+        regular1 = hex theme.neutralRed;
+        regular2 = hex theme.neutralGreen;
+        regular3 = hex theme.neutralYellow;
+        regular4 = hex theme.neutralBlue;
+        regular5 = hex theme.neutralPurple;
+        regular6 = hex theme.neutralAqua;
+        regular7 = hex theme.fg4;
 
-        # ANSI 8-15
-        bright0 = "585b70";
-        bright1 = "f38ba8";
-        bright2 = "a6e3a1";
-        bright3 = "f9e2af";
-        bright4 = "89b4fa";
-        bright5 = "cba6f7";
-        bright6 = "94e2d5";
-        bright7 = "a6adc8";
+        # ANSI 8-15 (Gruvbox bright palette)
+        bright0 = hex theme.gray;
+        bright1 = hex theme.red;
+        bright2 = hex theme.green;
+        bright3 = hex theme.yellow;
+        bright4 = hex theme.blue;
+        bright5 = hex theme.purple;
+        bright6 = hex theme.aqua;
+        bright7 = hex theme.fg1;
 
         # All are "text background" pairs.
-        "jump-labels" = "1e1e2e fab387";
-        "scrollback-indicator" = "1e1e2e 89b4fa";
-        "search-box-match" = "1e1e2e fab387";
-        "search-box-no-match" = "1e1e2e f38ba8";
+        "jump-labels" = "${hex theme.bg0} ${hex theme.orange}";
+        "scrollback-indicator" = "${hex theme.bg0} ${hex theme.blue}";
+        "search-box-match" = "${hex theme.bg0} ${hex theme.yellow}";
+        "search-box-no-match" = "${hex theme.bg0} ${hex theme.red}";
       };
     };
   };

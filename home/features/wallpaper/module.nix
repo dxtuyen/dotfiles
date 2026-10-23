@@ -1,24 +1,16 @@
 { pkgs, ... }:
 
 {
-  # Create the wallpaper data directories outside the repo when Home Manager activates.
-  home.activation.wallpaperDirs = ''
-    mkdir -p "$HOME/Pictures/wallpapers" "$HOME/Pictures/Screenshots"
-  '';
-
-  # The awww daemon rides along with the Sway session; wallpaper-set waits for it to be ready.
-  systemd.user.services.awww-daemon = {
+  # Keep one static wallpaper for the lifetime of the Sway session.
+  systemd.user.services.swaybg = {
     Unit = {
-      Description = "awww wallpaper daemon (swww fork)";
+      Description = "Static Sway wallpaper";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
-      StartLimitIntervalSec = 60;
     };
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.awww}/bin/awww-daemon";
-      Restart = "on-failure";
-      RestartSec = 3;
+      ExecStart = "${pkgs.swaybg}/bin/swaybg -i ${../../assets/wallpapers/nixos-gruvbox.png} -m fill";
     };
     Install.WantedBy = [ "sway-session.target" ];
   };
