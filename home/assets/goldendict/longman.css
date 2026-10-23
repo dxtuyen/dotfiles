@@ -177,3 +177,34 @@ span[onclick*="toggle"]{-webkit-touch-callout:none;-webkit-user-select:none;-kht
 .hs0:before{content:"‧"}
 .arrow{color:#333;border:1px solid #666;border-radius:2px;font-size:smaller}
 .dict-faq img[src*="cover"]{max-height:8em}
+/* Gruvbox Dark color layer: preserve Longman's layout and semantic markup. */
+html,body,.entry{background-color:#282828!important;color:#ebdbb2!important}
+.entry,.entry.lozenge,.verbtable{color:#ebdbb2!important}
+a,.deriv,.homnum,.hyphenation,.phrvbhwd,.sensenum,.synopp,.colloc.key,
+span.keycollo,.thesref span.thesaurus,.thesref .refhwd,.thesref .refhomnum,
+.nodeword,.ws-head,.phrvbs .heading{color:#83a598!important}
+.example,.gloss,.collgloss,span.neutral,span.italic,
+.verbtable .geo,.add_exa,ul.exas li{color:#d5c4a1!important}
+.pos,.gram{color:#8ec07c!important}
+.geo,.registerlab{color:#d3869b!important}
+.level,.frequent,.cross,span.warning{color:#fb4934!important}
+.ac,.freq,.signpost,.sensenum,.synopp{border-color:#665c54!important}
+.ac,.freq,.synopp{background-color:#3c3836!important;color:#fabd2f!important}
+.signpost{background-color:#d79921!important;color:#282828!important}
+.subheading,.secheading,.heading,.popheader{background-color:#3c3836!important;color:#fabd2f!important}
+.spokensect{border-color:#665c54!important}
+.spokensecthead,.f2nbox .heading,.cyan{color:#83a598!important}
+.collobox,.thesbox,.usagebox,.grambox,.f2nbox{background-color:#3c3836!important;border-color:#504945!important}
+.collobox .section,.thesbox .section,.usagebox .expl,
+.grambox .expl,.grambox .compareword,.f2nbox .section{background-color:#32302f!important;color:#ebdbb2!important}
+.thesaurus .secheading,.thesbox .secheading,.grambox .heading.newline{background-color:#504945!important}
+.popup-button{background-color:#3c3836!important;border-color:#7c6f64!important;color:#d5c4a1!important}
+.popup-button-hover,.popup-button:hover{background-color:#504945!important}
+.popverbs,.popheader.popexa,.popheader.popphrase,.popheader.popcollo,
+.popheader.popthes,.popheader.popetym,.popheader.popwf,.popheader.pope_menu{
+  background-color:#3c3836!important;color:#fabd2f!important
+}
+.verbtable td{border-color:#665c54!important}
+.chwd a{background-color:#3c3836!important;color:#8ec07c!important}
+.chwd .hw{color:#8ec07c!important}
+.arrow{color:#d5c4a1!important;border-color:#7c6f64!important}

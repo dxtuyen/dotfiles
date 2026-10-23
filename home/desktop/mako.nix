@@ -2,7 +2,7 @@
 
 let
   theme = import ../theme.nix;
-  papirusGruvbox = import ./icon-theme.nix { inherit pkgs; };
+  iconTheme = import ./icon-theme.nix { inherit pkgs; };
 in
 
 {
@@ -10,10 +10,10 @@ in
     enable = true;
 
     settings = {
-      # Mako does not follow Inherits from index.theme, so include Papirus'
-      # Breeze and hicolor parents explicitly for notification icon fallbacks.
+      # Mako does not follow Inherits from index.theme; list Gruvbox Plus'
+      # Breeze-Dark and hicolor parents explicitly for notification fallbacks.
       icon-path = builtins.concatStringsSep ":" [
-        "${papirusGruvbox}/share/icons/Papirus-Dark"
+        "${iconTheme.package}/share/icons/${iconTheme.name}"
         "${pkgs.kdePackages.breeze-icons}/share/icons/breeze-dark"
         "${pkgs.hicolor-icon-theme}/share/icons/hicolor"
       ];
@@ -32,7 +32,7 @@ in
       # Per-app timeouts.
       # Translation auto-dismisses after ~2 min; left click dismisses early.
       "app-name=quick-lang".default-timeout = 120000;
-      "app-name=quick-lang".border-color = theme.purple;
+      "app-name=quick-lang".border-color = theme.blue;
       # Left click dismisses the translation notification.
       "app-name=quick-lang".on-button-left = "dismiss";
       "app-name=volume".default-timeout = 2000;

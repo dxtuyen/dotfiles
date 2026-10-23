@@ -2,7 +2,7 @@
 { pkgs, ... }:
 
 let
-  papirusGruvbox = import ./icon-theme.nix { inherit pkgs; };
+  iconTheme = import ./icon-theme.nix { inherit pkgs; };
 in
 
 {
@@ -22,10 +22,7 @@ in
       name = "gruvbox-dark";
       package = pkgs.gruvbox-dark-gtk;
     };
-    iconTheme = {
-      name = "Papirus-Dark";
-      package = papirusGruvbox;
-    };
+    iconTheme = iconTheme;
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = 1;
     };

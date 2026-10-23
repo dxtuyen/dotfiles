@@ -6,7 +6,7 @@
 }:
 
 {
-  # Keep the dictionary's own Longman stylesheet unchanged.
+  # Keep Longman's layout while applying a readable Gruvbox Dark color layer.
   xdg.configFile."goldendict/article-style.css" = {
     source = ../assets/goldendict/longman.css;
     force = true;
@@ -20,7 +20,7 @@
       ${pkgs.gnused}/bin/sed -i \
         -e 's#<displayStyle>[^<]*</displayStyle>#<displayStyle>modern</displayStyle>#' \
         -e 's#<darkMode>[^<]*</darkMode>#<darkMode>1</darkMode>#' \
-        -e 's#<darkReaderMode>[^<]*</darkReaderMode>#<darkReaderMode>1</darkReaderMode>#' \
+        -e 's#<darkReaderMode>[^<]*</darkReaderMode>#<darkReaderMode>0</darkReaderMode>#' \
         "$configFile"
     fi
   '';

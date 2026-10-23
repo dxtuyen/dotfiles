@@ -13,18 +13,15 @@ in
     settings.mainBar = {
       position = "top";
       height = 30;
-      spacing = 4;
+      spacing = 2;
       "modules-left" = [
         "sway/workspaces"
         "custom/away-windows"
         "sway/mode"
       ];
-      "modules-center" = [
-        "group/countdown"
-      ];
+      "modules-center" = [ "group/countdown" ];
       "modules-right" = [
         "group/status"
-        "clock"
         "tray"
       ];
       "group/status" = {
@@ -124,12 +121,13 @@ in
           ""
         ];
       };
-      # Countdown control and menu time share one pill but keep separate clicks.
+      # Keep the Pomodoro controls and clock together as one centered pair.
       "group/countdown" = {
         orientation = "horizontal";
         modules = [
           "custom/countdown-control"
           "custom/countdown"
+          "clock"
         ];
       };
       "custom/countdown-control" = {
@@ -237,9 +235,10 @@ in
         background: transparent;
         border: none;
         border-radius: 0;
-        margin: 0 4px;
+        margin: 0 2px;
         padding: 0 3px;
       }
+      #countdown, #clock, #status, #tray { margin-left: 2px; margin-right: 2px; }
       #tray { margin-right: 8px; padding: 0 4px; }
       #mode { color: ${theme.blue}; }
       #clock, #countdown { font-weight: bold; }
