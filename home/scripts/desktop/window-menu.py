@@ -356,19 +356,19 @@ choice = subprocess.run(
         os.environ["WINDOW_MENU_ROFI"], "-dmenu", "-i", "-matching", "normal",
         "-no-sort", "-no-custom", "-show-icons", "-format", "i",
         "-p", ("Scratchpad" if stashed_only else "Away" if away_only else "Windows"),
-        # Shift+Delete kills the selected window.
+        # Ctrl+Q kills the selected window.
         "-kb-delete-entry", "",
-        "-kb-custom-1", "Shift+Delete",
+        "-kb-custom-1", "Control+q",
         # Shift+Enter opens the selected window and reopens this menu.
         "-kb-accept-alt", "",
         "-kb-custom-2", "Shift+Return",
         "-mesg",
         # Show key hints for the selected list mode.
-        ("Enter: show on this workspace · Shift+Enter: show and keep menu · Shift+Delete: kill"
+        ("Enter: show on this workspace · Shift+Enter: show and keep menu · Ctrl+Q: kill"
          if stashed_only else
-         "Enter: bring here · Shift+Enter: bring and keep menu · Shift+Delete: kill"
+         "Enter: bring here · Shift+Enter: bring and keep menu · Ctrl+Q: kill"
          if away_only else
-         "Enter: jump to window · Shift+Enter: pull here and keep menu · Shift+Delete: kill"),
+         "Enter: jump to window · Shift+Enter: pull here and keep menu · Ctrl+Q: kill"),
     ],
     input=b"\n".join(rows) + (b"\n" if rows else b""),
     capture_output=True,
