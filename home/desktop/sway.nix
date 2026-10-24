@@ -80,6 +80,10 @@ in
       # Sioyek: new windows open on the focused workspace.
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
+      # Keep Anki on workspace 5, including XWayland windows.
+      for_window [app_id="(?i)^anki$"] move container to workspace number 5
+      for_window [class="(?i)^anki$"] move container to workspace number 5
+
       # Open Foliate on the currently focused workspace.
       for_window [app_id="(?i)^com\.github\.johnfactotum\.foliate$"] move container to workspace current
 
