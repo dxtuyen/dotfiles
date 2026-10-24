@@ -1,7 +1,7 @@
 { ... }:
 
 # Utilities menu launchers:
-#   $mod+u       -> daily tools
+#   $mod+o       -> daily tools
 #   $mod+p       -> session and power actions
 #   $mod+Shift+p -> same power menu, retained as an alias
 {
@@ -22,7 +22,9 @@
         ⏻ Poweroff"
           PROMPT="System"
         else
-          MENU="👁 Idle
+          MENU="🍅 Pomodoro
+        📓 Obsidian
+        👁 Idle
         ☀ Display
         📶 Wi-Fi
         🔵 Bluetooth
@@ -35,6 +37,8 @@
           -mesg "Type to filter · Enter to select")
 
         case "$choice" in
+          "🍅 Pomodoro"*) exec ~/.local/bin/countdown ;;
+          "📓 Obsidian"*) exec ~/.local/bin/obsidian-toggle ;;
           "👁 Idle"*) exec ~/.local/bin/countdown-engine inhibit-toggle ;;
           "☀ Display"*) exec ~/.local/bin/wlsunset-menu ;;
           "📶 Wi-Fi"*) exec foot --app-id=wifitui -T "Wi-Fi" wifitui ;;

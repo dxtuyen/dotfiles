@@ -15,6 +15,7 @@ stashed_only = "--scratchpad" in sys.argv[1:]
 away_only = "--away" in sys.argv[1:]
 normal_only = "--normal" in sys.argv[1:]
 first_only = "--first" in sys.argv[1:]
+show_all = "--show-all" in sys.argv[1:]
 waybar_only = "--waybar" in sys.argv[1:]
 after_kill = "--after-kill" in sys.argv[1:]
 after_open = "--after-open" in sys.argv[1:]
@@ -36,14 +37,6 @@ def stashed(window):
     """Return whether the window is hidden in the scratchpad."""
     return (window.get("scratchpad_state") not in (None, "none")
             and not window.get("visible"))
-
-obsidian_app_id = re.compile(r"(?:md(?:\.obsidian)?\.obsidian|obsidian)", re.I)
-
-def is_obsidian(window):
-    properties = window.get("window_properties") or {}
-    identities = (window.get("app_id"), properties.get("class"))
-    return any(identity and obsidian_app_id.fullmatch(identity)
-               for identity in identities)
 
 def collect_windows(node, ws=None, in_floating_group=False, split_path=()):
     # Track workspace ancestry; hidden windows live under __i3_scratch.
@@ -113,10 +106,7 @@ if away_only:
     focus_rank = {con_id: index for index, con_id in enumerate(focus_order)}
     found = sorted(
         enumerate(found),
-        # Obsidian is normally summoned with Mod+o, so keep it last in Mod+m's
-        # away-window list while preserving MRU order for every other window.
         key=lambda item: (
-            is_obsidian(item[1][0]),
             focus_rank.get(item[1][0].get("id"), len(focus_rank)),
             item[0],
         ),
@@ -167,6 +157,21 @@ if first_only:
     if floating:
         subprocess.run([swaymsg, f"{criteria} floating enable"], check=True)
     subprocess.run([swaymsg, f"{criteria} focus"], check=True)
+    sys.exit(0)
+
+if show_all:
+    for window in windows:
+        criteria = f"[con_id={window['id']}]"
+        ws = window_ws.get(window["id"])
+        if stashed(window) or ws == "__i3_scratch":
+            subprocess.run([swaymsg, f"{criteria} scratchpad show"], check=True)
+        else:
+            subprocess.run(
+                [swaymsg, f"{criteria} move container to workspace current"],
+                check=True,
+            )
+        if window_context.get(window["id"], (False, ()))[0]:
+            subprocess.run([swaymsg, f"{criteria} floating enable"], check=True)
     sys.exit(0)
 
 icon_dirs = [
