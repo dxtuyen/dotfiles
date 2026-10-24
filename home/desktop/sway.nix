@@ -186,14 +186,14 @@ in
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
       bindsym $mod+c move scratchpad
-      # Take the first item from Mod+m's away-window list without opening the menu.
+      # Take the first item from Mod+r's away-window list without opening the menu.
       bindsym $mod+z exec ~/.local/bin/window-menu --away --first
-      # Bring every window from Mod+m's away list to the current workspace.
+      # Bring every window from Mod+r's away list to the current workspace.
       bindsym $mod+Shift+z exec ~/.local/bin/window-menu --away --show-all
       # Stash all floating popups on the current workspace.
       bindsym $mod+Shift+x [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+r move position center
-      bindsym $mod+m exec ~/.local/bin/window-menu --away
+      bindsym $mod+r exec ~/.local/bin/window-menu --away
+      bindsym $mod+Shift+r move position center
 
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).

@@ -346,7 +346,7 @@ if waybar_only:
     plural = "s" if count != 1 else ""
     print(json.dumps({
         "text": "{} ↓ {}".format(count, waybar_apps[0]),
-        "tooltip": "{} window{} in the Mod+m list\r".format(count, plural) + "\r".join(labels),
+        "tooltip": "{} window{} in the Mod+r list\r".format(count, plural) + "\r".join(labels),
     }))
     sys.exit(0)
 
