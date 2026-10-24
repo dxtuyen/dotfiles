@@ -23,7 +23,7 @@ in
     translate-shell
     goldendict-ng
     wifitui # Wi-Fi management TUI.
-
+    anki
     bluetui
     google-chrome
     # E-book reader.
