@@ -13,11 +13,11 @@ in
     enableBashIntegration = true;
 
     settings = {
-      # Separate each command's output from the next prompt with one blank line.
+      # Separate prompts so command history is easier to scan.
       add_newline = true;
 
-      # Line 1: path + git + command time; line 2: a muted connector and prompt.
-      format = "$directory$git_branch$git_status$cmd_duration\n[╰─](${theme.gray})$character";
+      # Keep the context and prompt aligned at the left edge.
+      format = "$directory$git_branch$git_status$cmd_duration\n$character";
 
       directory = {
         style = "bold ${theme.blue}";

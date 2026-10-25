@@ -43,7 +43,7 @@ in
         alpha = 1.0;
         background = hex theme.bg0;
         foreground = hex theme.fg1;
-        cursor = "${hex theme.bg0} ${hex theme.blue}";
+        cursor = "${hex theme.bg0} ${hex theme.fg3}";
         "selection-foreground" = hex theme.fg1;
         "selection-background" = hex theme.bg2;
 

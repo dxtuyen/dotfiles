@@ -27,13 +27,12 @@ in
       bg:                 ${theme.bg0};
       surface:            ${theme.bg1};
       surface-hover:      ${theme.bg2};
-      selected:           ${theme.fadedBlue};
       fg:                 ${theme.fg1};
       fg-strong:          ${theme.fg0};
       muted:              ${theme.fg3};
-      accent:             ${theme.neutralBlue};
+      accent:             ${theme.fg3};
       aqua:               ${theme.aqua};
-      accent-bright:      ${theme.blue};
+      accent-bright:      ${theme.fg3};
       red:                ${theme.red};
       background-color:   transparent;
       text-color:         @fg;
@@ -47,7 +46,7 @@ in
       transparency:       "real";
       border:             1px;
       border-color:       @accent;
-      border-radius:      8px;
+      border-radius:      6px;
       background-color:   @bg;
     }
 
@@ -119,12 +118,12 @@ in
     }
 
     element selected.normal {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @fg-strong;
     }
 
     element selected.active {
-      background-color:   @selected;
+      background-color:   @surface-hover;
       text-color:         @fg-strong;
     }
 

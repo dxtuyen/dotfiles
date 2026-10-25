@@ -51,16 +51,16 @@ in
       gaps inner 5
       gaps outer 3
       gaps top 0
-      default_border pixel 1
-      default_floating_border pixel 1
+      default_border pixel 2
+      default_floating_border pixel 2
       # $mod + left/right mouse button = move/resize floating windows.
       floating_modifier $mod normal
       focus_follows_mouse yes
       # Keep Sway's default activation behavior: mark requests urgent without stealing focus.
       smart_borders off
 
-      # Keep the persistent focus border muted; use bright Gruvbox blue for the split cue.
-      client.focused           ${theme.neutralBlue} ${theme.bg1} ${theme.fg0} ${theme.blue} ${theme.neutralBlue}
+      # Use the original Gruvbox light3 beige for focused windows.
+      client.focused           ${theme.fg3} ${theme.bg1} ${theme.fg0} ${theme.fg3} ${theme.fg3}
       client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
       client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
       client.urgent            ${theme.neutralOrange} ${theme.bg0} ${theme.neutralOrange} ${theme.bg3} ${theme.neutralOrange}

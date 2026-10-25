@@ -3,16 +3,16 @@
 let
   # tuigreet accepts ANSI color names; set the virtual console palette to Gruvbox below.
   greeterTheme = builtins.concatStringsSep ";" [
-    "border=blue"
+    "border=white"
     "text=bright-white"
-    "time=bright-blue"
+    "time=white"
     "container=black"
-    "title=blue"
-    "greet=bright-blue"
-    "prompt=blue"
+    "title=white"
+    "greet=white"
+    "prompt=white"
     "input=bright-white"
     "action=bright-white"
-    "button=bright-blue"
+    "button=white"
   ];
 in
 
@@ -26,7 +26,7 @@ in
     "458588"
     "b16286"
     "689d6a"
-    "a89984"
+    "bdae93"
     "928374"
     "fb4934"
     "b8bb26"

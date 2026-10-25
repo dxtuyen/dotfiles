@@ -37,6 +37,4 @@
   fadedAqua = "#427b58";
   fadedOrange = "#af3a03";
   pill = "rgba(40, 40, 40, 0.88)";
-  # A quiet blue wash for focused workspaces and other transient selection cues.
-  focusHighlight = "rgba(69, 133, 136, 0.20)";
 }
