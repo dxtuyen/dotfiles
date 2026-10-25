@@ -27,11 +27,13 @@ in
       bg:                 ${theme.bg0};
       surface:            ${theme.bg1};
       surface-hover:      ${theme.bg2};
-      selected:           ${theme.bg3};
+      selected:           ${theme.fadedBlue};
       fg:                 ${theme.fg1};
+      fg-strong:          ${theme.fg0};
       muted:              ${theme.fg3};
-      accent:             ${theme.neutralYellow};
+      accent:             ${theme.neutralBlue};
       aqua:               ${theme.aqua};
+      accent-bright:      ${theme.blue};
       red:                ${theme.red};
       background-color:   transparent;
       text-color:         @fg;
@@ -67,7 +69,7 @@ in
     }
 
     prompt {
-      text-color:         @accent;
+      text-color:         @accent-bright;
       font:               "JetBrains Mono Bold 12";
     }
 
@@ -109,7 +111,7 @@ in
     }
 
     element normal.active {
-      text-color:         @aqua;
+      text-color:         @accent-bright;
     }
 
     element normal.urgent {
@@ -117,13 +119,13 @@ in
     }
 
     element selected.normal {
-      background-color:   @surface-hover;
-      text-color:         @fg;
+      background-color:   @selected;
+      text-color:         @fg-strong;
     }
 
     element selected.active {
-      background-color:   @surface-hover;
-      text-color:         @aqua;
+      background-color:   @selected;
+      text-color:         @fg-strong;
     }
 
     element selected.urgent {
@@ -147,7 +149,7 @@ in
       border:             0;
       border-color:       @bg;
       background-color:   @bg;
-      handle-color:       @selected;
+      handle-color:       @accent;
     }
   '';
 }

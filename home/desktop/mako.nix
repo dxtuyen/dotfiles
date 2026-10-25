@@ -27,12 +27,12 @@ in
       default-timeout = 5000;
       background-color = theme.bg0;
       text-color = theme.fg1;
-      border-color = theme.blue;
+      border-color = theme.neutralBlue;
       border-radius = 8;
       # Per-app timeouts.
       # Translation auto-dismisses after ~2 min; left click dismisses early.
       "app-name=quick-lang".default-timeout = 120000;
-      "app-name=quick-lang".border-color = theme.blue;
+      "app-name=quick-lang".border-color = theme.neutralBlue;
       # Left click dismisses the translation notification.
       "app-name=quick-lang".on-button-left = "dismiss";
       "app-name=volume".default-timeout = 2000;
@@ -41,7 +41,7 @@ in
       "app-name=power-profiles".default-timeout = 2000;
       "app-name=toggle-touchpad".default-timeout = 2000;
       # Countdown: border matches the Waybar clock color.
-      "app-name=countdown".border-color = theme.blue;
+      "app-name=countdown".border-color = theme.neutralBlue;
       "app-name=countdown".default-timeout = 5000;
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;

@@ -43,7 +43,7 @@ in
         alpha = 1.0;
         background = hex theme.bg0;
         foreground = hex theme.fg1;
-        cursor = "${hex theme.bg0} ${hex theme.yellow}";
+        cursor = "${hex theme.bg0} ${hex theme.blue}";
         "selection-foreground" = hex theme.fg1;
         "selection-background" = hex theme.bg2;
 
@@ -70,7 +70,7 @@ in
         # All are "text background" pairs.
         "jump-labels" = "${hex theme.bg0} ${hex theme.orange}";
         "scrollback-indicator" = "${hex theme.bg0} ${hex theme.blue}";
-        "search-box-match" = "${hex theme.bg0} ${hex theme.yellow}";
+        "search-box-match" = "${hex theme.bg0} ${hex theme.blue}";
         "search-box-no-match" = "${hex theme.bg0} ${hex theme.red}";
       };
     };

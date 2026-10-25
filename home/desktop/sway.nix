@@ -59,8 +59,8 @@ in
       # Keep Sway's default activation behavior: mark requests urgent without stealing focus.
       smart_borders off
 
-      # Keep the persistent focus border muted; use bright yellow for the transient split cue.
-      client.focused           ${theme.neutralYellow} ${theme.bg1} ${theme.fg0} ${theme.yellow} ${theme.neutralYellow}
+      # Keep the persistent focus border muted; use bright Gruvbox blue for the split cue.
+      client.focused           ${theme.neutralBlue} ${theme.bg1} ${theme.fg0} ${theme.blue} ${theme.neutralBlue}
       client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
       client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
       client.urgent            ${theme.neutralOrange} ${theme.bg0} ${theme.neutralOrange} ${theme.bg3} ${theme.neutralOrange}
@@ -90,7 +90,7 @@ in
       # Thunar popup; Mod+Shift+Space toggles it back to tiling.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
 
-      # Yazi popup, toggled with Mod+y. Popup keys can hide or restore it.
+      # Float the Foot window that runs Yazi from Rofi.
       for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
       # Keep the shell session alive while the terminal is hidden in the scratchpad.
@@ -127,15 +127,13 @@ in
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
-      # Mod+o opens utilities; Mod+p opens power actions.
+      # Mod+u opens utilities; Mod+p opens power actions.
       # Mod+c opens Countdown; Mod+q moves the focused window to the scratchpad; Shift+Mod+q closes it.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       # Toggle Sway's workspace overview and switcher.
       bindsym $mod+Tab exec pkill -x swayview || swayview
       bindsym $mod+Shift+q kill
 
-      # Toggle the Yazi popup.
-      bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
       bindsym $mod+c exec ~/.local/bin/countdown
@@ -198,8 +196,8 @@ in
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).
       bindsym $mod+Shift+b exec systemctl --user kill --signal=SIGUSR1 --kill-whom=main waybar.service
-      # Mod+o opens daily utilities, including Pomodoro and Obsidian; Mod+p opens session and power actions.
-      bindsym $mod+o exec ~/.local/bin/utilities
+      # Mod+u opens daily utilities, including Pomodoro and Obsidian; Mod+p opens session and power actions.
+      bindsym $mod+u exec ~/.local/bin/utilities
       bindsym $mod+p exec ~/.local/bin/utilities --power
       bindsym $mod+Shift+p exec ~/.local/bin/utilities --power
       # Quick language tools: Mod+t translates Vietnamese to English; Shift reverses it;

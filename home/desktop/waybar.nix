@@ -221,7 +221,7 @@ in
       #workspaces button.focused, #workspaces button.active {
         color: @txt-strong;
         background-color: ${theme.focusHighlight};
-        border-bottom-color: ${theme.neutralYellow};
+        border-bottom-color: ${theme.neutralBlue};
       }
       #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
       /* Keep empty workspaces quiet but readable against the dark bar. */
