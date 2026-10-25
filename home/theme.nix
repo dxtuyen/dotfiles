@@ -14,6 +14,7 @@
   fg2 = "#d5c4a1";
   fg3 = "#bdae93";
   fg4 = "#a89984";
+  splitIndicator = "#d8b878";
   gray = "#928374";
   neutralRed = "#cc241d";
   neutralGreen = "#98971a";

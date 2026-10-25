@@ -220,14 +220,16 @@ in
       }
       #workspaces button.focused, #workspaces button.active {
         color: @txt-strong;
+        background: ${theme.bg2};
         border-bottom-color: ${theme.fg3};
       }
-      #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
-      /* Keep empty workspaces quiet but readable against the dark bar. */
+      /* Keep empty workspaces subdued while occupied ones use the default text color. */
       #workspaces button.persistent.empty { color: ${theme.gray}; }
+      #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
       /* Keep focused empty workspaces readable. */
       #workspaces button.persistent.empty.focused {
         color: @txt-strong;
+        background: ${theme.bg2};
       }
       box#status > widget > *, box#countdown > widget > * {
         background: transparent;

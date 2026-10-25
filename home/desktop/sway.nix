@@ -59,8 +59,8 @@ in
       # Keep Sway's default activation behavior: mark requests urgent without stealing focus.
       smart_borders off
 
-      # Use the original Gruvbox light3 beige for focused windows.
-      client.focused           ${theme.fg3} ${theme.bg1} ${theme.fg0} ${theme.fg3} ${theme.fg3}
+      # Keep the focused border at light3; use a nearby muted ochre for the split indicator.
+      client.focused           ${theme.fg3} ${theme.bg1} ${theme.fg0} ${theme.splitIndicator} ${theme.fg3}
       client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
       client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
       client.urgent            ${theme.neutralOrange} ${theme.bg0} ${theme.neutralOrange} ${theme.bg3} ${theme.neutralOrange}
