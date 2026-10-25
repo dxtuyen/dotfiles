@@ -1,5 +1,21 @@
 { pkgs, userName, ... }:
 
+let
+  # tuigreet accepts ANSI color names; console.colors maps these to Gruvbox hex values.
+  greeterTheme = builtins.concatStringsSep ";" [
+    "border=yellow"
+    "text=bright-white"
+    "time=bright-blue"
+    "container=black"
+    "title=yellow"
+    "greet=bright-aqua"
+    "prompt=yellow"
+    "input=bright-white"
+    "action=bright-white"
+    "button=bright-aqua"
+  ];
+in
+
 {
   programs.sway.enable = true;
   programs.dconf.enable = true;
@@ -25,7 +41,7 @@
     enable = true;
     settings.default_session = {
       # Keep the known username prefilled while still requiring the password.
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --user ${userName} --cmd sway";
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --user ${userName} --cmd sway --theme '${greeterTheme}'";
       user = "greeter";
     };
   };

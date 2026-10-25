@@ -128,16 +128,17 @@ in
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+o opens utilities; Mod+p opens power actions.
-      # Mod+c moves the focused window to the scratchpad; Mod+q closes the focused window.
+      # Mod+c opens Countdown; Mod+q moves the focused window to the scratchpad; Shift+Mod+q closes it.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       # Toggle Sway's workspace overview and switcher.
       bindsym $mod+Tab exec pkill -x swayview || swayview
-      bindsym $mod+q kill
+      bindsym $mod+Shift+q kill
 
       # Toggle the Yazi popup.
       bindsym $mod+y exec ~/.local/bin/yazi-open
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
+      bindsym $mod+c exec ~/.local/bin/countdown
       # Focus movement
       bindsym $mod+$left focus left
       bindsym $mod+$down focus down
@@ -185,15 +186,12 @@ in
       bindsym $mod+space focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
-      bindsym $mod+c move scratchpad
-      # Take the first item from Mod+r's away-window list without opening the menu.
-      bindsym $mod+z exec ~/.local/bin/window-menu --away --first
-      # Bring every window from Mod+r's away list to the current workspace.
-      bindsym $mod+Shift+z exec ~/.local/bin/window-menu --away --show-all
-      # Stash all floating popups on the current workspace.
-      bindsym $mod+Shift+x [workspace=__focused__ floating] move container to scratchpad
-      bindsym $mod+r exec ~/.local/bin/window-menu --away
-      bindsym $mod+Shift+r move position center
+      bindsym $mod+q move scratchpad
+      # Stash all floating windows on the current workspace.
+      bindsym $mod+x [workspace=__focused__ floating] move container to scratchpad
+      # Mod+r takes the first window from the away list; Shift+Mod+r opens the window menu.
+      bindsym $mod+r exec ~/.local/bin/window-menu --away --first
+      bindsym $mod+Shift+r exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).
