@@ -210,7 +210,7 @@ in
         border-bottom: 2px solid transparent;
         border-radius: 0;
         box-shadow: none;
-        padding: 0 8px;
+        padding: 0 5px;
         font-size: 15px;
         transition: none;
       }
@@ -224,7 +224,7 @@ in
         border-bottom-color: ${theme.fg3};
       }
       /* Keep empty workspaces subdued while occupied ones use the default text color. */
-      #workspaces button.persistent.empty { color: ${theme.gray}; }
+      #workspaces button.persistent.empty { color: ${theme.bg4}; }
       #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
       /* Keep focused empty workspaces readable. */
       #workspaces button.persistent.empty.focused {

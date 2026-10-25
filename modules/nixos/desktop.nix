@@ -1,42 +1,15 @@
 { pkgs, userName, ... }:
 
 let
-  # tuigreet accepts ANSI color names; set the virtual console palette to Gruvbox below.
+  # Keep the TTY's system palette; customize only these tuigreet components.
   greeterTheme = builtins.concatStringsSep ";" [
-    "border=white"
-    "text=bright-white"
-    "time=white"
-    "container=black"
-    "title=white"
-    "greet=white"
-    "prompt=white"
-    "input=bright-white"
-    "action=bright-white"
-    "button=white"
+    "border=bright-black"
+    "time=bright-blue"
+    "input=bright-cyan"
   ];
 in
 
 {
-  # Gruvbox Dark ANSI palette, used by tuigreet on the Linux virtual console.
-  console.colors = [
-    "282828"
-    "cc241d"
-    "98971a"
-    "d79921"
-    "458588"
-    "b16286"
-    "689d6a"
-    "bdae93"
-    "928374"
-    "fb4934"
-    "b8bb26"
-    "fabd2f"
-    "83a598"
-    "d3869b"
-    "8ec07c"
-    "ebdbb2"
-  ];
-
   programs.sway.enable = true;
   programs.dconf.enable = true;
 

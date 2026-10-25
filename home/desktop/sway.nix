@@ -189,9 +189,9 @@ in
       bindsym $mod+x [workspace=__focused__ floating] move container to scratchpad
       # Bring every away window back to the current workspace.
       bindsym $mod+z exec ~/.local/bin/window-menu --away --show-all
-      # Mod+r takes the first window from the away list; Shift+Mod+r opens the window menu.
+      # Mod+r takes the first window from the away list; Mod+m opens the window menu.
       bindsym $mod+r exec ~/.local/bin/window-menu --away --first
-      bindsym $mod+Shift+r exec ~/.local/bin/window-menu --away
+      bindsym $mod+m exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).
