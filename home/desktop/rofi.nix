@@ -16,6 +16,7 @@ in
       hover-select: false;
       me-select-entry: "";
       me-accept-entry: "MousePrimary";
+      kb-cancel: "Escape,Control+g,Control+bracketleft,MouseSecondary";
     }
 
     @theme "gruvbox-dark"

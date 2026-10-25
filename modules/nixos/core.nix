@@ -5,10 +5,6 @@
   ...
 }:
 
-let
-  theme = import ../../home/theme.nix;
-  toConsoleColor = color: builtins.substring 1 6 color;
-in
 {
   # Run garbage collection weekly and keep the last seven days.
   nix = {
@@ -76,25 +72,6 @@ in
   services.timesyncd.enable = true;
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "us";
-  # Match the Linux virtual-console palette used by tuigreet to Gruvbox and foot.
-  console.colors = map toConsoleColor [
-    theme.bg0
-    theme.neutralRed
-    theme.neutralGreen
-    theme.neutralYellow
-    theme.neutralBlue
-    theme.neutralPurple
-    theme.neutralAqua
-    theme.fg4
-    theme.gray
-    theme.red
-    theme.green
-    theme.yellow
-    theme.blue
-    theme.purple
-    theme.aqua
-    theme.fg0
-  ];
 
   users.users.${userName} = {
     isNormalUser = true;
