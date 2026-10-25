@@ -223,7 +223,7 @@ in
         background-color: ${theme.focusHighlight};
         border-bottom-color: ${theme.neutralYellow};
       }
-      #workspaces button.urgent { color: ${theme.red}; border-bottom-color: ${theme.red}; }
+      #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
       /* Keep empty workspaces quiet but readable against the dark bar. */
       #workspaces button.persistent.empty { color: ${theme.gray}; }
       /* Keep the focused empty workspace highlighted. */
