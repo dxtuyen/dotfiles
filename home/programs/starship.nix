@@ -16,8 +16,8 @@ in
       # Separate each command's output from the next prompt with one blank line.
       add_newline = true;
 
-      # Line 1: path + git + command time; line 2: ❯.
-      format = "$directory$git_branch$git_status$cmd_duration\n$character";
+      # Line 1: path + git + command time; line 2: a muted connector and prompt.
+      format = "$directory$git_branch$git_status$cmd_duration\n[╰─](${theme.gray})$character";
 
       directory = {
         style = "bold ${theme.blue}";
