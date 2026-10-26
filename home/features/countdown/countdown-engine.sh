@@ -501,7 +501,9 @@ case "${1:-status}" in
     read_state
     remaining=$(get_remaining)
     if [ -z "$DURATION" ]; then
-      text=""
+      # Keep the Waybar module present while idle so the clock remains centered.
+      # A non-breaking space is visually blank.
+      text=$(printf '\302\240')
       class="idle"
       tooltip=""
     elif [ "$RUNNING" = "true" ]; then
