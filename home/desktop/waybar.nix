@@ -20,8 +20,8 @@ in
         "sway/mode"
       ];
       "modules-center" = [
-        "custom/countdown-control"
         "custom/countdown"
+        "custom/countdown-control"
         "clock"
         "custom/clock-balance"
       ];
@@ -157,11 +157,12 @@ in
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
+        # Keep the idle placeholder (NBSP) rendered so the clock balance stays stable.
+        "hide-empty-text" = false;
         "on-click" = "~/.local/bin/countdown-engine control-click";
         "on-click-right" = "~/.local/bin/countdown";
       };
-      # Match the Countdown width after the centered clock so the clock itself
-      # stays at the monitor midpoint while Countdown sits immediately left.
+      # Mirror the combined Countdown width on the right to keep the clock centered.
       "custom/clock-balance" = {
         format = " ";
         tooltip = false;
