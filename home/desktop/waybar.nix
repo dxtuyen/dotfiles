@@ -19,12 +19,7 @@ in
         "custom/away-windows"
         "sway/mode"
       ];
-      "modules-center" = [
-        "custom/countdown"
-        "custom/countdown-control"
-        "clock"
-        "custom/clock-balance"
-      ];
+      "modules-center" = [ "clock" ];
       "modules-right" = [
         "group/status"
         "custom/status-divider"
@@ -35,6 +30,8 @@ in
       "group/status" = {
         orientation = "horizontal";
         modules = [
+          "custom/countdown"
+          "custom/countdown-control"
           "custom/inhibit"
           "bluetooth"
           "network"
@@ -157,15 +154,9 @@ in
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
-        # Keep the idle placeholder (NBSP) rendered so the clock balance stays stable.
-        "hide-empty-text" = false;
+        "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown-engine control-click";
         "on-click-right" = "~/.local/bin/countdown";
-      };
-      # Mirror the combined Countdown width on the right to keep the clock centered.
-      "custom/clock-balance" = {
-        format = " ";
-        tooltip = false;
       };
       # Idle-inhibition status.
       "custom/inhibit" = {
@@ -262,9 +253,14 @@ in
         margin: 0 4px;
         padding: 0 2px;
       }
-      #custom-countdown-control { min-width: 18px; margin: 0 2px; padding: 0 3px; }
-      #custom-countdown { min-width: 40px; margin: 0 2px; padding: 0 3px; }
-      #custom-clock-balance { min-width: 80px; margin: 0; padding: 0; color: transparent; }
+      box#status > widget > #custom-countdown-control,
+      box#status > widget > #custom-countdown {
+        margin: 0;
+        padding: 0 1px;
+      }
+      box#status > widget > #custom-countdown-control { margin-right: 6px; }
+      #custom-countdown-control { min-width: 18px; }
+      #custom-countdown { min-width: 40px; }
       #clock { margin-left: 2px; margin-right: 2px; }
       #tray {
         background: transparent;
@@ -294,7 +290,7 @@ in
       #custom-inhibit.idle { color: @muted; }
       #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
       #bluetooth.connected { color: ${theme.green}; }
-      #network.disconnected, #network.disabled { color: ${theme.red}; }
+      #network.disconnected, #network.disabled { color: @muted; }
       #battery.warning { color: ${theme.yellow}; }
       #battery.critical { color: ${theme.red}; }
       #battery.charging { color: ${theme.green}; font-weight: bold; }
