@@ -124,7 +124,7 @@ in
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
       # Toggle the persistent scratchpad terminal.
-      bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
+      bindsym F12 exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+u opens utilities; Mod+p opens power actions.
@@ -189,9 +189,9 @@ in
       bindsym $mod+x [workspace=__focused__ floating] move container to scratchpad
       # Bring every away window back to the current workspace.
       bindsym $mod+z exec ~/.local/bin/window-menu --away --show-all
-      # Mod+r takes the first window from the away list; Mod+m opens the window menu.
+      # Mod+r takes the first window from the away list; Mod+grave opens the window menu.
       bindsym $mod+r exec ~/.local/bin/window-menu --away --first
-      bindsym $mod+m exec ~/.local/bin/window-menu --away
+      bindsym $mod+grave exec ~/.local/bin/window-menu --away
 
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).
