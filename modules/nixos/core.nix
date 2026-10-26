@@ -30,10 +30,9 @@
   boot.loader.timeout = 3;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # OEM-style boot (tham khảo fufexan/dotfiles): initrd chạy systemd nên
-  # Plymouth (plymouth.use-simpledrm giữ framebuffer từ sớm) che được cả
+  # The systemd-based initrd is the NixOS default. Plymouth (with
+  # plymouth.use-simpledrm keeping the framebuffer early) covers the
   # khoảng đen giữa menu boot và logo, không còn hẫng màn hình.
-  boot.initrd.systemd.enable = true;
   boot.consoleLogLevel = 3;
   boot.plymouth = {
     enable = true;
@@ -48,7 +47,6 @@
     # Avoid fbcon taking over the console after tuigreet has already drawn.
     "fbcon=nodefer"
   ];
-  boot.initrd.verbose = false;
 
   networking = {
     networkmanager = {
