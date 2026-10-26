@@ -16,6 +16,7 @@ in
       spacing = 2;
       "modules-left" = [
         "sway/workspaces"
+        "sway/scratchpad"
         "sway/mode"
       ];
       "modules-center" = [
@@ -76,6 +77,13 @@ in
           "4" = [ ];
           "5" = [ ];
         };
+      };
+      # Show the indicator only while Sway has scratchpad windows.
+      "sway/scratchpad" = {
+        format = "${faSpan ""} {count}";
+        "show-empty" = false;
+        tooltip = true;
+        "tooltip-format" = "{app}: {title}";
       };
       "custom/power-menu" = {
         format = faSpan "";
@@ -187,6 +195,7 @@ in
       }
 
       #workspaces,
+      #scratchpad,
       #mode,
       #clock,
       #custom-power-menu {
@@ -198,6 +207,7 @@ in
       }
 
       #workspaces { margin-left: 8px; padding: 0; }
+      #scratchpad { margin: 0 5px; padding: 0 2px; color: @txt; }
       #workspaces button {
         color: @txt;
         background: transparent;

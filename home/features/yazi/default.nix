@@ -1,4 +1,4 @@
-# Rofi launches Yazi in a floating Foot window.
+# Rofi launches Yazi in a regular tiled Foot window.
 { pkgs, ... }:
 
 let
@@ -17,7 +17,7 @@ in
   xdg.desktopEntries.yazi = {
     name = "Yazi";
     genericName = "Terminal File Manager";
-    exec = "${pkgs.foot}/bin/foot --app-id=yazi-popup -e yazi";
+    exec = "${pkgs.foot}/bin/foot --app-id=yazi -e yazi";
     terminal = false;
     categories = [
       "System"

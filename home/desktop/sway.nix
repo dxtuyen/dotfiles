@@ -68,11 +68,11 @@ in
       client.background        ${theme.bg0}
 
       # Floating rules
+      # Keep the popup terminal at Foot's default size, as before.
+      for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
       for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
-      # Match common Obsidian app_id variants across package formats.
-      for_window [app_id="(?i)^(md([.]obsidian)?[.]obsidian|obsidian)$"] floating enable, resize set width 1000 px height 700 px, move position center
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict popup; Mod+g toggles it and closing hides it to the tray.
@@ -89,9 +89,6 @@ in
 
       # Thunar popup; Mod+Shift+Space toggles it back to tiling.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
-
-      # Float the Foot window that runs Yazi from Rofi.
-      for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
       # Wi-Fi popup.
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
@@ -112,15 +109,12 @@ in
       # Chrome Picture-in-Picture
       for_window [title="Picture in picture"] floating enable, sticky enable, resize set width 350 px height 197 px, move position 1530 px 800 px
 
-      # Center Chrome PWAs from the Default profile. Add another profile suffix if needed.
-      for_window [app_id="(?i)^chrome-[a-z0-9]+-Default$"] floating enable, resize set width 1000 px height 700 px, move position center
-
       # Inhibit idle
       for_window [app_id="(?i)^google-chrome$"] inhibit_idle fullscreen
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      bindsym $mod+grave exec $term
+      bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.

@@ -19,6 +19,7 @@ in
     swayidle
     libnotify
     wiremix # PipeWire mixer (terminal UI).
+    btop # Terminal resource monitor; usable inside the Mod+grave popup.
     brightnessctl
     translate-shell
     goldendict-ng

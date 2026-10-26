@@ -30,7 +30,7 @@ imports the user-level modules.
 |---|---|---|
 | Sway keybindings | `home/desktop/sway.nix` | Commands in `home/scripts/desktop/` and `home/features/` |
 | Waybar modules | `home/desktop/waybar.nix` | Countdown and system status modules |
-| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, swayview overview, and swayr history switcher |
+| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, toggleable terminal popup, Waybar scratchpad count, swayview overview, and swayr history switcher |
 | Countdown menu and timer | `home/features/countdown/default.nix` | `menu.nix` / `countdown-menu.sh`, `engine.nix` / `countdown-engine.sh`, `sleep-watch.nix` / `countdown-sleep-watch.sh`, and `services.nix` |
 | Wallpaper workflow | `home/features/wallpaper/default.nix` | One fixed Gruvbox wallpaper rendered by swaybg for the Sway session |
 
