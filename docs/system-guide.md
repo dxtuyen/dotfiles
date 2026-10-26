@@ -89,7 +89,7 @@ greetd mở tuigreet, sau đó chạy Sway. Khi khởi động, Sway đưa WAYLA
 
 ### Idle, nguồn điện và Countdown
 
-idle-suspend chỉ gọi suspend sau 900 giây khi máy đang dùng pin. Nếu máy đang cắm điện, script chạy idle-suspend-ac-watch; watcher kiểm tra định kỳ và suspend nếu máy bị rút sạc trong lúc vẫn idle. Watcher kết thúc khi màn hình bật lại, Sway mất kết nối hoặc Countdown bắt đầu.
+Sau 900 giây idle, idle-suspend chỉ suspend nếu có pin báo `Discharging`. Khi cắm điện hoặc không có pin, máy tiếp tục idle với màn hình tắt; nếu rút sạc khi vẫn idle, máy không suspend cho đến chu kỳ idle tiếp theo. Không có watcher pin chạy nền.
 
 Countdown có thể tự ngăn swayidle để phiên tập trung không bị tắt màn hình/suspend do idle. Nút inhibit thủ công dùng cùng cơ chế. Dịch vụ khóa trước sleep tách riêng để máy vẫn khóa khi lid hoặc thao tác khác yêu cầu sleep. Timer lưu thời gian còn lại, pause khi nhận sự kiện ngủ và giữ trạng thái pause sau khi thức; người dùng chủ động tiếp tục lại.
 
@@ -102,7 +102,7 @@ Countdown có thể tự ngăn swayidle để phiên tập trung không bị t�
 | Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/module.nix](../home/features/wallpaper/module.nix) | swaybg hiển thị ảnh Gruvbox cố định từ `home/assets/wallpapers/` trong phiên Sway. Không cài công cụ đổi nền, menu, thumbnail hay thư mục ảnh ngoài repo. |
 | Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Dark upstream được ghim revision bằng Nix; mục Yazi trong Rofi mở popup, Bash function `y` đổi về thư mục cuối cùng sau khi thoát. |
 | Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open đưa PDF về cửa sổ đang mở nếu nhận diện được duy nhất một tài liệu khớp; MIME PDF mặc định mở bằng Sioyek. |
-| Session/power | home/scripts/session/, home/scripts/system/, home/scripts/utilities/ | lock-screen, idle-suspend và idle-suspend-ac-watch quản lý session idle; refresh-session nạp lại cấu hình Sway; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
+| Session/power | home/scripts/session/, home/scripts/system/, home/scripts/utilities/ | lock-screen và idle-suspend quản lý session idle; refresh-session nạp lại cấu hình Sway; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
 | Desktop/media | home/scripts/desktop/, home/scripts/media/ | scratchpad-terminal bật terminal ẩn; screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |
 | Ngôn ngữ | home/scripts/utilities/quick-lang.nix | Dịch hoặc sửa văn bản qua menu; khóa API nếu cần được đọc từ ~/.config/quick-lang/api.key, không lưu trong repo. |
 
