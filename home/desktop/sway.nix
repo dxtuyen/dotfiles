@@ -93,9 +93,6 @@ in
       # Float the Foot window that runs Yazi from Rofi.
       for_window [app_id="(?i)^yazi-popup$"] floating enable, resize set 1000 px 700 px
 
-      # Keep the shell session alive while the terminal is hidden in the scratchpad.
-      for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
-
       # Wi-Fi popup.
       for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
 
@@ -123,16 +120,18 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      # Toggle the persistent scratchpad terminal.
-      bindsym $mod+backslash exec ~/.local/bin/scratchpad-terminal
+      bindsym $mod+grave exec $term
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.
-      # Mod+c opens Countdown; Mod+q moves the focused window to the scratchpad; Shift+Mod+q closes it.
+      # Mod+c opens Countdown.
       bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
-      # Toggle Sway's workspace overview and switcher.
+      # Toggle Sway's native scratchpad; Shift+Mod+- sends the focused window there.
+      bindsym $mod+minus scratchpad show
+      bindsym $mod+Shift+minus move scratchpad
+      # Mod+Tab opens the Sway workspace overview.
       bindsym $mod+Tab exec pkill -x swayview || swayview
-      bindsym $mod+Shift+q kill
+      bindsym $mod+q kill
 
       bindsym $mod+Shift+c exec ~/.local/bin/refresh-session
       bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit Sway?' -B 'Yes, exit sway' 'swaymsg exit'
@@ -184,14 +183,21 @@ in
       bindsym $mod+space focus mode_toggle
       bindsym $mod+a focus parent
       bindsym $mod+Shift+a focus child
-      bindsym $mod+q move scratchpad
-      # Stash all floating windows on the current workspace.
-      bindsym $mod+x [workspace=__focused__ floating] move container to scratchpad
-      # Bring every away window back to the current workspace.
-      bindsym $mod+z exec ~/.local/bin/window-menu --away --show-all
-      # Mod+r takes the first window from the away list; Mod+grave opens the window menu.
-      bindsym $mod+r exec ~/.local/bin/window-menu --away --first
-      bindsym $mod+grave exec ~/.local/bin/window-menu --away
+      # Enter Sway's native resize mode.
+      bindsym $mod+r mode "resize"
+
+      mode "resize" {
+        bindsym $left resize shrink width 10 px or 10 ppt
+        bindsym $down resize grow height 10 px or 10 ppt
+        bindsym $up resize shrink height 10 px or 10 ppt
+        bindsym $right resize grow width 10 px or 10 ppt
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+      }
 
       # Custom Utilities & Screenshot
       # Toggle Waybar visibility (SIGUSR1 toggles it by default).

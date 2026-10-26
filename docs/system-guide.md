@@ -62,7 +62,7 @@ home/default.nix là điểm vào của cấu hình user. Các mục import tư�
 
 | Thư mục/file | Nội dung |
 |---|---|
-| [home/packages.nix](../home/packages.nix) | Package ứng dụng và công cụ user. Package nội bộ swayview được tách ở [pkgs/swayview.nix](../pkgs/swayview.nix) và hiện chỉ hỗ trợ x86_64-linux. |
+| [home/packages.nix](../home/packages.nix) | Package ứng dụng và công cụ user; swayview được đóng gói riêng ở [pkgs/swayview.nix](../pkgs/swayview.nix). |
 | home/xdg.nix | Bật XDG user directories và tạo các thư mục chuẩn như Documents, Downloads, Pictures. |
 | home/shell/ | Bash, alias nswitch, hàm nt mở terminal tại thư mục hiện tại, hàm y mở Yazi, direnv, zoxide và fzf. Có thêm [reset-generations.sh](../home/shell/scripts/reset-generations.sh), script bảo trì phải chạy thủ công; script xóa các generation cũ và thu gom Nix store nên sẽ mất khả năng rollback về các generation đã xóa. |
 | home/programs/ | Cấu hình Foot, Git, Neovim và Starship. |
@@ -81,7 +81,6 @@ greetd mở tuigreet, sau đó chạy Sway. Khi khởi động, Sway đưa WAYLA
 | swayidle | [sway.nix](../home/desktop/sway.nix) | Sau 300 giây idle thì khóa màn hình; 310 giây tắt màn hình; 900 giây gọi idle-suspend. Khi có hoạt động, bật màn hình lại. |
 | swayrd | [sway.nix](../home/desktop/sway.nix) | Ghi lịch sử focus cho chuyển cửa sổ theo thứ tự dùng gần đây. |
 | swaybg | [wallpaper/module.nix](../home/features/wallpaper/module.nix) | Hiển thị một ảnh nền cố định trong phiên Sway; không có menu hoặc thao tác đổi ảnh. |
-| sway-waybar-window-events | [window-management.nix](../home/scripts/desktop/window-management.nix) | Nghe sự kiện cửa sổ/workspace từ Sway và gửi tín hiệu để Waybar cập nhật danh sách cửa sổ đang ở workspace khác hoặc scratchpad. |
 | countdown-sleep-watch | [countdown/services.nix](../home/features/countdown/services.nix) | Nghe PrepareForSleep qua system bus, tạm dừng timer khi máy ngủ và thông báo khi máy thức. |
 | countdown-lock-on-sleep | [countdown/services.nix](../home/features/countdown/services.nix) | Một swayidle riêng thực hiện khóa trước khi suspend; vẫn hoạt động khi Countdown tạm dừng service idle chính. |
 | fcitx5-daemon | [input-method.nix](../modules/nixos/input-method.nix) | Chạy Fcitx5 trong phiên Sway với đường dẫn addon rõ ràng. |
@@ -98,12 +97,12 @@ Countdown có thể tự ngăn swayidle để phiên tập trung không bị t�
 | Workflow | Điểm ghép cấu hình | Phần triển khai và hành vi |
 |---|---|---|
 | Countdown | [countdown/default.nix](../home/features/countdown/default.nix), [waybar.nix](../home/desktop/waybar.nix) | countdown-menu.sh điều khiển menu; countdown-engine.sh quản lý timer, lịch sử và idle inhibit; countdown-sleep-watch.sh xử lý sự kiện ngủ. Hỗ trợ di trú state cũ tên study/pomodoro. |
-| Quản lý cửa sổ | [window-management.nix](../home/scripts/desktop/window-management.nix), [waybar.nix](../home/desktop/waybar.nix) | window-menu.py liệt kê cửa sổ thường, scratchpad và cửa sổ ở workspace khác; sway-window-events.py duy trì thứ tự focus và làm mới Waybar theo sự kiện thay vì polling. |
+| Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | Dùng scratchpad và chế độ resize gốc của Sway; swayview mở tổng quan workspace; swayr chuyển cửa sổ theo lịch sử focus. |
 | Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/module.nix](../home/features/wallpaper/module.nix) | swaybg hiển thị ảnh Gruvbox cố định từ `home/assets/wallpapers/` trong phiên Sway. Không cài công cụ đổi nền, menu, thumbnail hay thư mục ảnh ngoài repo. |
 | Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Dark upstream được ghim revision bằng Nix; mục Yazi trong Rofi mở popup, Bash function `y` đổi về thư mục cuối cùng sau khi thoát. |
 | Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open đưa PDF về cửa sổ đang mở nếu nhận diện được duy nhất một tài liệu khớp; MIME PDF mặc định mở bằng Sioyek. |
 | Session/power | home/scripts/session/, home/scripts/system/, home/scripts/utilities/ | lock-screen và idle-suspend quản lý session idle; refresh-session nạp lại cấu hình Sway; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
-| Desktop/media | home/scripts/desktop/, home/scripts/media/ | scratchpad-terminal bật terminal ẩn; screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |
+| Desktop/media | home/scripts/desktop/, home/scripts/media/ | screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |
 | Ngôn ngữ | home/scripts/utilities/quick-lang.nix | Dịch hoặc sửa văn bản qua menu; khóa API nếu cần được đọc từ ~/.config/quick-lang/api.key, không lưu trong repo. |
 
 Một số dữ liệu đầu vào và kết quả nằm trong thư mục user, ví dụ ảnh chụp ở ~/Pictures/Screenshots và VM luyện tập ở ~/VMs. Wallpaper cấu hình được quản lý trong repo và đưa vào Nix store.
@@ -118,8 +117,6 @@ Một số dữ liệu đầu vào và kết quả nằm trong thư mục user, 
 | XDG_STATE_HOME/countdown-history.log; mặc định ~/.local/state/countdown-history.log | Lịch sử các phiên Countdown. | Dữ liệu lưu qua reboot. |
 | XDG_STATE_HOME/countdown-sleep-watch.log; mặc định ~/.local/state/countdown-sleep-watch.log | Nhật ký watcher sleep/wake. | Có thể xóa để dọn log cũ. |
 | ~/.local/state/wlsunset-mode | Chế độ ánh sáng màn hình được chọn lần cuối. | Xóa thì lần chạy tiếp theo dùng mặc định natural. |
-| /run/user/$UID/sway-window-focus-mru.json | Thứ tự focus gần đây, gắn với socket Sway; runtime và có thể tái tạo. | Có thể xóa khi đóng Sway. |
-| XDG_CACHE_HOME/window-menu/index.json; mặc định ~/.cache/window-menu/index.json | Cache tên ứng dụng/icon của menu cửa sổ. | Có thể xóa; sẽ được tạo lại. |
 | ~/.config/quick-lang/api.key | API key riêng của người dùng nếu tính năng dịch cần đến. | Không đưa nội dung file này lên Git. |
 | ~/Pictures/Screenshots | Screenshot tạo ra. | Đây là dữ liệu cá nhân; tự sao lưu nếu cần. |
 | ~/.local/share/Trash/ | Thùng rác GIO; các mục cũ hơn 30 ngày bị timer dọn. | Kiểm tra trước khi khôi phục file cũ. |
@@ -185,7 +182,6 @@ Hook chỉ format-check và đánh giá cấu hình, không thay cho việc th�
 | Countdown không cập nhật | Kiểm tra countdown-engine status, service countdown-sleep-watch và ~/.local/state/countdown-sleep-watch.log. |
 | Hibernate không tiếp tục từ swap | So sánh swap đang bật bằng swapon --show với nhãn swap trong lsblk -f; kiểm tra /sys/power/mem_sleep. |
 | Fcitx không xuất hiện trong desktop | Kiểm tra fcitx5-daemon, profile home/desktop/fcitx5.nix và biến QT_IM_MODULE/XMODIFIERS. |
-| Waybar không thấy cửa sổ ở workspace khác | Kiểm tra service sway-waybar-window-events, SWAYSOCK trong môi trường systemd user và log service. |
 
 ## Tài liệu liên quan
 

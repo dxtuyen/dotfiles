@@ -16,7 +16,6 @@ in
       spacing = 2;
       "modules-left" = [
         "sway/workspaces"
-        "custom/away-windows"
         "sway/mode"
       ];
       "modules-center" = [
@@ -77,19 +76,6 @@ in
           "4" = [ ];
           "5" = [ ];
         };
-      };
-      # Reuse the Mod+= list for both the label and tooltip.
-      "custom/away-windows" = {
-        "exec" = "~/.local/bin/window-menu --away --waybar";
-        "return-type" = "json";
-        "interval" = "once";
-        # The Sway event listener refreshes this module immediately.
-        "signal" = 9;
-        "format" = "${faSpan ""} {text}";
-        "max-length" = 42;
-        "hide-empty-text" = true;
-        "escape" = true;
-        "on-click" = "~/.local/bin/window-menu --away";
       };
       "custom/power-menu" = {
         format = faSpan "";
@@ -201,7 +187,6 @@ in
       }
 
       #workspaces,
-      #custom-away-windows,
       #mode,
       #clock,
       #custom-power-menu {

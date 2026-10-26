@@ -29,8 +29,8 @@ imports the user-level modules.
 | Entry point | Configuration | Implementation |
 |---|---|---|
 | Sway keybindings | `home/desktop/sway.nix` | Commands in `home/scripts/desktop/` and `home/features/` |
-| Waybar modules | `home/desktop/waybar.nix` | Countdown engine and window-management commands |
-| Window picker and away-window indicator | `home/scripts/desktop/window-management.nix` | `window-menu.py`, `sway-window-events.py`, and a user service |
+| Waybar modules | `home/desktop/waybar.nix` | Countdown and system status modules |
+| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, swayview overview, and swayr history switcher |
 | Countdown menu and timer | `home/features/countdown/default.nix` | `menu.nix` / `countdown-menu.sh`, `engine.nix` / `countdown-engine.sh`, `sleep-watch.nix` / `countdown-sleep-watch.sh`, and `services.nix` |
 | Wallpaper workflow | `home/features/wallpaper/default.nix` | One fixed Gruvbox wallpaper rendered by swaybg for the Sway session |
 
@@ -43,6 +43,6 @@ service setup.
 
 Start at the keybinding or Waybar module, follow the referenced command name to
 its Home Manager module, then check whether that module installs a script or
-declares a systemd service. For example, the window indicator is refreshed by
-Sway events through `sway-window-events.py`, while its displayed list is built
-by `window-menu.py`.
+declares a systemd service. Sway window arrangement and resize behavior are
+handled directly by Sway, while swayview and swayr provide workspace and focus
+switching.
