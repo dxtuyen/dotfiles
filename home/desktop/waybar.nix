@@ -19,10 +19,18 @@ in
         "custom/away-windows"
         "sway/mode"
       ];
-      "modules-center" = [ "group/countdown" ];
+      "modules-center" = [
+        "custom/countdown-control"
+        "custom/countdown"
+        "clock"
+        "custom/clock-balance"
+      ];
       "modules-right" = [
         "group/status"
+        "custom/status-divider"
         "tray"
+        "custom/tray-divider"
+        "custom/power-menu"
       ];
       "group/status" = {
         orientation = "horizontal";
@@ -84,6 +92,20 @@ in
         "escape" = true;
         "on-click" = "~/.local/bin/window-menu --away";
       };
+      "custom/power-menu" = {
+        format = faSpan "";
+        tooltip = true;
+        "tooltip-format" = "Power options";
+        "on-click" = "~/.local/bin/utilities --power";
+      };
+      "custom/status-divider" = {
+        format = " ";
+        tooltip = false;
+      };
+      "custom/tray-divider" = {
+        format = " ";
+        tooltip = false;
+      };
       pulseaudio = {
         format = "${faSpan "{icon}"} {volume}%";
         "format-muted" = "muted";
@@ -121,15 +143,6 @@ in
           ""
         ];
       };
-      # Keep the Pomodoro controls and clock together as one centered pair.
-      "group/countdown" = {
-        orientation = "horizontal";
-        modules = [
-          "custom/countdown-control"
-          "custom/countdown"
-          "clock"
-        ];
-      };
       "custom/countdown-control" = {
         exec = "~/.local/bin/countdown-engine status-control";
         signal = 10;
@@ -144,9 +157,14 @@ in
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
-        "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown-engine control-click";
         "on-click-right" = "~/.local/bin/countdown";
+      };
+      # Match the Countdown width after the centered clock so the clock itself
+      # stays at the monitor midpoint while Countdown sits immediately left.
+      "custom/clock-balance" = {
+        format = " ";
+        tooltip = false;
       };
       # Idle-inhibition status.
       "custom/inhibit" = {
@@ -191,15 +209,13 @@ in
       #workspaces,
       #custom-away-windows,
       #mode,
-      #countdown,
-      #status,
       #clock,
-      #tray {
+      #custom-power-menu {
         background: transparent;
         border: none;
         border-radius: 0;
         margin: 0 4px;
-        padding: 0 5px;
+        padding: 0 4px;
       }
 
       #workspaces { margin-left: 8px; padding: 0; }
@@ -231,17 +247,41 @@ in
         color: @txt-strong;
         background: ${theme.bg2};
       }
-      box#status > widget > *, box#countdown > widget > * {
+      #status {
         background: transparent;
         border: none;
         border-radius: 0;
-        margin: 0 2px;
+        margin: 0;
+        padding: 0;
+      }
+      box#status > widget > * {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        margin: 0 4px;
+        padding: 0 2px;
+      }
+      #custom-countdown-control { min-width: 18px; margin: 0 2px; padding: 0 3px; }
+      #custom-countdown { min-width: 40px; margin: 0 2px; padding: 0 3px; }
+      #custom-clock-balance { min-width: 80px; margin: 0; padding: 0; color: transparent; }
+      #clock { margin-left: 2px; margin-right: 2px; }
+      #tray {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        margin: 0;
         padding: 0 3px;
       }
-      #countdown, #clock, #status, #tray { margin-left: 2px; margin-right: 2px; }
-      #tray { margin-right: 8px; padding: 0 4px; }
       #mode { color: ${theme.blue}; }
-      #clock, #countdown { font-weight: bold; }
+      #custom-status-divider, #custom-tray-divider {
+        border-left: 1px solid ${theme.bg3};
+        min-height: 14px;
+        margin: 0 1px;
+        padding: 0;
+      }
+      #custom-power-menu { color: ${theme.fg2}; margin: 0 8px 0 2px; padding: 0 3px; }
+      #custom-power-menu:hover { color: ${theme.fg0}; }
+      #clock, #custom-countdown { font-weight: bold; }
       #custom-countdown.running { color: ${theme.blue}; }
       #custom-countdown.paused { color: ${theme.orange}; }
       #custom-countdown.idle { color: @muted; }
