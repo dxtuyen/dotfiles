@@ -124,7 +124,7 @@ in
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
       # Toggle the persistent scratchpad terminal.
-      bindsym F12 exec ~/.local/bin/scratchpad-terminal
+      bindsym $mod+backslash exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
       # Alt+Tab switches to the urgent or most recently used window.
       # Mod+u opens utilities; Mod+p opens power actions.
