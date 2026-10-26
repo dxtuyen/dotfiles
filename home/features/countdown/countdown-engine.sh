@@ -542,7 +542,7 @@ case "${1:-status}" in
     if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
       printf '{"text": "%s", "class": "%s", "tooltip": "%s", "manual": %s}\n' \
         "$(printf '\xef\x81\xae')" "running" \
-        "Focus is active — idle is inhibited automatically\\nClick to pause the session; manual changes apply after Focus ends" "$manual_json"
+        "Focus is active — idle is inhibited automatically\\nClick has no effect while Countdown is running" "$manual_json"
     elif [ -f "$MANUAL_FLAG" ]; then
       printf '{"text": "%s", "class": "%s", "tooltip": "%s", "manual": true}\n' \
         "$(printf '\xef\x81\xae')" "manual" \
@@ -555,9 +555,14 @@ case "${1:-status}" in
     ;;
 
   inhibit-toggle)
-    # Toggle manual idle inhibition. Focus keeps its automatic inhibition.
+    # Ignore clicks during Countdown; do not save them as a later manual toggle.
+    "$0" status >/dev/null 2>&1
     state_lock
     read_state
+    if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ] && [ "$END_TIME" -gt "$(date +%s)" ]; then
+      state_unlock
+      exit 0
+    fi
     if [ -f "$MANUAL_FLAG" ]; then
       rm -f "$MANUAL_FLAG"
       toggle_msg="Off"

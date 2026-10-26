@@ -281,8 +281,6 @@ in
       #custom-countdown-control.running { color: ${theme.blue}; }
       #custom-countdown-control.paused { color: ${theme.orange}; }
       #custom-countdown-control.idle { color: @muted; }
-      #custom-inhibit.running { color: ${theme.blue}; }
-      #custom-inhibit.manual { color: ${theme.orange}; }
       #custom-inhibit.idle { color: @muted; }
       #bluetooth.off, #bluetooth.disabled, #bluetooth.no-controller { color: @muted; }
       #bluetooth.connected { color: ${theme.green}; }
