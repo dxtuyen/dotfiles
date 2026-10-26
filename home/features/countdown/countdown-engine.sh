@@ -501,9 +501,7 @@ case "${1:-status}" in
     read_state
     remaining=$(get_remaining)
     if [ -z "$DURATION" ]; then
-      # Keep the Waybar module present while idle so the clock remains centered.
-      # A non-breaking space is visually blank.
-      text=$(printf '\302\240')
+      text=""
       class="idle"
       tooltip=""
     elif [ "$RUNNING" = "true" ]; then
@@ -645,7 +643,7 @@ case "${1:-status}" in
     ;;
 
   lock-pause)
-    # Screen locked (manually via $mod+Shift+p, 300s timeout, or before-sleep)
+    # Screen locked (manually via $mod+Escape, 300s timeout, or before-sleep)
     # -> pause the session, keep REMAINING. Unlocking does NOT auto-resume — press ▶.
     state_lock
     read_state

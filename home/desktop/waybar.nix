@@ -23,7 +23,6 @@ in
         "custom/countdown"
         "custom/countdown-control"
         "clock"
-        "custom/clock-balance"
       ];
       "modules-right" = [
         "group/status"
@@ -157,15 +156,9 @@ in
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
-        # Keep an invisible idle slot so the centered clock does not shift.
-        "hide-empty-text" = false;
+        "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown-engine control-click";
         "on-click-right" = "~/.local/bin/countdown";
-      };
-      # Balance Countdown's width after the clock to keep the clock at screen center.
-      "custom/clock-balance" = {
-        format = " ";
-        tooltip = false;
       };
       # Idle-inhibition status.
       "custom/inhibit" = {
@@ -264,7 +257,6 @@ in
       }
       #custom-countdown-control { min-width: 18px; margin: 0; padding: 0; }
       #custom-countdown { min-width: 44px; margin: 0; padding: 0; }
-      #custom-clock-balance { min-width: 64px; margin: 0; padding: 0; color: transparent; }
       #clock { margin-left: 2px; margin-right: 2px; }
       #tray {
         background: transparent;
