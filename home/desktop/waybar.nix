@@ -230,7 +230,7 @@ in
       }
       /* Keep empty workspaces subdued while occupied ones use the default text color. */
       #workspaces button.persistent.empty { color: ${theme.bg4}; }
-      #workspaces button.urgent { color: ${theme.neutralOrange}; border-bottom-color: ${theme.neutralOrange}; }
+      #workspaces button.urgent { color: ${theme.orange}; border-bottom-color: ${theme.orange}; }
       /* Keep focused empty workspaces readable. */
       #workspaces button.persistent.empty.focused {
         color: @txt-strong;
