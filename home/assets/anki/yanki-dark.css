@@ -82,3 +82,22 @@
 .night_mode .yanki .shiki span {
   color: var(--shiki-dark, #e1e4e8) !important;
 }
+
+/* On narrow screens, wrap code and left-align long scrollable equations. */
+@media screen and (max-width: 600px) {
+  .yanki p > .math-inline:only-child {
+    text-align: left;
+    font-size: clamp(0.68em, 3vw, 0.78em);
+  }
+
+  .yanki pre.shiki {
+    padding: 0.7rem;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  .yanki pre.shiki code {
+    font-size: 0.8em;
+  }
+}
