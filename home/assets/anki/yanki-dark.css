@@ -36,12 +36,15 @@
   padding-left: 1.4em;
 }
 
-/* Center standalone equations and scale them to reduce clipping on narrow screens. */
+/* Center equations that fit; let oversized equations scroll from the left edge. */
 .yanki p > .math-inline:only-child {
   display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
   overflow-x: auto;
   overflow-y: hidden;
-  text-align: center;
+  text-align: left;
   font-size: 0.85em;
 }
 
@@ -86,7 +89,6 @@
 /* On narrow screens, wrap code and left-align long scrollable equations. */
 @media screen and (max-width: 600px) {
   .yanki p > .math-inline:only-child {
-    text-align: left;
     font-size: clamp(0.68em, 3vw, 0.78em);
   }
 
