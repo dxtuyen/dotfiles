@@ -1,0 +1,107 @@
+/* Markdown-friendly Yanki cards: centered reading column, left-aligned content. */
+.card {
+  font-family: arial, sans-serif;
+  font-size: 20px;
+  text-align: left;
+  color: #000000;
+  background-color: #ffffff;
+}
+
+.yanki {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.yanki h1,
+.yanki h2,
+.yanki h3 {
+  line-height: 1.3;
+  margin: 1.15em 0 0.5em;
+}
+
+.yanki h1 { font-size: 1.45em; }
+.yanki h2 { font-size: 1.25em; }
+.yanki h3 { font-size: 1.1em; }
+
+.yanki p {
+  margin: 0.75em 0;
+}
+
+.yanki ul,
+.yanki ol {
+  padding-left: 1.4em;
+}
+
+/* Center standalone equations and scale them to reduce clipping on narrow screens. */
+.yanki p > .math-inline:only-child {
+  display: block;
+  overflow: visible;
+  text-align: center;
+  font-size: clamp(0.68em, 2vw, 0.85em);
+}
+
+.yanki pre.shiki {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 1rem 0;
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 8px;
+  text-align: left;
+  white-space: pre;
+}
+
+.yanki pre.shiki code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.85em;
+}
+
+/* Anki Night Mode colors for the card. */
+.card.nightMode,
+.nightMode .card,
+.night_mode .card {
+  color: #e1e4e8;
+  background-color: #1e1e1e;
+}
+
+/* Activate the dark Shiki palette, which is present in Yanki's generated HTML. */
+.nightMode .yanki .shiki,
+.night_mode .yanki .shiki {
+  color: var(--shiki-dark, #e1e4e8) !important;
+  background-color: var(--shiki-dark-bg, #24292e) !important;
+}
+
+.nightMode .yanki .shiki span,
+.night_mode .yanki .shiki span {
+  color: var(--shiki-dark, #e1e4e8) !important;
+}
+
+/* Scale dense Markdown cards down on phones; desktop sizing stays unchanged. */
+@media screen and (max-width: 600px) {
+  .card {
+    font-size: 16px;
+  }
+
+  .yanki {
+    max-width: 100%;
+    line-height: 1.5;
+  }
+
+  .yanki h1 { font-size: 1.3em; }
+  .yanki h2 { font-size: 1.15em; }
+  .yanki h3 { font-size: 1.05em; }
+
+  .yanki pre.shiki {
+    margin: 0.75rem 0;
+    padding: 0.7rem;
+  }
+
+  .yanki pre.shiki code {
+    font-size: 0.8em;
+  }
+
+}
