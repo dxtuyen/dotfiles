@@ -9,7 +9,6 @@ in
 
   home.packages = with pkgs; [
     rofi
-    swayr # switch windows by focus history (Alt+Tab-style MRU)
     swayview # overview and switcher for Sway workspaces
     wlsunset
     grim

@@ -25,7 +25,7 @@ Luồng đăng nhập và khởi chạy desktop:
 ~~~text
 UEFI / systemd-boot → NixOS / Plymouth → greetd / tuigreet → Sway
                                                    └── sway-session.target
-                                                       ├── Waybar, swayidle, swayrd
+                                                       ├── Waybar, swayidle
                                                        ├── Fcitx5, swaybg
                                                        └── service của các workflow
 ~~~
@@ -79,7 +79,6 @@ greetd mở tuigreet, sau đó chạy Sway. Khi khởi động, Sway đưa WAYLA
 | Service | Khai báo | Vai trò |
 |---|---|---|
 | swayidle | [sway.nix](../home/desktop/sway.nix) | Sau 300 giây idle thì khóa màn hình; 310 giây tắt màn hình; 900 giây gọi idle-suspend. Khi có hoạt động, bật màn hình lại. |
-| swayrd | [sway.nix](../home/desktop/sway.nix) | Ghi lịch sử focus cho chuyển cửa sổ theo thứ tự dùng gần đây. |
 | swaybg | [wallpaper/module.nix](../home/features/wallpaper/module.nix) | Hiển thị một ảnh nền cố định trong phiên Sway; không có menu hoặc thao tác đổi ảnh. |
 | countdown-sleep-watch | [countdown/services.nix](../home/features/countdown/services.nix) | Nghe PrepareForSleep qua system bus, tạm dừng timer khi máy ngủ và thông báo khi máy thức. |
 | countdown-lock-on-sleep | [countdown/services.nix](../home/features/countdown/services.nix) | Một swayidle riêng thực hiện khóa trước khi suspend; vẫn hoạt động khi Countdown tạm dừng service idle chính. |
@@ -97,7 +96,7 @@ Countdown có thể tự ngăn swayidle để phiên tập trung không bị t�
 | Workflow | Điểm ghép cấu hình | Phần triển khai và hành vi |
 |---|---|---|
 | Countdown | [countdown/default.nix](../home/features/countdown/default.nix), [waybar.nix](../home/desktop/waybar.nix) | countdown-menu.sh điều khiển menu; countdown-engine.sh quản lý timer, lịch sử và idle inhibit; countdown-sleep-watch.sh xử lý sự kiện ngủ. Hỗ trợ di trú state cũ tên study/pomodoro. |
-| Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | `Mod+grave` bật/tắt terminal popup; `Mod+-` duyệt scratchpad gốc; Waybar hiện số cửa sổ khi scratchpad không trống; swayview mở tổng quan workspace và swayr chuyển cửa sổ theo lịch sử focus. |
+| Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | `Alt+Tab` chuyển qua lại giữa workspace hiện tại và workspace dùng gần nhất; `Mod+grave` bật/tắt terminal popup; `Mod+-` duyệt scratchpad gốc; Waybar hiện số cửa sổ khi scratchpad không trống; swayview mở tổng quan workspace. |
 | Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/module.nix](../home/features/wallpaper/module.nix) | swaybg hiển thị ảnh Gruvbox cố định từ `home/assets/wallpapers/` trong phiên Sway. Không cài công cụ đổi nền, menu, thumbnail hay thư mục ảnh ngoài repo. |
 | Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Dark upstream được ghim revision bằng Nix; mục Yazi trong Rofi mở Foot dạng tiled; Bash function `y` đổi về thư mục cuối cùng sau khi thoát. `btop` chạy trong terminal popup Mod+grave. |
 | Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open đưa PDF về cửa sổ đang mở nếu nhận diện được duy nhất một tài liệu khớp; MIME PDF mặc định mở bằng Sioyek. |

@@ -116,10 +116,10 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Alt+Tab switches to the urgent or most recently used window.
+      # Alt+Tab toggles between the current and previously focused workspace.
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.
       # Mod+c opens Countdown.
-      bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
+      bindsym Mod1+Tab workspace back_and_forth
       # Toggle Sway's native scratchpad; Shift+Mod+- sends the focused window there.
       bindsym $mod+minus scratchpad show
       bindsym $mod+Shift+minus move scratchpad
@@ -225,23 +225,6 @@ in
       # Lock after 300s, turn off the display after 310s, and suspend after 900s on battery.
       # Countdown temporarily stops and restarts this service.
     '';
-  };
-
-  # swayrd remains enabled for Alt+Tab.
-
-  # Record window focus history for the Sway session.
-  systemd.user.services.swayrd = {
-    Unit = {
-      Description = "Swayr window history daemon";
-      After = [ "sway-session.target" ];
-      PartOf = [ "sway-session.target" ];
-    };
-    Service = {
-      ExecStart = "${pkgs.swayr}/bin/swayrd";
-      Restart = "on-failure";
-      RestartSec = 3;
-    };
-    Install.WantedBy = [ "sway-session.target" ];
   };
 
   # Run swayidle with logging, crash recovery, and Sway-session lifecycle management.

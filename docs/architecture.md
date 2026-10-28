@@ -30,7 +30,7 @@ imports the user-level modules.
 |---|---|---|
 | Sway keybindings | `home/desktop/sway.nix` | Commands in `home/scripts/desktop/` and `home/features/` |
 | Waybar modules | `home/desktop/waybar.nix` | Countdown and system status modules |
-| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, toggleable terminal popup, Waybar scratchpad count, swayview overview, and swayr history switcher |
+| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, toggleable terminal popup, Alt+Tab workspace back-and-forth, Waybar scratchpad count, and swayview overview |
 | Countdown menu and timer | `home/features/countdown/default.nix` | `menu.nix` / `countdown-menu.sh`, `engine.nix` / `countdown-engine.sh`, `sleep-watch.nix` / `countdown-sleep-watch.sh`, and `services.nix` |
 | Wallpaper workflow | `home/features/wallpaper/default.nix` | One fixed Gruvbox wallpaper rendered by swaybg for the Sway session |
 
@@ -43,6 +43,5 @@ service setup.
 
 Start at the keybinding or Waybar module, follow the referenced command name to
 its Home Manager module, then check whether that module installs a script or
-declares a systemd service. Sway window arrangement and resize behavior are
-handled directly by Sway, while swayview and swayr provide workspace and focus
-switching.
+declares a systemd service. Sway handles window arrangement, resize behavior,
+and workspace back-and-forth directly; swayview provides the workspace overview.
