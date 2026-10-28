@@ -207,7 +207,7 @@ in
         padding: 0 4px;
       }
 
-      #workspaces { margin-left: 8px; padding: 0; }
+      #workspaces { margin: 0 2px 0 4px; padding: 0; }
       #scratchpad { margin: 0 5px; padding: 0 2px; color: @txt; }
       #workspaces button {
         color: @txt;
@@ -216,7 +216,9 @@ in
         border-bottom: 2px solid transparent;
         border-radius: 0;
         box-shadow: none;
-        padding: 0 5px;
+        min-width: 16px;
+        margin: 0;
+        padding: 0 4px;
         font-size: 15px;
         transition: none;
       }
