@@ -207,7 +207,7 @@ in
         padding: 0 4px;
       }
 
-      #workspaces { margin: 0 2px 0 4px; padding: 0; }
+      #workspaces { margin-left: 8px; padding: 0; }
       #scratchpad { margin: 0 5px; padding: 0 2px; color: @txt; }
       #workspaces button {
         color: @txt;
@@ -216,9 +216,11 @@ in
         border-bottom: 2px solid transparent;
         border-radius: 0;
         box-shadow: none;
-        min-width: 16px;
+        /* Preserve the previous GTK theme's sizing independently of colors. */
+        min-width: 18px;
+        min-height: 18px;
         margin: 0;
-        padding: 0 4px;
+        padding: 0 5px;
         font-size: 15px;
         transition: none;
       }
