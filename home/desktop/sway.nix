@@ -56,7 +56,8 @@ in
       # $mod + left/right mouse button = move/resize floating windows.
       floating_modifier $mod normal
       focus_follows_mouse yes
-      # Keep Sway's default activation behavior: mark requests urgent without stealing focus.
+      # Focus windows when applications request activation, including from another workspace.
+      focus_on_window_activation focus
       smart_borders off
 
       # Keep the focused border at light3; use a nearby muted ochre for the split indicator.
