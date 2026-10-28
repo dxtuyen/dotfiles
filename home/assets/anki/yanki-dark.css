@@ -42,7 +42,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   text-align: center;
-  font-size: clamp(0.68em, 2vw, 0.85em);
+  font-size: 0.85em;
 }
 
 .yanki pre.shiki {
@@ -81,30 +81,4 @@
 .nightMode .yanki .shiki span,
 .night_mode .yanki .shiki span {
   color: var(--shiki-dark, #e1e4e8) !important;
-}
-
-/* Scale dense Markdown cards down on phones; desktop sizing stays unchanged. */
-@media screen and (max-width: 600px) {
-  .card {
-    font-size: 16px;
-  }
-
-  .yanki {
-    max-width: 100%;
-    line-height: 1.5;
-  }
-
-  .yanki h1 { font-size: 1.3em; }
-  .yanki h2 { font-size: 1.15em; }
-  .yanki h3 { font-size: 1.05em; }
-
-  .yanki pre.shiki {
-    margin: 0.75rem 0;
-    padding: 0.7rem;
-  }
-
-  .yanki pre.shiki code {
-    font-size: 0.8em;
-  }
-
 }
