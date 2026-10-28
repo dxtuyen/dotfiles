@@ -39,7 +39,8 @@
 /* Center standalone equations and scale them to reduce clipping on narrow screens. */
 .yanki p > .math-inline:only-child {
   display: block;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   text-align: center;
   font-size: clamp(0.68em, 2vw, 0.85em);
 }
