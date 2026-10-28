@@ -33,6 +33,12 @@ ask_minutes() {
   echo "$minutes"
 }
 
+ask_task() {
+  rofi -dmenu -p "Countdown — task (optional)" \
+    -mesg "Enter a task name · Enter to continue · Esc to skip" \
+    -theme-str 'window { width: 36%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "What are you focusing on?"; }'
+}
+
 # Finalize or recover the timer before building the menu.
 "$ENGINE" status >/dev/null
 
@@ -68,7 +74,8 @@ fi
 if [ -z "$DURATION" ]; then
   m=$(ask_minutes) || exit $?
   [ -n "$m" ] || exit 0
-  exec "$ENGINE" start "$m"
+  task=$(ask_task)
+  exec "$ENGINE" start "$m" "$task"
 fi
 
 if [ "$RUNNING" = "true" ]; then

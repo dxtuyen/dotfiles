@@ -4,7 +4,7 @@ let
   countdownEngine = pkgs.writeTextFile {
     name = "countdown-engine";
     executable = true;
-    text = builtins.replaceStrings [ "@flock@" ] [ "${pkgs.util-linux}/bin/flock" ] (
+    text = builtins.replaceStrings [ "@flock@" "@jq@" ] [ "${pkgs.util-linux}/bin/flock" "${pkgs.jq}/bin/jq" ] (
       builtins.readFile ./countdown-engine.sh
     );
   };

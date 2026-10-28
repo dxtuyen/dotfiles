@@ -20,12 +20,12 @@ in
         "sway/mode"
       ];
       "modules-center" = [
-        "custom/countdown"
         "custom/countdown-control"
-        "clock"
+        "custom/countdown"
       ];
       "modules-right" = [
         "group/status"
+        "clock"
         "custom/status-divider"
         "tray"
         "custom/tray-divider"
@@ -150,6 +150,7 @@ in
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
         return-type = "json";
+        escape = true;
         "hide-empty-text" = true;
         "on-click" = "~/.local/bin/countdown-engine control-click";
         "on-click-right" = "~/.local/bin/countdown";

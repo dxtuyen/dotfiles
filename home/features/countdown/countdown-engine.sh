@@ -6,6 +6,7 @@ STATE_DIR="${XDG_RUNTIME_DIR:-$HOME/.local/state}"
 STATE_FILE="$STATE_DIR/countdown-state"
 LOCK_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/countdown-state.lock"
 FLOCK="@flock@"
+JQ="@jq@"
 SLEEP_MARKER="$STATE_DIR/countdown-sleep-paused"
 MANUAL_FLAG="$STATE_DIR/inhibit-manual"
 HISTORY_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/countdown-history.log"
@@ -83,13 +84,19 @@ if [ -f "$STATE_DIR/pomodoro-state" ] ||
 fi
 
 read_state() {
+  TASK=""
+  INITIAL_DURATION=""
   if [ -f "$STATE_FILE" ]; then
     . "$STATE_FILE"
+    # Older state files have no immutable starting estimate.
+    INITIAL_DURATION="${INITIAL_DURATION:-$DURATION}"
   else
     DURATION=""
+    INITIAL_DURATION=""
     RUNNING="false"
     END_TIME=""
     REMAINING=""
+    TASK=""
   fi
 }
 
@@ -108,8 +115,11 @@ write_state() {
   local tmp
   # Same-directory rename keeps readers from seeing a partially written state.
   tmp=$(mktemp "$STATE_FILE.XXXXXX") || return 1
-  if ! printf 'DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
-    "$DURATION" "$RUNNING" "$END_TIME" "$REMAINING" > "$tmp"; then
+  if ! {
+    printf 'DURATION="%s"\nINITIAL_DURATION="%s"\nRUNNING="%s"\nEND_TIME="%s"\nREMAINING="%s"\n' \
+      "$DURATION" "$INITIAL_DURATION" "$RUNNING" "$END_TIME" "$REMAINING"
+    printf 'TASK=%q\n' "$TASK"
+  } > "$tmp"; then
     rm -f -- "$tmp"
     return 1
   fi
@@ -247,9 +257,11 @@ finalize_if_expired() {
 
   finished_duration="$DURATION"
   DURATION=""
+  INITIAL_DURATION=""
   RUNNING="false"
   END_TIME=""
   REMAINING=""
+  TASK=""
   write_state || return 1
   # Do not pkill here: this function can run inside the daemon itself.
   # Killing it before the caller unlocks/notifies leaves Waybar stuck at 1s.
@@ -269,6 +281,8 @@ case "${1:-status}" in
     clear_sleep_marker
     now=$(date +%s)
     DURATION="$minutes"
+    INITIAL_DURATION="$minutes"
+    TASK="${3:-}"
     RUNNING="true"
     END_TIME=$((now + minutes * 60))
     REMAINING=""
@@ -400,9 +414,11 @@ case "${1:-status}" in
     maybe_log_current "countdown"
     clear_sleep_marker
     DURATION=""
+    INITIAL_DURATION=""
     RUNNING="false"
     END_TIME=""
     REMAINING=""
+    TASK=""
     write_state || exit 1
     pkill -f "countdown-engine daemon" 2>/dev/null || true
     state_unlock
@@ -513,8 +529,20 @@ case "${1:-status}" in
       class="paused"
       tooltip="Paused · $(format_time "$remaining") remaining"
     fi
-    printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
-      "$text" "$class" "$tooltip"
+    if [ -n "$TASK" ]; then
+      task_display="${TASK:0:20}"
+      if [ "${#TASK}" -gt 20 ]; then
+        task_display+="…"
+      fi
+      text+=" · $task_display"
+      tooltip="Task: $TASK"$'\n'"$tooltip"
+    fi
+    if [ -n "$INITIAL_DURATION" ]; then
+      text+=" (${INITIAL_DURATION}m)"
+      tooltip+=$'\n'"Estimate: ${INITIAL_DURATION} min"
+    fi
+    "$JQ" -cn --arg text "$text" --arg class "$class" --arg tooltip "$tooltip" \
+      '{text: $text, class: $class, tooltip: $tooltip}'
     ;;
 
   inhibit-state)
@@ -624,9 +652,11 @@ case "${1:-status}" in
       elif [ -n "$DURATION" ] && [ "$REMAINING" = "0" ]; then
         finished_duration="$DURATION"
         DURATION=""
+        INITIAL_DURATION=""
         RUNNING="false"
         END_TIME=""
         REMAINING=""
+        TASK=""
         write_state || exit 1
         pkill -f "countdown-engine daemon" 2>/dev/null || true
       fi
