@@ -1,7 +1,7 @@
 /* Markdown-friendly Yanki cards: centered reading column, left-aligned content. */
 .card {
   font-family: arial, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   text-align: left;
   color: #000000;
   background-color: #ffffff;
@@ -10,7 +10,7 @@
 .yanki {
   box-sizing: border-box;
   width: 100%;
-  max-width: 56rem;
+  max-width: 46rem;
   margin: 0 auto;
   text-align: left;
   line-height: 1.6;
