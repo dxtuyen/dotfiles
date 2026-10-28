@@ -23,6 +23,7 @@ in
     custom_color_mode_empty_background_color ${rgb theme.bg0}
     custom_background_color ${rgb theme.bg0}
     custom_text_color ${rgb theme.fg1}
+    startup_commands toggle_custom_color
     ui_background_color ${rgb theme.bg1}
     ui_text_color ${rgb theme.fg1}
     ui_selected_background_color ${rgb theme.selection}
@@ -34,8 +35,12 @@ in
     search_highlight_color ${rgb theme.green}
     link_highlight_color ${rgb theme.blue}
     synctex_highlight_color ${rgb theme.purple}
-    # Keep PDF page colors intact (figures/scans); custom colors are available
-    # with Sioyek's toggle_custom_color command when reading plain text.
+    # Start with the shared Gruvbox page colors; F8 restores original PDF colors.
+  '';
+
+  # Override the default F8 dark-mode binding with the shared Gruvbox colors.
+  xdg.configFile."sioyek/keys_user.config".text = ''
+    toggle_custom_color <f8>
   '';
 
   # All PDF open paths go through sioyek-open (apps cannot focus themselves on Wayland).
