@@ -1,8 +1,17 @@
-# Gruvbox GTK and icon themes with the existing Bibata cursor.
+# Gruvbox Material GTK 3/4 with the existing icons and Bibata cursor.
 { pkgs, ... }:
 
 let
   iconTheme = import ./icon-theme.nix { inherit pkgs; };
+  gtkTheme = {
+    name = "Gruvbox-Dark-Medium";
+    package = pkgs.gruvbox-gtk-theme.override {
+      colorVariants = [ "dark" ];
+      sizeVariants = [ "standard" ];
+      themeVariants = [ "default" ];
+      tweakVariants = [ "medium" ];
+    };
+  };
 in
 
 {
@@ -18,10 +27,11 @@ in
 
   gtk = {
     enable = true;
-    theme = {
-      name = "gruvbox-dark";
-      package = pkgs.gruvbox-dark-gtk;
-    };
+    theme = gtkTheme;
+    # HM 26.05+ no longer inherits the GTK 3 theme for GTK 4. Import its
+    # stylesheet explicitly so libadwaita apps such as Foliate match as well.
+    gtk4.theme = gtkTheme;
+    colorScheme = "dark";
     iconTheme = iconTheme;
     gtk3.extraConfig = {
       "gtk-application-prefer-dark-theme" = 1;

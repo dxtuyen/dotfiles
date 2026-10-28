@@ -5,10 +5,28 @@
   ...
 }:
 
+let
+  theme = import ../theme.nix;
+in
 {
-  # Keep Longman's layout while applying a readable Gruvbox Dark color layer.
+  # Preserve Longman's layout; substitute colors from the shared palette.
   xdg.configFile."goldendict/article-style.css" = {
-    source = ../assets/goldendict/longman.css;
+    source = pkgs.replaceVars ../assets/goldendict/longman.css {
+      inherit (theme)
+        bg0
+        bg1
+        bg2
+        bg3
+        bg4
+        fg0
+        fg1
+        red
+        blue
+        aqua
+        purple
+        selectionBlue
+        ;
+    };
     force = true;
   };
 

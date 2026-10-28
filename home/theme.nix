@@ -1,41 +1,49 @@
-# Gruvbox Dark palette shared by the desktop and terminal configuration.
-# Base values follow the upstream Gruvbox palette:
-# https://github.com/morhetz/gruvbox/blob/master/colors/gruvbox.vim
-{
+# Gruvbox Material: dark background, medium contrast, material foreground.
+# https://github.com/sainnhe/gruvbox-material/blob/master/autoload/gruvbox_material.vim
+# Surface/foreground aliases use steps from the upstream palette so desktop
+# applications can share colors without each maintaining separate hex values.
+rec {
+  bgDim = "#1b1b1b";
   bg0 = "#282828";
-  bg0Hard = "#1d2021";
-  bg0Soft = "#32302f";
-  bg1 = "#3c3836";
-  bg2 = "#504945";
-  bg3 = "#665c54";
-  bg4 = "#7c6f64";
-  fg0 = "#fbf1c7";
-  fg1 = "#ebdbb2";
-  fg2 = "#d5c4a1";
-  fg3 = "#bdae93";
-  fg4 = "#a89984";
-  splitIndicator = "#d2a476";
+  bg1 = "#32302f";
+  bg2 = "#3c3836";
+  bg3 = "#45403d";
+  bg4 = "#5a524c";
+  fg0 = "#ddc7a1";
+  fg1 = "#d4be98";
+  fg2 = fg1;
+  fg3 = "#a89984";
+  fg4 = gray;
   gray = "#928374";
-  neutralRed = "#cc241d";
-  neutralGreen = "#98971a";
-  neutralYellow = "#d79921";
-  neutralBlue = "#458588";
-  neutralPurple = "#b16286";
-  neutralAqua = "#689d6a";
-  neutralOrange = "#d65d0e";
-  red = "#fb4934";
-  green = "#b8bb26";
-  yellow = "#fabd2f";
-  blue = "#83a598";
+  muted = "#7c6f64";
+  red = "#ea6962";
+  green = "#a9b665";
+  yellow = "#d8a657";
+  blue = "#7daea3";
   purple = "#d3869b";
-  aqua = "#8ec07c";
-  orange = "#fe8019";
-  fadedRed = "#9d0006";
-  fadedGreen = "#79740e";
-  fadedYellow = "#b57614";
-  fadedBlue = "#076678";
-  fadedPurple = "#8f3f71";
-  fadedAqua = "#427b58";
-  fadedOrange = "#af3a03";
-  pill = "rgba(40, 40, 40, 0.88)";
+  aqua = "#89b482";
+  orange = "#e78a4e";
+  splitIndicator = "#c5a87c";
+  selection = "#45403d";
+  selectionBlue = "#374141";
+
+  # Material uses the same accents in normal and bright ANSI slots.
+  ansi = [
+    bg0
+    red
+    green
+    yellow
+    blue
+    purple
+    aqua
+    fg1
+    gray
+    red
+    green
+    yellow
+    blue
+    purple
+    aqua
+    fg0
+  ];
 }

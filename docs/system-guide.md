@@ -65,12 +65,22 @@ home/default.nix là điểm vào của cấu hình user. Các mục import tư�
 | [home/packages.nix](../home/packages.nix) | Package ứng dụng và công cụ user; swayview được đóng gói riêng ở [pkgs/swayview.nix](../pkgs/swayview.nix). |
 | home/xdg.nix | Bật XDG user directories và tạo các thư mục chuẩn như Documents, Downloads, Pictures. |
 | home/shell/ | Bash, alias nswitch, hàm nt mở terminal tại thư mục hiện tại, hàm y mở Yazi, direnv, zoxide và fzf. Có thêm [reset-generations.sh](../home/shell/scripts/reset-generations.sh), script bảo trì phải chạy thủ công; script xóa các generation cũ và thu gom Nix store nên sẽ mất khả năng rollback về các generation đã xóa. |
-| home/programs/ | Cấu hình Foot, Git, Neovim và Starship. |
+| home/programs/ | Cấu hình Foot, Git, Neovim, Starship, btop, VS Code, theme Obsidian và CSS thẻ Anki. |
 | home/desktop/ | Sway, Waybar, Mako, Rofi, GTK, Fcitx5 profile, MIME mặc định và tích hợp Thunar. |
 | home/features/ | Countdown, Sioyek, wallpaper và Yazi; mỗi feature gom module và phần triển khai liên quan. |
 | home/scripts/ | Lệnh desktop, media, session, system và utilities. Các default.nix trong nhóm chỉ tập hợp module con. |
 
 Trong một tính năng, file .nix thường khai báo package/path, cấu hình Home Manager hoặc systemd service; phần Bash/Python dài được để trong file .sh/.py cùng thư mục để dễ đọc và chỉnh bằng editor phù hợp.
+
+### Giao diện Gruvbox Material
+
+Mặc định là **dark, medium contrast, material palette**. Ưu tiên theme có sẵn: GTK dùng `gruvbox-gtk-theme` (chỉ build bản dark/medium), Rofi giữ bố cục cũ và nhận màu từ palette chung, Foot dùng bản port được wiki của sainnhe giới thiệu, Neovim và VS Code dùng `sainnhe/gruvbox-material`, Yazi dùng `matt-dong-123/gruvbox-material.yazi`, btop dùng theme Material đi kèm package, Obsidian dùng `AllJavi/material_gruvbox_obsidian`. Các nguồn tải thêm đều được ghim revision và hash.
+
+[home/theme.nix](../home/theme.nix) cung cấp màu cho Sway, Waybar, Mako, Fcitx5, fzf, Starship, màn hình khóa, console/tuigreet và những giao diện không có preset Material phù hợp. Qt 5/6 dùng Fusion với palette chung qua qt5ct/qt6ct; GTK4 nhập stylesheet của theme để Foliate cũng đồng bộ. Sioyek đổi màu giao diện, giữ màu trang PDF gốc; có thể dùng `toggle_custom_color` khi muốn đọc bằng nền Material.
+
+VS Code giữ các extension cài qua GUI và trộn riêng các tùy chọn theme. Obsidian cài theme upstream vào các vault đã đăng ký, giữ thiết lập khác và sao lưu file giao diện trước khi sửa. btop giữ cấu hình bố cục/sắp xếp đang dùng. CSS thẻ Yanki của Anki được sinh tại `~/.config/anki/yanki-dark.css`; xem [hướng dẫn áp dụng vào collection](../home/assets/anki/README.md).
+
+Sau `nixos-rebuild switch`, đăng xuất/đăng nhập lại để các ứng dụng nhận môi trường Qt mới. Theme riêng của trang web và nội dung tài liệu vẫn do ứng dụng quản lý.
 
 ## 5. Phiên Sway và các service
 
@@ -98,7 +108,7 @@ Countdown có thể tự ngăn swayidle để phiên tập trung không bị t�
 | Countdown | [countdown/default.nix](../home/features/countdown/default.nix), [waybar.nix](../home/desktop/waybar.nix) | countdown-menu.sh điều khiển menu; countdown-engine.sh quản lý timer, lịch sử và idle inhibit; countdown-sleep-watch.sh xử lý sự kiện ngủ. Hỗ trợ di trú state cũ tên study/pomodoro. |
 | Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | `Alt+Tab` chuyển tới cửa sổ urgent hoặc cửa sổ dùng gần đây qua swayr; `Mod+Tab` mở tổng quan workspace bằng swayview; `Mod+grave` bật/tắt terminal popup; `Mod+-` duyệt scratchpad gốc; Waybar hiện số cửa sổ khi scratchpad không trống. |
 | Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/module.nix](../home/features/wallpaper/module.nix) | swaybg hiển thị ảnh Gruvbox cố định từ `home/assets/wallpapers/` trong phiên Sway. Không cài công cụ đổi nền, menu, thumbnail hay thư mục ảnh ngoài repo. |
-| Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Dark upstream được ghim revision bằng Nix; mục Yazi trong Rofi mở Foot dạng tiled; Bash function `y` đổi về thư mục cuối cùng sau khi thoát. `btop` chạy trong terminal popup Mod+grave. |
+| Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Material của matt-dong-123 được ghim revision/hash bằng Nix; mục Yazi trong Rofi mở Foot dạng tiled; Bash function `y` đổi về thư mục cuối cùng sau khi thoát. `btop` chạy trong terminal popup Mod+grave. |
 | Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open đưa PDF về cửa sổ đang mở nếu nhận diện được duy nhất một tài liệu khớp; MIME PDF mặc định mở bằng Sioyek. |
 | Session/power | home/scripts/session/, home/scripts/system/, home/scripts/utilities/ | lock-screen và idle-suspend quản lý session idle; refresh-session nạp lại cấu hình Sway; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
 | Desktop/media | home/scripts/desktop/, home/scripts/media/ | screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |

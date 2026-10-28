@@ -18,10 +18,10 @@
 
         if [ -z "$node" ]; then
           # Sway may keep an older environment after Home Manager activates.
-          # Set Qt's dark style and Qt 6 platform theme on this app launch.
+          # Fusion reads the shared Material palette through qt6ct.
           export QT_QPA_PLATFORMTHEME=qt6ct
-          export QT_STYLE_OVERRIDE=adwaita-dark
-          export QT_PLUGIN_PATH="${pkgs.qt6Packages.qt6ct}/lib/qt-6/plugins:${pkgs.adwaita-qt6}/lib/qt-6/plugins:''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+          export QT_STYLE_OVERRIDE=Fusion
+          export QT_PLUGIN_PATH="${pkgs.qt6Packages.qt6ct}/lib/qt-6/plugins''${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
           exec ${pkgs.goldendict-ng}/bin/goldendict
         fi
 

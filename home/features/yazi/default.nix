@@ -2,13 +2,13 @@
 { pkgs, ... }:
 
 let
-  # Upstream Gruvbox Dark flavor, pinned for reproducible Home Manager builds.
-  # https://github.com/bennyyip/gruvbox-dark.yazi
-  gruvboxDarkFlavor = pkgs.fetchFromGitHub {
-    owner = "bennyyip";
-    repo = "gruvbox-dark.yazi";
-    rev = "71b03f6a382188a37e76d9e0b94332ee7146ea9c";
-    hash = "sha256-ctGclLIOVQIXSM+8RJL43hEx1C7ecxAgjPs7BzZHo4A=";
+  # Ready-made Material flavor listed in yazi-rs/flavors, pinned for Nix.
+  # https://github.com/matt-dong-123/gruvbox-material.yazi
+  materialFlavor = pkgs.fetchFromGitHub {
+    owner = "matt-dong-123";
+    repo = "gruvbox-material.yazi";
+    rev = "e0fd2d800aeb6adb680496b1a5ef125b901b7413";
+    hash = "sha256-mfIdFIe++jRDbTQBcLlpAq91JzmgL2SvqPxkYuCnKdQ=";
   };
 in
 {
@@ -30,9 +30,9 @@ in
     "yazi/keymap.toml".source = ./keymap.toml;
     "yazi/theme.toml".text = ''
       [flavor]
-      dark = "gruvbox-dark"
+      dark = "gruvbox-material"
     '';
-    "yazi/flavors/gruvbox-dark.yazi".source = gruvboxDarkFlavor;
+    "yazi/flavors/gruvbox-material.yazi".source = materialFlavor;
     "yazi/plugins/smart-enter.yazi".source = pkgs.yaziPlugins.smart-enter;
   };
 }

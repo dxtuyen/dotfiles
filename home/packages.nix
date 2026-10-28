@@ -19,7 +19,7 @@ in
     swayidle
     libnotify
     wiremix # PipeWire mixer (terminal UI).
-    btop # Terminal resource monitor; usable inside the Mod+grave popup.
+    # Btop and VS Code are installed by their Home Manager modules.
     brightnessctl
     translate-shell
     goldendict-ng
@@ -42,7 +42,6 @@ in
     libreoffice
     mysql-workbench
     # Development tools.
-    vscode
     python3
     python3Packages.virtualenv
     gcc

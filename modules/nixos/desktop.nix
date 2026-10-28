@@ -1,7 +1,7 @@
 { pkgs, userName, ... }:
 
 let
-  # Keep the TTY's system palette; customize only these tuigreet components.
+  # Color names resolve through the shared Material Linux console palette.
   greeterTheme = builtins.concatStringsSep ";" [
     "border=bright-black"
     "time=bright-blue"

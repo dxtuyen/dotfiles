@@ -5,6 +5,9 @@
   ...
 }:
 
+let
+  theme = import ../../home/theme.nix;
+in
 {
   # Run garbage collection weekly and keep the last seven days.
   nix = {
@@ -70,6 +73,7 @@
   services.timesyncd.enable = true;
   i18n.defaultLocale = "en_US.UTF-8";
   console.keyMap = "us";
+  console.colors = map (color: builtins.substring 1 6 color) theme.ansi;
 
   users.users.${userName} = {
     isNormalUser = true;

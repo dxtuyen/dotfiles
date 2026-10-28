@@ -19,10 +19,10 @@ in
       kb-cancel: "Escape,Control+g,Control+bracketleft,MouseSecondary";
     }
 
-    @theme "gruvbox-dark"
+    @theme "gruvbox-material"
   '';
 
-  xdg.configFile."rofi/gruvbox-dark.rasi".text = ''
+  xdg.configFile."rofi/gruvbox-material.rasi".text = ''
     * {
       bg:                 ${theme.bg0};
       surface:            ${theme.bg1};

@@ -5,6 +5,20 @@ let
 in
 
 {
+  wayland.windowManager.sway.swaynag = {
+    enable = true;
+    settings = {
+      "<config>" = {
+        background = theme.bg0;
+        text = theme.fg1;
+        border = theme.bg4;
+        border-bottom = theme.yellow;
+        button-background = theme.bg1;
+        button-text = theme.fg0;
+      };
+    };
+  };
+
   wayland.windowManager.sway = {
     enable = true;
     package = null; # use Sway from the NixOS module
@@ -47,7 +61,7 @@ in
       seat * hide_cursor 10000
       seat * xcursor_theme Bibata-Modern-Classic 24
 
-      # Gruvbox Dark styling
+      # Gruvbox Material styling
       gaps inner 5
       gaps outer 3
       gaps top 0
@@ -58,7 +72,7 @@ in
       focus_follows_mouse yes
       smart_borders off
 
-      # Keep the focused border at light3; use a nearby muted ochre for the split indicator.
+      # Muted beige focus border; soft ochre indicates the next split.
       client.focused           ${theme.fg3} ${theme.bg1} ${theme.fg0} ${theme.splitIndicator} ${theme.fg3}
       client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
       client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
