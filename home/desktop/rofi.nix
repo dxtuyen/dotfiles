@@ -160,7 +160,7 @@ in
     @theme "gruvbox-material"
     window { width: 28em; }
     inputbar { enabled: false; }
-    listview { columns: 1; fixed-height: true; scrollbar: false; }
+    listview { scrollbar: false; }
     element { padding: 10px 12px; }
     element normal.active { text-color: @aqua; }
     element selected.active { text-color: @aqua; }
@@ -168,7 +168,6 @@ in
 
   xdg.configFile."rofi/input.rasi".text = ''
     @theme "gruvbox-material"
-    window { width: 32em; }
     mainbox { children: [ message, inputbar ]; }
     inputbar { children: [ entry ]; }
     listview { enabled: false; }
