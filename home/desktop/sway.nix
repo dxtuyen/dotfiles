@@ -253,8 +253,8 @@ in
       # Media & Brightness keys
       bindsym XF86AudioRaiseVolume exec ~/.local/bin/media-notify volume-up
       bindsym XF86AudioLowerVolume exec ~/.local/bin/media-notify volume-down
-      bindsym XF86AudioMute exec ~/.local/bin/media-notify volume-mute
-      bindsym XF86AudioMicMute exec ~/.local/bin/media-notify mic-mute
+      bindsym --no-repeat XF86AudioMute exec ~/.local/bin/media-notify volume-mute
+      bindsym --no-repeat XF86AudioMicMute exec ~/.local/bin/media-notify mic-mute
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 

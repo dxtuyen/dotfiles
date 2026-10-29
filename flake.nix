@@ -1,5 +1,5 @@
 {
-  description = "Doxuan Tuyen's reproducible NixOS laptop";
+  description = "Personal dotfiles for NixOS and Home Manager";
 
   inputs = {
     # Rolling release (nixos-unstable), checked through CI evaluation and

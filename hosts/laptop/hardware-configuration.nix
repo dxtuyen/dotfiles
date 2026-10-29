@@ -24,8 +24,8 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  # This UUID is specific to this machine. Copy this file from the new system
-  # when installing on another machine (see docs/personal/cai-laptop.md).
+  # This UUID is specific to this machine. Regenerate this file on the target
+  # system when installing on another machine.
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/06d0b498-0000-4d08-a97a-56702a562ed2";
     fsType = "ext4";

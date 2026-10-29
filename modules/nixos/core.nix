@@ -34,8 +34,8 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   # The systemd-based initrd is the NixOS default. Plymouth (with
-  # plymouth.use-simpledrm keeping the framebuffer early) covers the
-  # khoảng đen giữa menu boot và logo, không còn hẫng màn hình.
+  # plymouth.use-simpledrm keeping the framebuffer early) covers the blank
+  # transition between the boot menu and the logo.
   boot.consoleLogLevel = 3;
   boot.plymouth = {
     enable = true;
@@ -66,7 +66,7 @@ in
   programs.nh = {
     enable = true;
     # nh uses this flake by default.
-    flake = "/home/${userName}/nix-config";
+    flake = "/home/${userName}/dotfiles";
   };
 
   time.timeZone = "Asia/Ho_Chi_Minh";
@@ -84,7 +84,7 @@ in
     ];
   };
 
-  # Keep SSH keys unlocked for the login session (see docs/personal/cai-laptop.md).
+  # Keep SSH keys unlocked for the login session.
   programs.ssh.startAgent = true;
 
   # Basic tools available from the system profile.

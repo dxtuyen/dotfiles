@@ -3,7 +3,7 @@
 {
   programs.bash = {
     enable = true;
-    shellAliases.nswitch = ''cd "$HOME/nix-config" && sudo nixos-rebuild switch --flake ".#$(hostname -s)"'';
+    shellAliases.nswitch = ''cd "$HOME/dotfiles" && sudo nixos-rebuild switch --flake ".#$(hostname -s)"'';
     initExtra = ''
       export PATH="$HOME/.local/bin:$PATH"
 

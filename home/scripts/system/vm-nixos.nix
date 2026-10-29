@@ -26,7 +26,7 @@
           exit 1
         }
         if [ "$MODE" = iso ] && [ -z "$ISO" ]; then
-          echo "No ISO found in $DIR/iso; see docs/06-Luyen-Tap-VM.md." >&2
+          echo "No ISO found in $DIR/iso; add a NixOS installer ISO to that directory." >&2
           exit 1
         fi
 

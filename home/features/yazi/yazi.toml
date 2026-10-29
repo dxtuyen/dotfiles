@@ -24,7 +24,7 @@ chrome = [
 prepend_rules = [
 { url = "*.{html,htm,xhtml}", use = [ "open", "edit" ] }, # → Chrome
 { url = "*.csv", use = [ "open", "edit" ] },               # → Calc
-{ url = "*.pdf", use = [ "open", "chrome", "edit" ] },     # PDF: Sioyek mặc định, Chrome chọn bằng O
+{ url = "*.pdf", use = [ "open", "chrome", "edit" ] },     # PDF: Sioyek by default; choose Chrome with O.
 ]
 
 [mgr]
