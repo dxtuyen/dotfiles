@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./refresh-session.nix
     ./screenshot.nix
     ./screenshot-menu.nix
     ./scratchpad-terminal.nix

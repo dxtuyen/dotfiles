@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 let
   theme = import ../theme.nix;
@@ -163,7 +163,7 @@ in
       bindsym $mod+Shift+Up move up
       bindsym $mod+Shift+Right move right
 
-      # Five numbered workspaces, matching the Waybar configuration.
+      # Ten numbered workspaces; Waybar pins 1–5 and the 0 key selects workspace 10.
       bindsym $mod+1 workspace number 1
       bindsym $mod+Shift+1 move container to workspace number 1
       bindsym $mod+2 workspace number 2
@@ -174,11 +174,21 @@ in
       bindsym $mod+Shift+4 move container to workspace number 4
       bindsym $mod+5 workspace number 5
       bindsym $mod+Shift+5 move container to workspace number 5
+      bindsym $mod+6 workspace number 6
+      bindsym $mod+Shift+6 move container to workspace number 6
+      bindsym $mod+7 workspace number 7
+      bindsym $mod+Shift+7 move container to workspace number 7
+      bindsym $mod+8 workspace number 8
+      bindsym $mod+Shift+8 move container to workspace number 8
+      bindsym $mod+9 workspace number 9
+      bindsym $mod+Shift+9 move container to workspace number 9
+      bindsym $mod+0 workspace number 10
+      bindsym $mod+Shift+0 move container to workspace number 10
       # Cycle through workspaces; Shift moves the focused window.
       bindsym $mod+bracketleft workspace prev
-            bindsym $mod+bracketright workspace next
-            bindsym $mod+Shift+bracketleft move container to workspace prev
-            bindsym $mod+Shift+bracketright move container to workspace next
+      bindsym $mod+bracketright workspace next
+      bindsym $mod+Shift+bracketleft move container to workspace prev
+      bindsym $mod+Shift+bracketright move container to workspace next
       # Layout & Window State
       bindsym $mod+b splith
       bindsym $mod+v splitv
@@ -251,41 +261,6 @@ in
       ExecStart = "${pkgs.swayr}/bin/swayrd";
       Restart = "on-failure";
       RestartSec = 3;
-    };
-    Install = {
-      WantedBy = [ "sway-session.target" ];
-    };
-  };
-
-  # Run swayidle with logging, crash recovery, and Sway-session lifecycle management.
-  systemd.user.services.swayidle = {
-    Unit = {
-      Description = "Idle manager for Wayland (lock → screen off → suspend)";
-      After = [ "sway-session.target" ];
-      PartOf = [ "sway-session.target" ];
-      StartLimitIntervalSec = 60;
-    };
-    Service = {
-      Type = "simple";
-      # Replace stale instances without stopping Countdown's separate lock handler.
-      ExecStartPre = "-${pkgs.procps}/bin/pkill -f 'swayidle -w timeout 300'";
-      # Commands started by swayidle need these tools on PATH.
-      Environment = [
-        "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin:%h/.local/bin"
-      ];
-      Restart = "on-failure";
-      RestartSec = 3;
-      ExecStart = ''
-        ${pkgs.swayidle}/bin/swayidle -w \
-          timeout 300 '%h/.local/bin/lock-screen' \
-          timeout 310 'swaymsg "output * power off"' \
-          resume 'swaymsg "output * power on"' \
-          timeout 900 '%h/.local/bin/idle-suspend' \
-          before-sleep '%h/.local/bin/lock-screen' \
-          after-resume 'swaymsg "output * power on"' \
-          lock '%h/.local/bin/lock-screen' \
-          unlock 'swaymsg "output * power on"'
-      '';
     };
     Install = {
       WantedBy = [ "sway-session.target" ];

@@ -30,7 +30,7 @@ UEFI / systemd-boot → NixOS / Plymouth → greetd / tuigreet → Sway
                                                        └── service của các workflow
 ~~~
 
-NixOS quản lý kernel, driver, user, mạng và dịch vụ cấp máy. Home Manager quản lý môi trường của user: package, cấu hình ứng dụng, script và user service. Cấu hình được tạo trong Nix store rồi liên kết vào profile; dữ liệu cần thay đổi khi sử dụng như wallpaper, lịch sử timer và cache được lưu ngoài repo.
+NixOS quản lý kernel, driver, user, mạng và dịch vụ cấp máy. Home Manager quản lý môi trường của user: package, cấu hình ứng dụng, script và user service. Cấu hình và ảnh nền được tạo trong Nix store; dữ liệu thay đổi khi sử dụng như lịch sử timer và cache được lưu ngoài repo.
 
 ## 2. Flake, host và phiên bản
 
@@ -54,7 +54,7 @@ Host import rõ các module trong [hosts/laptop/default.nix](../hosts/laptop/def
 | [virtualisation.nix](../modules/nixos/virtualisation.nix) | Libvirt, virt-manager và quyền nhóm kvm/libvirtd. |
 | [system-tweaks.nix](../modules/nixos/system-tweaks.nix) | earlyoom, TRIM hàng tuần và nix-ld cho một số binary dựng sẵn. |
 
-Home Manager được cấu hình từ host, dùng chung bộ package Nixpkgs của hệ thống. extraSpecialArgs chuyển inputs và userName vào các module user. Tài khoản hiện tại được đặt trong flake.nix; một số cấu hình cá nhân cũng dùng đường dẫn /home/doxuantuyen, nên cần cập nhật đồng bộ khi đổi user.
+Home Manager được cấu hình từ host, dùng chung bộ package Nixpkgs của hệ thống. extraSpecialArgs chuyển inputs, userName và tùy chọn wallpaperResolution của từng máy vào các module user. Không đặt wallpaperResolution thì ảnh mặc định là 1920×1080; laptop dùng luôn mặc định. Chỉ khai báo riêng khi máy cần ảnh có độ phân giải khác. Tài khoản hiện tại được đặt trong flake.nix; một số cấu hình cá nhân cũng dùng đường dẫn /home/doxuantuyen, nên cần cập nhật đồng bộ khi đổi user.
 
 ## 4. Cấu hình Home Manager
 
@@ -92,10 +92,12 @@ greetd mở tuigreet, sau đó chạy Sway. Khi khởi động, Sway đưa WAYLA
 
 | Service | Khai báo | Vai trò |
 |---|---|---|
-| swayidle | [sway.nix](../home/desktop/sway.nix) | Sau 300 giây idle thì khóa màn hình; 310 giây tắt màn hình; 900 giây gọi idle-suspend. Khi có hoạt động, bật màn hình lại. |
-| swaybg | [wallpaper/module.nix](../home/features/wallpaper/module.nix) | Hiển thị một ảnh nền cố định trong phiên Sway; không có menu hoặc thao tác đổi ảnh. |
+| swayidle | [session.nix](../home/desktop/session.nix) | Sau 300 giây idle thì báo trạng thái idle cho logind và khóa màn hình; 310 giây tắt màn hình; 900 giây gọi idle-suspend. Khi có hoạt động, bật màn hình lại. |
+| swaybg | [wallpaper/default.nix](../home/features/wallpaper/default.nix) | Hiển thị ảnh nền nhiều màu được sinh bằng Nix trong phiên Sway; không có menu hoặc thao tác đổi ảnh. |
 | countdown-sleep-watch | [countdown/services.nix](../home/features/countdown/services.nix) | Nghe PrepareForSleep qua system bus, tạm dừng timer khi máy ngủ và thông báo khi máy thức. |
-| countdown-lock-on-sleep | [countdown/services.nix](../home/features/countdown/services.nix) | Một swayidle riêng thực hiện khóa trước khi suspend; vẫn hoạt động khi Countdown tạm dừng service idle chính. |
+| countdown-engine | [countdown/services.nix](../home/features/countdown/services.nix) | Worker được systemd giám sát trong phiên Sway, hoàn tất timer và đồng bộ trạng thái ngăn idle mỗi 5 giây; tự khởi động lại nếu tiến trình kết thúc. |
+| session-lock | [session.nix](../home/desktop/session.nix) | Nhận sự kiện khóa/ngủ từ logind và bật lại màn hình khi thức; vẫn chạy khi Countdown tạm dừng service idle chính. |
+| swaylock | [session.nix](../home/desktop/session.nix) | Khởi chạy theo yêu cầu; các lệnh khóa đồng thời cùng chờ một màn hình khóa sẵn sàng. Chạy độc lập với service idle cho đến khi mở khóa. |
 | fcitx5-daemon | [input-method.nix](../modules/nixos/input-method.nix) | Chạy Fcitx5 trong phiên Sway với đường dẫn addon rõ ràng. |
 | trash-clean.timer | [trash-clean.nix](../home/scripts/utilities/trash-clean.nix) | Mỗi ngày lúc 03:00 xóa file trong thùng rác cũ hơn 30 ngày; timer persistent nên có thể chạy bù sau khi máy tắt. |
 
@@ -105,20 +107,28 @@ Sau 900 giây idle, idle-suspend chỉ suspend nếu có pin báo `Discharging`.
 
 Countdown có thể tự ngăn swayidle để phiên tập trung không bị tắt màn hình/suspend do idle. Nút inhibit thủ công dùng cùng cơ chế. Dịch vụ khóa trước sleep tách riêng để máy vẫn khóa khi lid hoặc thao tác khác yêu cầu sleep. Timer lưu thời gian còn lại, pause khi nhận sự kiện ngủ và giữ trạng thái pause sau khi thức; người dùng chủ động tiếp tục lại.
 
+Trước khi khởi động, swayidle kiểm tra countdown-engine idle-allowed nên reload/rebuild không bật idle khi đang bị ngăn. Worker tự kiểm tra trạng thái định kỳ; Waybar cũng đọc lại timer sau tối đa 5 giây khi không có tín hiệu cập nhật. Các thao tác Pause, Resume, khóa và sleep đều hoàn tất phiên đã hết giờ trước khi đổi trạng thái, kể cả dữ liệu cũ đang paused ở 00:00.
+
+Khóa thủ công bằng Super+Esc hoặc menu nguồn dùng cùng lệnh lock-screen với khóa tự động. Lệnh này chờ swaylock khóa xong rồi mới pause Countdown; bước pause có giới hạn thời gian để timer không giữ luồng khóa/ngủ quá lâu. Mở khóa không tự chạy tiếp timer. Các sự kiện logind chỉ do session-lock xử lý, tránh hai dịch vụ cùng gọi khóa khi máy ngủ.
+
 ## 6. Các workflow chính
 
 | Workflow | Điểm ghép cấu hình | Phần triển khai và hành vi |
 |---|---|---|
 | Countdown | [countdown/default.nix](../home/features/countdown/default.nix), [waybar.nix](../home/desktop/waybar.nix) | countdown-menu.sh điều khiển menu; countdown-engine.sh quản lý timer, lịch sử và idle inhibit; countdown-sleep-watch.sh xử lý sự kiện ngủ. Hỗ trợ di trú state cũ tên study/pomodoro. |
-| Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | `Alt+Tab` chuyển tới cửa sổ urgent hoặc cửa sổ dùng gần đây qua swayr; `Mod+Tab` mở tổng quan workspace bằng swayview; `Mod+grave` bật/tắt terminal popup; `Mod+-` duyệt scratchpad gốc; Waybar hiện số cửa sổ khi scratchpad không trống. |
-| Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/module.nix](../home/features/wallpaper/module.nix) | swaybg hiển thị ảnh Gruvbox cố định từ `home/assets/wallpapers/` trong phiên Sway. Không cài công cụ đổi nền, menu, thumbnail hay thư mục ảnh ngoài repo. |
+| Quản lý cửa sổ | [sway.nix](../home/desktop/sway.nix), [waybar.nix](../home/desktop/waybar.nix) | `Super+1…9` chọn workspace 1…9, `Super+0` chọn workspace 10; thêm Shift để chuyển cửa sổ. Waybar ghim sẵn workspace 1–5; workspace 6–10 hiện khi đang dùng. `Alt+Tab` chuyển tới cửa sổ urgent hoặc cửa sổ dùng gần đây qua swayr; `Mod+Tab` mở tổng quan workspace bằng swayview; `Mod+grave` bật/tắt terminal popup; `Mod+-` duyệt scratchpad gốc; Waybar hiện số cửa sổ khi scratchpad không trống. |
+| Wallpaper | [wallpaper/default.nix](../home/features/wallpaper/default.nix), [wallpaper/images.nix](../home/features/wallpaper/images.nix) | Sinh hai ảnh từ home/theme.nix bằng nix-wallpaper đã ghim trong flake.lock: desktop nhiều màu, lockscreen xanh hai tông. Mặc định 1920×1080; host có thể đặt wallpaperResolution trong extraSpecialArgs khi cần kích thước khác. swaybg và swaylock dùng ảnh trong Nix store; không lưu PNG trong repo. |
 | Yazi | [yazi/default.nix](../home/features/yazi/default.nix), [bash.nix](../home/shell/bash.nix) | Flavor Gruvbox Material của matt-dong-123 được ghim revision/hash bằng Nix; mục Yazi trong Rofi mở Foot dạng tiled; Bash function `y` đổi về thư mục cuối cùng sau khi thoát. `btop` chạy trong terminal popup Mod+grave. |
-| Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open đưa PDF về cửa sổ đang mở nếu nhận diện được duy nhất một tài liệu khớp; MIME PDF mặc định mở bằng Sioyek. |
-| Session/power | home/scripts/session/, home/scripts/system/, home/scripts/utilities/ | lock-screen và idle-suspend quản lý session idle; refresh-session nạp lại cấu hình Sway; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
-| Desktop/media | home/scripts/desktop/, home/scripts/media/ | screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |
+| Sioyek | [sioyek/default.nix](../home/features/sioyek/default.nix), [mimeapps.nix](../home/desktop/mimeapps.nix) | Wrapper sioyek-open luôn chuyển file được yêu cầu cho Sioyek, tránh nhầm tài liệu trùng tên. Mở launcher không truyền file thì focus cửa sổ đang có. MIME PDF mặc định mở bằng Sioyek. |
+| Session/power | [session.nix](../home/desktop/session.nix), home/scripts/system/, home/scripts/utilities/ | session.nix khai báo lock-screen, idle-suspend và các dịch vụ khóa/idle; power-profile-menu chọn profile; vm-nixos chạy máy ảo; daily-menu và dict-toggle mở tiện ích; trash-clean dọn thùng rác. |
+| Desktop/media | home/scripts/desktop/, home/scripts/media/ | refresh-session nạp lại cấu hình Sway; screenshot và screenshot-menu chụp màn hình; toggle-touchpad đổi trạng thái touchpad; wlsunset-menu/wlsunset-apply chọn ánh sáng màn hình; media-notify điều khiển âm lượng và độ sáng, cập nhật thông báo. |
 | Ngôn ngữ | home/scripts/utilities/quick-lang.nix | Dịch hoặc sửa văn bản qua menu; khóa API nếu cần được đọc từ ~/.config/quick-lang/api.key, không lưu trong repo. |
 
-Một số dữ liệu đầu vào và kết quả nằm trong thư mục user, ví dụ ảnh chụp ở ~/Pictures/Screenshots và VM luyện tập ở ~/VMs. Wallpaper cấu hình được quản lý trong repo và đưa vào Nix store.
+Một số dữ liệu đầu vào và kết quả nằm trong thư mục user, ví dụ ảnh chụp ở ~/Pictures/Screenshots và VM luyện tập ở ~/VMs. Thông số tạo wallpaper được quản lý trong repo; ảnh được sinh trong Nix store. Xem [hướng dẫn wallpaper](../home/features/wallpaper/README.md) để build riêng từng ảnh.
+
+Menu Countdown chấp nhận khoảng trắng quanh số phút khi tạo phiên hoặc thêm thời gian. Ở ô tên nhiệm vụ, Enter với tên để trống vẫn bắt đầu phiên; Esc hủy thao tác tạo phiên.
+
+Script reset-generations.sh build cấu hình mới trước khi xóa generation cũ và giữ cấu hình trước đó ở generation 1 để rollback. Bước thu gom cuối không dùng -d; generation dự phòng vẫn chịu chính sách lưu giữ thông thường. Script từ chối chạy khi system profile được chọn khác hệ thống đang chạy.
 
 ## 7. Dữ liệu, trạng thái và cache
 
@@ -145,7 +155,7 @@ Khi tìm một hành vi, đi theo đường từ nơi kích hoạt đến phần
 3. Nếu Nix chỉ cài một script, đọc phần .sh/.py cùng thư mục hoặc nội dung text của module.
 4. Nếu hành vi phụ thuộc service, đọc systemd.* và xem service đó được gắn với sway-session.target hay system target nào.
 
-Ví dụ: Waybar gọi countdown-engine status; command được cài bởi home/features/countdown/engine.nix; logic nằm trong countdown-engine.sh; service và sự kiện sleep được khai báo ở services.nix.
+Ví dụ: Waybar gọi countdown-engine status-time; command được cài bởi home/features/countdown/default.nix; logic nằm trong countdown-engine.sh. Dịch vụ theo dõi sleep của Countdown được khai báo ở countdown/services.nix; dịch vụ khóa/idle chung của desktop nằm trong home/desktop/session.nix.
 
 Khi thêm cấu hình:
 

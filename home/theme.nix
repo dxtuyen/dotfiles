@@ -20,6 +20,7 @@ rec {
   green = "#a9b665";
   yellow = "#d8a657";
   blue = "#7daea3";
+  blueDim = "#458588"; # Darker blue for the two-tone lockscreen logo.
   purple = "#d3869b";
   aqua = "#89b482";
   orange = "#e78a4e";

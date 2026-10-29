@@ -20,10 +20,13 @@ ask_minutes() {
   local prompt="${1:-Countdown — minutes (1–480)}"
   local minutes
   minutes=$(rofi -dmenu -p "$prompt" \
-    -mesg "Enter minutes (1–480) · Enter to start · Esc to cancel" \
-    -theme-str 'window { width: 28%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "Enter minutes…"; }')
+    -mesg "Enter minutes (1–480) · Enter to continue · Esc to cancel" \
+    -theme-str 'window { width: 28%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "Enter minutes…"; }') || return 0
+  # Accept surrounding whitespace while preserving validation of the number itself.
+  minutes="${minutes#"${minutes%%[![:space:]]*}"}"
+  minutes="${minutes%"${minutes##*[![:space:]]}"}"
   if [ -z "$minutes" ]; then
-    exit 0
+    return 0
   fi
   if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
     notify-send -a countdown -i "dialog-error" -t 4000 \
@@ -35,7 +38,7 @@ ask_minutes() {
 
 ask_task() {
   rofi -dmenu -p "Countdown — task (optional)" \
-    -mesg "Enter a task name · Enter to continue · Esc to skip" \
+    -mesg "Enter a task name · Enter to start · Esc to cancel" \
     -theme-str 'window { width: 36%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "What are you focusing on?"; }'
 }
 
@@ -70,11 +73,11 @@ else
   r=0
 fi
 
-# When idle, open the duration input directly. Enter starts the countdown.
+# Collect both inputs before starting; Esc at either prompt cancels.
 if [ -z "$DURATION" ]; then
   m=$(ask_minutes) || exit $?
   [ -n "$m" ] || exit 0
-  task=$(ask_task)
+  task=$(ask_task) || exit 0
   exec "$ENGINE" start "$m" "$task"
 fi
 
@@ -89,8 +92,8 @@ ITEMS+=("＋ Add minutes...")
 choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown · $(format_time "$r")")
 
 case "$choice" in
-  "⏸ "*) exec "$ENGINE" toggle ;;
-  "▶ "*) exec "$ENGINE" toggle ;;
+  "⏸ "*) exec "$ENGINE" pause ;;
+  "▶ "*) exec "$ENGINE" resume ;;
   "↺ Reset") exec "$ENGINE" reset ;;
   "＋ Add minutes...")
     m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?

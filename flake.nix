@@ -15,6 +15,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Use only the generator source, with this system's pinned Nixpkgs.
+    nix-wallpaper = {
+      url = "github:lunik1/nix-wallpaper";
+      flake = false;
+    };
   };
 
   outputs =
@@ -27,8 +32,36 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      # Preview aliases use the same resolution as the laptop's Home Manager config.
+      wallpapers = import ./home/features/wallpaper/images.nix {
+        inherit pkgs inputs;
+        wallpaperResolution =
+          self.nixosConfigurations.laptop.config.home-manager.extraSpecialArgs.wallpaperResolution or { };
+      };
     in
     {
+      packages.${system} = {
+        wallpaper-desktop = wallpapers.desktop;
+        wallpaper-lockscreen = wallpapers.lockscreen;
+      };
+
+      checks.${system}.workflows =
+        pkgs.runCommand "workflow-regressions"
+          {
+            nativeBuildInputs = with pkgs; [
+              python3
+              bash
+              coreutils
+              jq
+              util-linux
+            ];
+          }
+          ''
+            cd ${self}
+            python3 -m unittest discover -s tests -v
+            touch "$out"
+          '';
+
       formatter.${system} = pkgs.writeShellApplication {
         name = "nixfmt";
         text = ''

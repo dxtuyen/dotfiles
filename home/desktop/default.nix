@@ -9,6 +9,7 @@
     ./mimeapps.nix
     ./qt.nix
     ./rofi.nix
+    ./session.nix
     ./sway.nix
     ./thunar.nix
     ./waybar.nix

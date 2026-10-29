@@ -11,7 +11,7 @@ run_nix_in_snapshot() (
   "$@"
 )
 
-while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+while IFS=' ' read -r local_ref local_sha _remote_ref _remote_sha; do
   [[ -z "$local_sha" || "$local_sha" =~ ^0+$ ]] && continue
 
   echo "Checking pushed commit $local_ref ($local_sha)"
@@ -30,6 +30,11 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
 
   if ! run_nix_in_snapshot nix flake check --no-build; then
     echo "Nix flake check failed for $local_sha; fix the error and push again." >&2
+    exit 1
+  fi
+
+  if ! run_nix_in_snapshot nix build .#checks.x86_64-linux.workflows --no-link --print-build-logs; then
+    echo "Workflow regression tests failed for $local_sha." >&2
     exit 1
   fi
 

@@ -7,18 +7,19 @@
 # lower the number — to get back to 1 the remaining link must be renamed.
 #
 # The script does 4 things:
-#   1. Delete every generation except the running one (`nix-env --delete-generations old`).
+#   1. Build the requested configuration before deleting any generations, then
+#      delete every generation except the current, running one.
 #   2. Rename the remaining `system-<N>-link` to `system-1-link` and point the
 #      `system` symlink at it => the next rebuild becomes generation 2, then 3, 4...
 #   3. `nixos-rebuild switch` to create generation 2 and rewrite the boot entry. The
 #      systemd-boot builder DELETES ALL `nixos*` entries in /boot/loader/entries then
 #      rewrites them from the current generation list => old entries clean themselves
 #      up, no manual deletion needed.
-#   4. `nix-collect-garbage -d` — reclaim store space from old generations.
+#   4. `nix-collect-garbage` — reclaim unreachable store paths while keeping
+#      generation 1 as a rollback target for the new generation 2.
 #
-# ⚠️ AFTER RUNNING YOU CANNOT ROLL BACK to older versions (permanently deleted).
-#    Remaining safety net: generation 1 (the running one) + `configurationLimit`
-#    (boot menu keeps 10 entries) + weekly automatic GC (`--delete-older-than 7d`).
+# Older generations are permanently deleted. The previous configuration remains
+# as generation 1 until removed by normal retention or an explicit cleanup.
 #
 # 2 mandatory safety checks, enforced by the script:
 #   • /boot must be mounted — otherwise step 3 dies at "Failed to install
@@ -55,11 +56,16 @@ nix-env -p "$PROFILE" --list-generations
 CUR_LINK="$(readlink "$PROFILE")"                      # e.g. system-18-link
 CUR_NUM="${CUR_LINK#system-}"; CUR_NUM="${CUR_NUM%-link}"
 CUR_STORE="$(readlink -f "$PROFILE")"
+if [ "$CUR_STORE" != "$(readlink -f /run/current-system)" ]; then
+  echo "ERROR: the selected system profile differs from the running system. Switch to it or roll back before resetting generations." >&2
+  exit 1
+fi
 echo "   in use: generation $CUR_NUM → $CUR_STORE"
 echo "   flake: $FLAKE#${HOST} · /boot: mounted · disk usage:"; df -h /nix | tail -1
 
 echo
-echo "== 1. Delete all old generations (keep the running one) =="
+echo "== 1. Build first, then delete old generations (keep the running one) =="
+nix build --no-link "$FLAKE#nixosConfigurations.$HOST.config.system.build.toplevel"
 nix-env -p "$PROFILE" --delete-generations old
 
 echo
@@ -80,7 +86,7 @@ nixos-rebuild switch --flake "$FLAKE#$HOST"
 
 echo
 echo "== 4. Clean the store =="
-nix-collect-garbage -d
+nix-collect-garbage
 
 echo
 echo "== Done =="

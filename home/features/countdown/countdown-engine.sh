@@ -87,6 +87,7 @@ read_state() {
   TASK=""
   INITIAL_DURATION=""
   if [ -f "$STATE_FILE" ]; then
+    # shellcheck disable=SC1090
     . "$STATE_FILE"
     # Older state files have no immutable starting estimate.
     INITIAL_DURATION="${INITIAL_DURATION:-$DURATION}"
@@ -100,14 +101,20 @@ read_state() {
   fi
 }
 
-# Anti-idle from 2 sources: running session (automatic) + manual press.
-# Any source present → stop swayidle. Called inside write_state so it only
-# runs on state transitions, never in a 1-second loop.
+idle_inhibited() {
+  local current_time
+  current_time=$(date +%s)
+  { [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ] && [ "$END_TIME" -gt "$current_time" ]; } ||
+    [ -f "$MANUAL_FLAG" ]
+}
+
+# Queue changes without waiting for swayidle's ExecCondition, which reads state
+# through this engine too. Callers may still hold the state lock.
 sync_idle_inhibit() {
-  if { [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; } || [ -f "$MANUAL_FLAG" ]; then
-    systemctl --user stop swayidle 2>/dev/null || true
+  if idle_inhibited; then
+    systemctl --user --no-block stop swayidle.service 2>/dev/null || true
   else
-    systemctl --user start swayidle 2>/dev/null || true
+    systemctl --user --no-block start swayidle.service 2>/dev/null || true
   fi
 }
 
@@ -196,15 +203,19 @@ notify_clock() {
 }
 
 daemon_loop() {
+  local reconcile=0
   while true; do
-    # Atomic rename makes this snapshot safe without locking every second.
     read_state
-    if [ "$RUNNING" != "true" ] || [ -z "$END_TIME" ]; then
-      exit 0
+    # Repair interrupted state transitions and service reloads independently of
+    # Waybar. Routine clock updates still read an atomic, lock-free snapshot.
+    if [ "$reconcile" -eq 0 ]; then
+      state_lock
+      read_state
+      sync_idle_inhibit
+      state_unlock
     fi
-    now=$(date +%s)
-    remaining=$((END_TIME - now))
-    if [ "$remaining" -le 0 ]; then
+    reconcile=$(((reconcile + 1) % 5))
+    if session_expired; then
       state_lock
       read_state
       finished_duration=""
@@ -212,34 +223,19 @@ daemon_loop() {
         state_unlock
         exit 1
       }
-      still_running="$RUNNING"
-      still_has_end_time="$END_TIME"
       state_unlock
-      if [ -n "$finished_duration" ]; then
-        play_sound
-        notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-          "Focus" "Focus session finished! $finished_duration min 🍅"
-        log_history "countdown" "$finished_duration"
-        notify_waybar
-        exit 0
-      fi
-      if [ "$still_running" != "true" ] || [ -z "$still_has_end_time" ]; then
-        exit 0
-      fi
+      notify_finished
     fi
-    # Refresh only the clock each second.
-    notify_clock
+    if [ "$RUNNING" = "true" ]; then
+      notify_clock
+    fi
     sleep 1
   done
 }
 
-# Always replace the old daemon with a new one (avoids the pause -> stuck-timer race).
-# The first switch left daemons with old names (pomodoro/study) -> kill those too.
+# systemd owns the worker; starting an active unit neither duplicates nor kills it.
 ensure_daemon() {
-  pkill -f "countdown-engine daemon" 2>/dev/null || true
-  pkill -f "pomodoro-engine daemon" 2>/dev/null || true
-  pkill -f "study daemon" 2>/dev/null || true
-  nohup "$HOME/.local/bin/countdown-engine" daemon 9>&- >/dev/null 2>&1 &
+  systemctl --user --no-block start countdown-engine.service
 }
 
 # Clear the "sleep auto-pause" marker when the user acts manually.
@@ -247,14 +243,20 @@ clear_sleep_marker() {
   rm -f "$SLEEP_MARKER" 2>/dev/null || true
 }
 
-# Must be called under state_lock; only one caller can finalize a session.
-finalize_if_expired() {
-  if [ "$RUNNING" != "true" ] || [ -z "$END_TIME" ]; then
-    return 0
+session_expired() {
+  [ -n "$DURATION" ] || return 1
+  if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+    now=$(date +%s)
+    [ "$END_TIME" -le "$now" ]
+  else
+    # Recover zero-second paused sessions written by older versions too.
+    [ "$REMAINING" = "0" ]
   fi
-  now=$(date +%s)
-  [ "$END_TIME" -gt "$now" ] && return 0
+}
 
+# Must be called under state_lock; only one caller can finalize and log a session.
+finalize_if_expired() {
+  session_expired || return 0
   finished_duration="$DURATION"
   DURATION=""
   INITIAL_DURATION=""
@@ -263,8 +265,40 @@ finalize_if_expired() {
   REMAINING=""
   TASK=""
   write_state || return 1
-  # Do not pkill here: this function can run inside the daemon itself.
-  # Killing it before the caller unlocks/notifies leaves Waybar stuck at 1s.
+  clear_sleep_marker
+  log_history "countdown" "$finished_duration"
+}
+
+notify_finished() {
+  [ -n "$finished_duration" ] || return 0
+  notify_waybar
+  play_sound
+  notify-send -a countdown -i "chronometer" -t 10000 -u critical \
+    "Focus" "Focus session finished! $finished_duration min 🍅"
+}
+
+pause_current() {
+  finalize_if_expired || return 1
+  if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
+    # session_expired captured now while holding this same state lock.
+    REMAINING=$((END_TIME - now))
+    RUNNING="false"
+    END_TIME=""
+    write_state || return 1
+    changed=1
+  fi
+}
+
+resume_current() {
+  finalize_if_expired || return 1
+  if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
+    now=$(date +%s)
+    END_TIME=$((now + REMAINING))
+    RUNNING="true"
+    write_state || return 1
+    ensure_daemon || return 1
+    changed=1
+  fi
 }
 
 case "${1:-status}" in
@@ -277,6 +311,8 @@ case "${1:-status}" in
     fi
     state_lock
     read_state
+    finished_duration=""
+    finalize_if_expired || exit 1
     maybe_log_current "countdown"
     clear_sleep_marker
     now=$(date +%s)
@@ -289,6 +325,7 @@ case "${1:-status}" in
     write_state || exit 1
     ensure_daemon
     state_unlock
+    notify_finished
     notify_waybar
     notify-send -a countdown -i "chronometer" -t 3000 \
       "Focus" "Focus session of $minutes min started 🍅"
@@ -300,12 +337,13 @@ case "${1:-status}" in
       echo "Usage: countdown-engine add <1-480>" >&2
       exit 1
     fi
-    # Finalize first if the session elapsed while its menu was open.
-    "$0" status >/dev/null
     state_lock
     read_state
+    finished_duration=""
+    finalize_if_expired || exit 1
     if [ -z "$DURATION" ]; then
       state_unlock
+      notify_finished
       notify-send -a countdown -i "dialog-error" -t 4000 \
         "Focus" "No session to add time to."
       exit 1
@@ -319,8 +357,9 @@ case "${1:-status}" in
     fi
     remaining=$(get_remaining)
     if [ "$remaining" -le 0 ]; then
+      finalize_if_expired || exit 1
       state_unlock
-      "$0" status >/dev/null
+      notify_finished
       exit 1
     fi
     clear_sleep_marker
@@ -340,77 +379,46 @@ case "${1:-status}" in
       "Focus" "Added $minutes min · session total $DURATION min"
     ;;
 
-  pause)
+  pause|resume|toggle|lock-pause|sleep-pause)
     state_lock
     read_state
-    if [ "$RUNNING" = "true" ]; then
-      now=$(date +%s)
-      REMAINING=$((END_TIME - now))
-      [ "$REMAINING" -lt 0 ] && REMAINING=0
-      RUNNING="false"
-      END_TIME=""
-      write_state || exit 1
-      # Kill the daemon immediately (don't wait for it to exit on its own).
-      pkill -f "countdown-engine daemon" 2>/dev/null || true
-      state_unlock
-      notify_waybar
-      notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸"
-    else
-      state_unlock
+    finished_duration=""
+    changed=0
+    action="$1"
+    case "$action" in
+      pause|resume|toggle) clear_sleep_marker ;;
+    esac
+    if [ "$action" = toggle ]; then
+      if [ "$RUNNING" = true ]; then action=pause; else action=resume; fi
     fi
-    ;;
-
-  resume)
-    state_lock
-    read_state
-    clear_sleep_marker
-    if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
-      now=$(date +%s)
-      END_TIME=$((now + REMAINING))
-      RUNNING="true"
-      write_state || exit 1
-      ensure_daemon
-      state_unlock
-      notify_waybar
-      notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶"
+    if [ "$action" = resume ]; then
+      resume_current || exit 1
     else
-      state_unlock
+      pause_current || exit 1
     fi
-    ;;
-
-  toggle)
-    state_lock
-    read_state
-    clear_sleep_marker
-    if [ "$RUNNING" = "true" ]; then
-      now=$(date +%s)
-      REMAINING=$((END_TIME - now))
-      [ "$REMAINING" -lt 0 ] && REMAINING=0
-      RUNNING="false"
-      END_TIME=""
-      write_state || exit 1
-      # Kill the daemon immediately (don't wait for it to exit on its own).
-      pkill -f "countdown-engine daemon" 2>/dev/null || true
-      state_unlock
+    if [ "$action" = sleep-pause ] && [ -n "$DURATION" ]; then
+      touch "$SLEEP_MARKER"
+    fi
+    state_unlock
+    notify_finished
+    if [ "$changed" -eq 1 ]; then
       notify_waybar
-      notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸"
-    elif [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
-      now=$(date +%s)
-      END_TIME=$((now + REMAINING))
-      RUNNING="true"
-      write_state || exit 1
-      ensure_daemon
-      state_unlock
-      notify_waybar
-      notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶"
-    else
-      state_unlock
+      case "$action" in
+        resume) notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶" ;;
+        pause) notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸" ;;
+        lock-pause)
+          notify-send -a countdown -i "chronometer" -t 3000 \
+            "Focus" "Screen locked — session paused ⏸ (unlock, then press ▶)"
+          ;;
+      esac
     fi
     ;;
 
   reset)
     state_lock
     read_state
+    finished_duration=""
+    finalize_if_expired || exit 1
     maybe_log_current "countdown"
     clear_sleep_marker
     DURATION=""
@@ -420,8 +428,8 @@ case "${1:-status}" in
     REMAINING=""
     TASK=""
     write_state || exit 1
-    pkill -f "countdown-engine daemon" 2>/dev/null || true
     state_unlock
+    notify_finished
     notify_waybar
     ;;
 
@@ -432,23 +440,16 @@ case "${1:-status}" in
   status)
     read_state
     finished_duration=""
-    # Lock only on expiry or daemon recovery; routine Waybar polls are lock-free.
-    if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-      if [ "$((END_TIME - $(date +%s)))" -le 0 ] || ! pgrep -f "countdown-engine daemon" >/dev/null 2>&1; then
-        state_lock
-        read_state
-        if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-          finalize_if_expired || {
-            state_unlock
-            exit 1
-          }
-          if [ -z "$finished_duration" ] && ! pgrep -f "countdown-engine daemon" >/dev/null 2>&1; then
-            ensure_daemon
-            sync_idle_inhibit
-          fi
-        fi
+    # Waybar also polls independently, so an explicitly stopped worker can recover.
+    systemctl --user --quiet is-active countdown-engine.service || ensure_daemon
+    if session_expired; then
+      state_lock
+      read_state
+      finalize_if_expired || {
         state_unlock
-      fi
+        exit 1
+      }
+      state_unlock
     fi
     # Refresh from the latest complete snapshot after any locked transition.
     read_state
@@ -470,13 +471,7 @@ case "${1:-status}" in
       text="🍅 $(format_time "$remaining") $s_icon"
       tooltip="Focus $DURATION min\\n$s_label · $(format_time "$remaining")"
     fi
-    if [ -n "$finished_duration" ]; then
-      play_sound
-      notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-        "Focus" "Focus session finished! $finished_duration min 🍅"
-      log_history "countdown" "$finished_duration"
-      notify_waybar
-    fi
+    notify_finished
     printf '{"text": "%s", "class": "%s", "tooltip": "%s"}\n' \
       "$text" "$class" "$tooltip"
     ;;
@@ -541,8 +536,15 @@ case "${1:-status}" in
       text+=" (${INITIAL_DURATION}m)"
       tooltip+=$'\n'"Estimate: ${INITIAL_DURATION} min"
     fi
+    # shellcheck disable=SC2016
     "$JQ" -cn --arg text "$text" --arg class "$class" --arg tooltip "$tooltip" \
       '{text: $text, class: $class, tooltip: $tooltip}'
+    ;;
+
+  idle-allowed)
+    # Used by swayidle's ExecCondition and idle-suspend; never change state here.
+    read_state
+    if idle_inhibited; then exit 1; fi
     ;;
 
   inhibit-state)
@@ -588,6 +590,7 @@ case "${1:-status}" in
     state_lock
     read_state
     if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ] && [ "$END_TIME" -gt "$(date +%s)" ]; then
+      sync_idle_inhibit
       state_unlock
       exit 0
     fi
@@ -610,32 +613,6 @@ case "${1:-status}" in
     fi
     ;;
 
-  sleep-pause)
-    # Machine sleeping: pause the session, keep REMAINING so sleep time is not deducted.
-    state_lock
-    read_state
-    sleep_paused=0
-    if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-      now=$(date +%s)
-      REMAINING=$((END_TIME - now))
-      [ "$REMAINING" -lt 0 ] && REMAINING=0
-      RUNNING="false"
-      END_TIME=""
-      touch "$SLEEP_MARKER"
-      write_state || exit 1
-      pkill -f "countdown-engine daemon" 2>/dev/null || true
-      sleep_paused=1
-    elif [ -n "$DURATION" ]; then
-      # Already paused (lock-pause ran first) -> still set the marker so
-      # sleep-resume knows the machine just woke and can tell the user to unlock.
-      touch "$SLEEP_MARKER"
-    fi
-    state_unlock
-    if [ "$sleep_paused" -eq 1 ]; then
-      notify_waybar
-    fi
-    ;;
-
   sleep-resume)
     # Machine woke: do NOT auto-resume — the session STAYS paused, the user
     # presses ▶ to continue (same after unlocking). Remaining behavior:
@@ -644,65 +621,26 @@ case "${1:-status}" in
     read_state
     woken_paused=0
     finished_duration=""
+    finalize_if_expired || exit 1
     if [ -f "$SLEEP_MARKER" ]; then
       rm -f "$SLEEP_MARKER" 2>/dev/null || true
       if [ "$RUNNING" != "true" ] && [ -n "$REMAINING" ] && [ "$REMAINING" -gt 0 ]; then
         # REMAINING was preserved by sleep-pause -> keep it, just notify.
         woken_paused=1
-      elif [ -n "$DURATION" ] && [ "$REMAINING" = "0" ]; then
-        finished_duration="$DURATION"
-        DURATION=""
-        INITIAL_DURATION=""
-        RUNNING="false"
-        END_TIME=""
-        REMAINING=""
-        TASK=""
-        write_state || exit 1
-        pkill -f "countdown-engine daemon" 2>/dev/null || true
       fi
-      sync_idle_inhibit
-    else
-      sync_idle_inhibit
     fi
+    sync_idle_inhibit
     state_unlock
+    notify_finished
     if [ "$woken_paused" -eq 1 ]; then
       notify-send -a countdown -i "chronometer" -t 5000 \
         "Focus" "Just woke up — unlock, session is PAUSED ⏸ (press ▶ to continue)"
-    elif [ -n "$finished_duration" ]; then
-      play_sound
-      notify-send -a countdown -i "chronometer" -t 10000 -u critical \
-        "Focus" "Focus session finished while the machine slept! $finished_duration min 🍅"
-      log_history "countdown" "$finished_duration"
     fi
     notify_waybar
     ;;
 
-  lock-pause)
-    # Screen locked (manually via $mod+Escape, 300s timeout, or before-sleep)
-    # -> pause the session, keep REMAINING. Unlocking does NOT auto-resume — press ▶.
-    state_lock
-    read_state
-    lock_paused=0
-    if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-      now=$(date +%s)
-      REMAINING=$((END_TIME - now))
-      [ "$REMAINING" -lt 0 ] && REMAINING=0
-      RUNNING="false"
-      END_TIME=""
-      write_state || exit 1
-      pkill -f "countdown-engine daemon" 2>/dev/null || true
-      lock_paused=1
-    fi
-    state_unlock
-    if [ "$lock_paused" -eq 1 ]; then
-      notify_waybar
-      notify-send -a countdown -i "chronometer" -t 3000 \
-        "Focus" "Screen locked — session paused ⏸ (unlock, then press ▶)"
-    fi
-    ;;
-
   *)
-    echo "Usage: countdown-engine {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|lock-pause|sleep-pause|sleep-resume|daemon}" >&2
+    echo "Usage: countdown-engine {start <1-480>|add <1-480>|pause|resume|toggle|reset|status|inhibit|inhibit-state|inhibit-toggle|idle-allowed|lock-pause|sleep-pause|sleep-resume|daemon}" >&2
     exit 1
     ;;
 esac

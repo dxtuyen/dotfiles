@@ -29,10 +29,11 @@ imports the user-level modules.
 | Entry point | Configuration | Implementation |
 |---|---|---|
 | Sway keybindings | `home/desktop/sway.nix` | Commands in `home/scripts/desktop/` and `home/features/` |
+| Session lock, idle, and sleep | `home/desktop/session.nix` | Swaylock settings, session services, and the lock-screen / idle-suspend commands |
 | Waybar modules | `home/desktop/waybar.nix` | Countdown and system status modules |
 | Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, toggleable terminal popup, Alt+Tab urgent/recent window switching via swayr, Mod+Tab workspace overview via swayview, and Waybar scratchpad count |
-| Countdown menu and timer | `home/features/countdown/default.nix` | `menu.nix` / `countdown-menu.sh`, `engine.nix` / `countdown-engine.sh`, `sleep-watch.nix` / `countdown-sleep-watch.sh`, and `services.nix` |
-| Wallpaper workflow | `home/features/wallpaper/default.nix` | One fixed Gruvbox wallpaper rendered by swaybg for the Sway session |
+| Countdown menu and timer | `home/features/countdown/default.nix` | Installs `countdown-menu.sh`, `countdown-engine.sh`, and `countdown-sleep-watch.sh`; `services.nix` declares Countdown services |
+| Wallpaper workflow | `home/features/wallpaper/default.nix` | `images.nix` generates desktop and lockscreen images from the shared palette at 1920×1080 by default, with optional host resolution overrides; swaybg and swaylock display the Nix store outputs |
 
 The Nix modules install scripts and declare the services that run them. Longer
 Python and Bash implementations live in adjacent source files so editors can

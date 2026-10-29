@@ -12,6 +12,7 @@ result-*
 # Python venv (in case one is accidentally created inside the repo)
 .venv/
 venv/
+__pycache__/
 
-# Ignore only a root-level scratch wallpaper folder; managed assets live in home/assets/wallpapers.
+# Local wallpaper previews; configured images are generated in the Nix store.
 /wallpapers/

@@ -67,7 +67,7 @@ in
         "tooltip-format-enumerate-connected" = "{device_alias}";
         "on-click" = "foot --app-id=bluetui -T Bluetooth bluetui";
       };
-      # Keep all five workspaces visible.
+      # Keep 1–5 visible; other workspaces appear only while they exist in Sway.
       "sway/workspaces" = {
         "disable-scroll" = true;
         "persistent-workspaces" = {
@@ -149,6 +149,8 @@ in
       "custom/countdown" = {
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
+        # Recover even when the worker no longer sends refresh signals.
+        interval = 5;
         return-type = "json";
         escape = true;
         "hide-empty-text" = true;

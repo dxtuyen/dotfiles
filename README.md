@@ -58,6 +58,12 @@ Format Nix files with:
 nix fmt
 ```
 
+Run the isolated Countdown, PDF launcher, and generation-maintenance regression tests with:
+
+```bash
+nix build .#checks.x86_64-linux.workflows --no-link --print-build-logs
+```
+
 ## Documentation
 
 - [Documentation index](docs/README.md) — choose an installation path.
