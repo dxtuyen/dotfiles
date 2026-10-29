@@ -70,27 +70,20 @@
 .card.nightMode,
 .nightMode .card,
 .night_mode .card {
-  color: @fg1@;
-  background-color: @bg0@;
-}
-
-/* Keep links and code surfaces consistent with the desktop in Night Mode. */
-.nightMode .yanki a,
-.night_mode .yanki a {
-  color: @blue@;
+  color: #e1e4e8;
+  background-color: #1e1e1e;
 }
 
 /* Activate the dark Shiki palette, which is present in Yanki's generated HTML. */
 .nightMode .yanki .shiki,
 .night_mode .yanki .shiki {
-  color: var(--shiki-dark, @fg1@) !important;
-  background-color: @bg1@ !important;
-  border-color: @bg3@;
+  color: var(--shiki-dark, #e1e4e8) !important;
+  background-color: var(--shiki-dark-bg, #24292e) !important;
 }
 
 .nightMode .yanki .shiki span,
 .night_mode .yanki .shiki span {
-  color: var(--shiki-dark, @fg1@) !important;
+  color: var(--shiki-dark, #e1e4e8) !important;
 }
 
 /* On narrow screens, wrap code and left-align long scrollable equations. */

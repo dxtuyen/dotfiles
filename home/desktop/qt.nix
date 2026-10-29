@@ -36,6 +36,10 @@ let
     disabled_colors=${colorList theme.gray}
   '';
   settings = {
+    Fonts = {
+      general = ''"Noto Sans,11"'';
+      fixed = ''"JetBrains Mono,11"'';
+    };
     Appearance = {
       style = "Fusion";
       icon_theme = iconTheme.name;

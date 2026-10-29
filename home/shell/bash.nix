@@ -23,8 +23,11 @@
       }
 
       __set_window_title() {
-        local dir="''${PWD/#$HOME/}"
-        printf '\033]2;~%s\007' "$dir"
+        local dir="$PWD"
+        case "$dir" in
+          "$HOME"|"$HOME"/*) dir="~''${dir#"$HOME"}" ;;
+        esac
+        printf '\033]2;%s\007' "$dir"
         __foot_escape_uri_path "$PWD"
         printf '\033]7;file://%s%s\033\\' "''${HOSTNAME:-localhost}" "$__foot_osc7_path"
       }

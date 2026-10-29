@@ -19,7 +19,7 @@ in
     swayidle
     libnotify
     wiremix # PipeWire mixer (terminal UI).
-    # Btop and VS Code are installed by their Home Manager modules.
+    # Btop is installed by its Home Manager module.
     brightnessctl
     translate-shell
     goldendict-ng
@@ -37,6 +37,7 @@ in
     ncdu # Interactive disk usage browser.
     sioyek
     obsidian
+    vscode
     jq
     fastfetch
     libreoffice

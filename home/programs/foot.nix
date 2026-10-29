@@ -4,20 +4,18 @@
 # scrollback-indicator, search-box-*) = TWO hex colors separated by WHITESPACE, order is
 # `text-color background-color`. On a syntax error foot prints `err: config.c:...`;
 # verify with `foot -C` without opening a window.
-{ pkgs, ... }:
+{ lib, ... }:
 
 let
   theme = import ../theme.nix;
   hex = color: builtins.substring 1 6 color;
-  # Medium Material port linked by sainnhe's Related Projects wiki.
-  upstreamTheme = pkgs.fetchurl {
-    url = "https://gist.githubusercontent.com/rehanzo/71f882adb28b7870b6643cd9eb0e944a/raw/beeee61fd669355729bd8c32f126d108679d8884/gruvbox-material-foot";
-    hash = "sha256-UAw3LRTUMYvQsdU94HyCE196Eix7MrPBVbH6h/VZFH4=";
-  };
-  materialTheme = pkgs.runCommand "foot-gruvbox-material.ini" { } ''
-    # Foot 1.28 renamed the legacy [colors] section.
-    sed 's/^\[colors\]$/[colors-dark]/' ${upstreamTheme} > "$out"
-  '';
+  # Foot names ANSI slots 0–7 regular0–7 and slots 8–15 bright0–7.
+  ansiColors = builtins.listToAttrs (
+    lib.imap0 (index: color: {
+      name = if index < 8 then "regular${toString index}" else "bright${toString (index - 8)}";
+      value = hex color;
+    }) theme.ansi
+  );
 in
 
 {
@@ -27,7 +25,6 @@ in
     # Generates $XDG_CONFIG_HOME/foot/foot.ini.
     settings = {
       main = {
-        include = "${materialTheme}";
         font = "JetBrainsMono Nerd Font:size=12";
         pad = "14x10";
       };
@@ -46,8 +43,9 @@ in
         beam-thickness = 1.5;
       };
 
-      # Keep the upstream palette; only UI affordances need local overrides.
-      colors-dark = {
+      colors-dark = ansiColors // {
+        background = hex theme.bg0;
+        foreground = hex theme.fg1;
         # Opaque background keeps text and file previews clear against the wallpaper.
         alpha = 1.0;
         cursor = "${hex theme.bg0} ${hex theme.fg3}";

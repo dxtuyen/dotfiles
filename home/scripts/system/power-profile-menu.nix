@@ -1,5 +1,9 @@
 { ... }:
 
+let
+  theme = import ../../theme.nix;
+in
+
 {
   home.file = {
     ".local/bin/power-profile-menu" = {
@@ -17,23 +21,29 @@
           *) current_label="$current" ;;
         esac
 
-        MENU="🔋 Power Saver
-        ⚖️ Balanced
-        🚀 Performance"
+        menu_item() {
+          printf '%s\0icon\x1f<span font_family="Font Awesome 7 Free" foreground="${theme.fg1}" size="12pt">%s</span>\n' "$1" "$2"
+        }
 
-        choice=$(printf '%s\n' "$MENU" | rofi -dmenu -i -p "Power Profile" \
-          -mesg "Current: $current_label — Select a profile, then press Enter")
+        choice=$(
+          {
+            menu_item "Power Saver" ""
+            menu_item "Balanced" ""
+            menu_item "Performance" ""
+          } | rofi -dmenu -i -show-icons -p "Power Profile" \
+            -mesg "Current: $current_label — Select a profile, then press Enter"
+        )
 
         case "$choice" in
-          "🔋 Power Saver")
+          "Power Saver")
             powerprofilesctl set power-saver
             notify-send -a power-profiles -i "battery" -t 2000 "Power Profile" "Power Saver"
             ;;
-          "⚖️ Balanced")
+          "Balanced")
             powerprofilesctl set balanced
             notify-send -a power-profiles -i "power-profile-balanced" -t 2000 "Power Profile" "Balanced"
             ;;
-          "🚀 Performance")
+          "Performance")
             powerprofilesctl set performance
             notify-send -a power-profiles -i "power-profile-performance" -t 2000 "Power Profile" "Performance"
             ;;

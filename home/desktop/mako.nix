@@ -10,6 +10,7 @@ in
     enable = true;
 
     settings = {
+      font = "Noto Sans 11";
       # Mako does not follow Inherits from index.theme; list Gruvbox Plus'
       # Breeze-Dark and hicolor parents explicitly for notification fallbacks.
       icon-path = builtins.concatStringsSep ":" [

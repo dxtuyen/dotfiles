@@ -65,7 +65,7 @@ home/default.nix là điểm vào của cấu hình user. Các mục import tư�
 | [home/packages.nix](../home/packages.nix) | Package ứng dụng và công cụ user; swayview được đóng gói riêng ở [pkgs/swayview.nix](../pkgs/swayview.nix). |
 | home/xdg.nix | Bật XDG user directories và tạo các thư mục chuẩn như Documents, Downloads, Pictures. |
 | home/shell/ | Bash, alias nswitch, hàm nt mở terminal tại thư mục hiện tại, hàm y mở Yazi, direnv, zoxide và fzf. Có thêm [reset-generations.sh](../home/shell/scripts/reset-generations.sh), script bảo trì phải chạy thủ công; script xóa các generation cũ và thu gom Nix store nên sẽ mất khả năng rollback về các generation đã xóa. |
-| home/programs/ | Cấu hình Foot, Git, Neovim, Starship, btop, VS Code, theme Obsidian và CSS thẻ Anki. |
+| home/programs/ | Cấu hình Foot, Git, Neovim, Starship và btop. |
 | home/desktop/ | Sway, Waybar, Mako, Rofi, GTK, Fcitx5 profile, MIME mặc định và tích hợp Thunar. |
 | home/features/ | Countdown, Sioyek, wallpaper và Yazi; mỗi feature gom module và phần triển khai liên quan. |
 | home/scripts/ | Lệnh desktop, media, session, system và utilities. Các default.nix trong nhóm chỉ tập hợp module con. |
@@ -74,11 +74,15 @@ Trong một tính năng, file .nix thường khai báo package/path, cấu hình
 
 ### Giao diện Gruvbox Material
 
-Mặc định là **dark, medium contrast, material palette**. Ưu tiên theme có sẵn: GTK dùng `gruvbox-gtk-theme` (chỉ build bản dark/medium), Rofi giữ bố cục cũ và nhận màu từ palette chung, Foot dùng bản port được wiki của sainnhe giới thiệu, Neovim và VS Code dùng `sainnhe/gruvbox-material`, Yazi dùng `matt-dong-123/gruvbox-material.yazi`, btop dùng theme Material đi kèm package, Obsidian dùng `AllJavi/material_gruvbox_obsidian`. Các nguồn tải thêm đều được ghim revision và hash.
+Mặc định là **dark, medium contrast, material palette**. Ưu tiên theme có sẵn: GTK dùng `gruvbox-gtk-theme` (chỉ build bản dark/medium), Rofi giữ bố cục cũ và nhận màu từ palette chung, Foot lấy màu nền, chữ và toàn bộ 16 màu ANSI trực tiếp từ `home/theme.nix`, Neovim dùng `sainnhe/gruvbox-material`, Yazi dùng `matt-dong-123/gruvbox-material.yazi`, btop dùng theme Material đi kèm package. Các nguồn tải thêm đều được ghim revision và hash.
 
 [home/theme.nix](../home/theme.nix) cung cấp màu cho Sway, Waybar, Mako, Fcitx5, fzf, Starship, màn hình khóa, console/tuigreet và những giao diện không có preset Material phù hợp. Qt 5/6 dùng Fusion với palette chung qua qt5ct/qt6ct; GTK4 nhập stylesheet của theme để Foliate cũng đồng bộ. Sioyek đổi màu giao diện và tự bật màu trang Gruvbox khi khởi động (`startup_commands toggle_custom_color`); F8 bật/tắt màu tùy chỉnh để trở về màu PDF gốc khi cần.
 
-VS Code giữ các extension cài qua GUI và trộn riêng các tùy chọn theme. Obsidian cài theme upstream vào các vault đã đăng ký, giữ thiết lập khác và sao lưu file giao diện trước khi sửa. btop giữ cấu hình bố cục/sắp xếp đang dùng. CSS thẻ Yanki của Anki được sinh tại `~/.config/anki/yanki-dark.css`; xem [hướng dẫn áp dụng vào collection](../home/assets/anki/README.md).
+GTK, Qt và Mako dùng Noto Sans 11; font monospace của Qt là JetBrains Mono 11. Menu tiện ích, menu nguồn, menu power profile và menu chụp màn hình dùng Font Awesome với màu từ palette chung, đồng bộ với Waybar.
+
+VS Code, Obsidian và Anki chỉ được cài package; theme và thiết lập trong ứng dụng do người dùng tự chỉnh. btop giữ cấu hình bố cục/sắp xếp đang dùng.
+
+CSS thẻ Yanki giữ cấu hình riêng ban đầu tại [home/assets/anki/yanki-dark.css](../home/assets/anki/yanki-dark.css), không lấy màu từ palette Gruvbox. Xem [hướng dẫn áp dụng vào collection](../home/assets/anki/README.md).
 
 Sau `nixos-rebuild switch`, đăng xuất/đăng nhập lại để các ứng dụng nhận môi trường Qt mới. Theme riêng của trang web và nội dung tài liệu vẫn do ứng dụng quản lý.
 

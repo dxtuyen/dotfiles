@@ -35,7 +35,7 @@ in
   home.activation.goldendictDarkMode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     configFile="${config.xdg.configHome}/goldendict/config"
     if [ -f "$configFile" ]; then
-      ${pkgs.gnused}/bin/sed -i \
+      run ${pkgs.gnused}/bin/sed -i \
         -e 's#<displayStyle>[^<]*</displayStyle>#<displayStyle>modern</displayStyle>#' \
         -e 's#<darkMode>[^<]*</darkMode>#<darkMode>1</darkMode>#' \
         -e 's#<darkReaderMode>[^<]*</darkReaderMode>#<darkReaderMode>0</darkReaderMode>#' \

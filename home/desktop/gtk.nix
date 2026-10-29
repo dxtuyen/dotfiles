@@ -27,6 +27,11 @@ in
 
   gtk = {
     enable = true;
+    font = {
+      name = "Noto Sans";
+      package = pkgs.noto-fonts;
+      size = 11;
+    };
     theme = gtkTheme;
     # HM 26.05+ no longer inherits the GTK 3 theme for GTK 4. Import its
     # stylesheet explicitly so libadwaita apps such as Foliate match as well.
