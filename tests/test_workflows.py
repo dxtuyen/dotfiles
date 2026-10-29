@@ -13,6 +13,7 @@ import tempfile
 import textwrap
 import time
 import unittest
+import xml.etree.ElementTree as ET
 
 
 SOURCE = Path(__file__).resolve().parents[1]
@@ -73,9 +74,7 @@ class WorkflowTests(unittest.TestCase):
                     sys.stdout.write(text)
                     sys.exit(status)
                 elif name == "powerprofilesctl":
-                    if args == ["list"]:
-                        print(os.environ.get("TEST_PROFILE_LIST", "  power-saver:\\n* balanced:\\n  performance:"))
-                    elif args[:1] == ["set"] and os.environ.get("TEST_PROFILE_FAILURE"):
+                    if args[:1] == ["set"] and os.environ.get("TEST_PROFILE_FAILURE"):
                         print("Switch rejected", file=sys.stderr)
                         sys.exit(1)
                 elif name == "pgrep":
@@ -193,20 +192,23 @@ class WorkflowTests(unittest.TestCase):
             ["3", 0], ["", 1],
         ])
         self.assertIn("Power Profile", (self.root / "menu-0").read_text())
-        self.assertIn("Balanced · current", (self.root / "menu-1").read_text())
+        self.assertIn("Balanced", (self.root / "menu-1").read_text())
         self.assertNotIn("Back", (self.root / "menu-1").read_text())
         self.assertEqual(len(self.recorded("rofi")), 2)
         self.assertFalse(self.recorded("systemctl"))
         self.assertFalse(self.recorded("swaymsg"))
-        self.assertFalse([c for c in self.recorded("powerprofilesctl") if c[0] == "set"])
+        self.assertFalse(self.recorded("powerprofilesctl"))
 
-    def test_power_profile_only_offers_supported_profiles(self):
-        self.power_menu("--power-profile", dialogs=[["1", 0]],
-                        TEST_PROFILE_LIST="* power-saver:\n  balanced:")
-        menu = (self.root / "menu-0").read_text()
-        self.assertNotIn("Performance", menu)
-        self.assertIn(["set", "balanced"], self.recorded("powerprofilesctl"))
-        self.assertEqual(self.recorded("notify-send")[0][-1], "Balanced")
+    def test_power_profile_choices_only_set_the_selected_profile(self):
+        profiles = (("power-saver", "Power Saver"), ("balanced", "Balanced"),
+                    ("performance", "Performance"))
+        for row, (profile, label) in enumerate(profiles):
+            with self.subTest(profile=profile):
+                (self.root / "dialog-index").unlink(missing_ok=True)
+                self.calls.unlink(missing_ok=True)
+                self.power_menu("--power-profile", dialogs=[[str(row), 0]])
+                self.assertEqual(self.recorded("powerprofilesctl"), [["set", profile]])
+                self.assertEqual(self.recorded("notify-send")[0][-1], label)
 
     def test_power_profile_failure_is_reported(self):
         self.power_menu("--power-profile", dialogs=[["2", 0]],
@@ -216,17 +218,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("critical", notifications[0])
         self.assertIn("Switch rejected", notifications[0][-1])
 
-    def test_current_power_profile_is_not_set_again(self):
-        self.power_menu("--power-profile", dialogs=[["1", 0]])
-        self.assertEqual(self.recorded("powerprofilesctl"), [["list"]])
-        self.assertIn("Balanced · current", (self.root / "menu-0").read_text())
-        self.assertFalse(self.recorded("notify-send"))
-
     def test_direct_power_profile_has_no_parent_row(self):
         self.power_menu("--power-profile", dialogs=[["0", 0]])
         menu = (self.root / "menu-0").read_text()
         self.assertNotIn("Back", menu)
-        self.assertIn(["set", "power-saver"], self.recorded("powerprofilesctl"))
+        self.assertNotIn("current", menu)
+        self.assertEqual(len(menu.splitlines()), 3)
+        self.assertEqual(self.recorded("powerprofilesctl"), [["set", "power-saver"]])
 
     def test_display_escape_does_not_reopen_utilities(self):
         self.power_menu(dialogs=[["1", 0], ["", 1]])
@@ -253,17 +251,29 @@ class WorkflowTests(unittest.TestCase):
                          TEST_DIALOGS=json.dumps([["", 1]]))
         self.assertFalse(self.recorded("screenshot"))
 
-    def test_power_profile_missing_current_does_not_offer_stale_choices(self):
-        self.power_menu("--power-profile", dialogs=[],
-                        TEST_PROFILE_LIST="  power-saver:\n  balanced:", expected=1)
-        self.assertFalse(self.recorded("rofi"))
-        self.assertEqual(self.recorded("powerprofilesctl"), [["list"]])
-        self.assertIn("critical", self.recorded("notify-send")[0])
+    def test_power_profile_invalid_choice_has_no_actions(self):
+        for choice in ("", "-1", "3", "invalid"):
+            with self.subTest(choice=choice):
+                (self.root / "dialog-index").unlink(missing_ok=True)
+                self.calls.unlink(missing_ok=True)
+                self.power_menu("--power-profile", dialogs=[[choice, 0]])
+                self.assertFalse(self.recorded("powerprofilesctl"))
+                self.assertFalse(self.recorded("notify-send"))
 
     def test_utilities_excludes_power_profile(self):
         self.power_menu(dialogs=[["", 1]])
         self.assertNotIn("Power Profile", (self.root / "menu-0").read_text())
         self.assertFalse(self.recorded("powerprofilesctl"))
+
+    def test_rofi_menu_labels_remain_literal_text(self):
+        label = 'A & B <b>literal</b> · tiếng Việt'
+        row = self.run_command(
+            "bash", "-c", 'source "$1"; rofi_item "$2" "$3"', "rofi-item",
+            self.home / ".local/lib/rofi-menu.sh", label, "",
+        )
+        rendered = ET.fromstring("<root>" + row + "</root>")
+        self.assertEqual("".join(rendered.itertext()), "\t" + label + "\n")
+        self.assertEqual([child.tag for child in rendered], ["span"])
 
     def test_expiry_before_every_transition(self):
         for action in ("pause", "toggle", "resume", "lock-pause", "sleep-pause", "reset", "status"):

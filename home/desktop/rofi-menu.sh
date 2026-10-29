@@ -1,7 +1,12 @@
 # shellcheck shell=bash
 # Shared presentation; each workflow owns its actions and input validation.
 rofi_item() {
-  printf '%s\0icon\x1f<span font_family="Font Awesome 7 Free" foreground="@iconColor@" size="12pt">%s</span>\n' "$1" "$2"
+  local label=$1
+  label=${label//&/'&amp;'}
+  label=${label//</'&lt;'}
+  label=${label//>/'&gt;'}
+  # Render the font glyph with the label, avoiding the asynchronous icon loader.
+  printf '<span font_family="Font Awesome 7 Free" foreground="@iconColor@" size="12pt">%s</span>\t%s\n' "$2" "$label"
 }
 
 rofi_hint() {
@@ -13,7 +18,7 @@ rofi_hint() {
 # Arguments: title, visible rows, selected row, active row, optional detail.
 # Return the original zero-based index, independent of labels or filtering.
 rofi_pick() {
-  rofi -dmenu -i -no-sort -no-custom -show-icons -format i -p '' \
+  rofi -dmenu -sync -i -no-sort -no-custom -no-show-icons -markup-rows -format i -p '' \
     -theme actions -theme-str "listview { lines: $2; }" \
     -mesg "$(rofi_hint "$1" "${5:-}")" \
     -kb-custom-1 '' -selected-row "${3:-0}" -a "${4:--1}"

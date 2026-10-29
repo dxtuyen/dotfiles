@@ -161,7 +161,8 @@ in
     window { width: 28em; }
     inputbar { enabled: false; }
     listview { scrollbar: false; }
-    element { padding: 10px 12px; }
+    element { padding: 10px 12px; children: [ element-text ]; }
+    element-text { tab-stops: [ 34px ]; }
     element normal.active { text-color: @aqua; }
     element selected.active { text-color: @aqua; }
   '';
