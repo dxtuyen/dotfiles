@@ -5,6 +5,10 @@ let
 in
 
 {
+  home.file.".local/lib/rofi-menu.sh".text = builtins.replaceStrings [ "@iconColor@" ] [ theme.fg1 ] (
+    builtins.readFile ./rofi-menu.sh
+  );
+
   xdg.configFile."rofi/config.rasi".text = ''
     configuration {
       modi: "drun,run,window";
@@ -42,7 +46,7 @@ in
     }
 
     window {
-      width:              42%;
+      width:              32em;
       transparency:       "real";
       border:             1px;
       border-color:       @accent;
@@ -150,5 +154,23 @@ in
       background-color:   @bg;
       handle-color:       @accent;
     }
+  '';
+
+  xdg.configFile."rofi/actions.rasi".text = ''
+    @theme "gruvbox-material"
+    window { width: 28em; }
+    inputbar { enabled: false; }
+    listview { columns: 1; fixed-height: true; scrollbar: false; }
+    element { padding: 10px 12px; }
+    element normal.active { text-color: @aqua; }
+    element selected.active { text-color: @aqua; }
+  '';
+
+  xdg.configFile."rofi/input.rasi".text = ''
+    @theme "gruvbox-material"
+    window { width: 32em; }
+    mainbox { children: [ message, inputbar ]; }
+    inputbar { children: [ entry ]; }
+    listview { enabled: false; }
   '';
 }

@@ -128,6 +128,10 @@ Một số dữ liệu đầu vào và kết quả nằm trong thư mục user, 
 
 Menu Countdown chấp nhận khoảng trắng quanh số phút khi tạo phiên hoặc thêm thời gian. Ở ô tên nhiệm vụ, Enter với tên để trống vẫn bắt đầu phiên; Esc hủy thao tác tạo phiên.
 
+Super+U mở các tiện ích hằng ngày. Super+P và nút nguồn Waybar mở menu nguồn dạng danh sách, có submenu Power Profile dùng chung theme Rofi. Submenu chỉ hiện profile máy hỗ trợ và đánh dấu profile đang dùng. Biểu tượng profile trên Waybar vẫn mở trực tiếp submenu này. Các menu ngắn không có Back: chọn hành động rồi đóng, Esc hủy và đóng toàn bộ luồng, không tự mở lại menu trước.
+
+Launcher Rofi rộng 32em và giữ chiều cao 8 dòng để khung không nhảy khi lọc. Các menu thao tác dùng actions.rasi, rộng 28em, ẩn ô tìm kiếm và giữ chiều cao cố định theo số mục: Utilities 5, Power 7, Display/Power Profile tối đa 3, Screenshot 4 và Countdown 3. Các ô nhập Countdown dùng input.rasi rộng 32em. rofi-menu.sh cung cấp cách hiển thị icon, trạng thái và chỉ số lựa chọn; logic từng workflow ở script riêng. Power Profile đọc một lần `powerprofilesctl list` mỗi lần mở submenu để lấy cả các profile hỗ trợ và profile đang dùng; di chuyển lựa chọn không đọc lại trạng thái.
+
 Script reset-generations.sh build cấu hình mới trước khi xóa generation cũ và giữ cấu hình trước đó ở generation 1 để rollback. Bước thu gom cuối không dùng -d; generation dự phòng vẫn chịu chính sách lưu giữ thông thường. Script từ chối chạy khi system profile được chọn khác hệ thống đang chạy.
 
 ## 7. Dữ liệu, trạng thái và cache

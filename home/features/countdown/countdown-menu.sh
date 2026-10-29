@@ -1,103 +1,93 @@
 #!/usr/bin/env bash
-# Countdown menu: enter a duration to start, or manage the active session.
+# Countdown menu: collect inputs before starting, or manage the active session.
 set -u
+# shellcheck source=../../desktop/rofi-menu.sh
+source "$HOME/.local/lib/rofi-menu.sh"
 
 ENGINE="$HOME/.local/bin/countdown-engine"
-# Read legacy state and engines during migration.
 for candidate in "$HOME/.local/bin/pomodoro-engine" "$HOME/.local/bin/study"; do
-  if [ ! -x "$ENGINE" ] && [ -x "$candidate" ]; then
-    ENGINE="$candidate"
+  if [[ ! -x "$ENGINE" && -x "$candidate" ]]; then
+    ENGINE=$candidate
   fi
 done
 STATE_DIR="${XDG_RUNTIME_DIR:-$HOME/.local/state}"
 
 format_time() {
   local secs=$1
-  printf "%02d:%02d" $((secs / 60)) $((secs % 60))
+  printf '%02d:%02d' "$((secs / 60))" "$((secs % 60))"
 }
 
 ask_minutes() {
-  local prompt="${1:-Countdown — minutes (1–480)}"
-  local minutes
-  minutes=$(rofi -dmenu -p "$prompt" \
-    -mesg "Enter minutes (1–480) · Enter to continue · Esc to cancel" \
-    -theme-str 'window { width: 28%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "Enter minutes…"; }') || return 0
-  # Accept surrounding whitespace while preserving validation of the number itself.
+  local title=${1:-Countdown · Minutes} minutes
+  minutes=$(rofi_input "$title" '1–480 · Enter to continue' 'Enter minutes…') || return 0
   minutes="${minutes#"${minutes%%[![:space:]]*}"}"
   minutes="${minutes%"${minutes##*[![:space:]]}"}"
-  if [ -z "$minutes" ]; then
-    return 0
+  [[ -n "$minutes" ]] || return 0
+  if ! [[ "$minutes" =~ ^[1-9][0-9]{0,2}$ ]] || [[ "$minutes" -gt 480 ]]; then
+    notify-send -a countdown -i dialog-error -t 4000 \
+      Countdown "Invalid minutes: $minutes (need 1–480)"
+    return 1
   fi
-  if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
-    notify-send -a countdown -i "dialog-error" -t 4000 \
-      "Countdown" "Invalid minutes: $minutes (need 1–480)"
-    exit 1
-  fi
-  echo "$minutes"
-}
-
-ask_task() {
-  rofi -dmenu -p "Countdown — task (optional)" \
-    -mesg "Enter a task name · Enter to start · Esc to cancel" \
-    -theme-str 'window { width: 36%; } mainbox { padding: 14px; spacing: 10px; } listview { enabled: false; } entry { placeholder: "What are you focusing on?"; }'
+  printf '%s' "$minutes"
 }
 
 # Finalize or recover the timer before building the menu.
 "$ENGINE" status >/dev/null
-
-DURATION=""
-RUNNING="false"
-END_TIME=""
-REMAINING=""
-# Prefer the current state file, then check legacy paths.
+DURATION=''
+RUNNING=false
+END_TIME=''
+REMAINING=''
 MENU_STATE="$STATE_DIR/countdown-state"
-if [ ! -f "$MENU_STATE" ]; then
+if [[ ! -f "$MENU_STATE" ]]; then
   for legacy in "$STATE_DIR/pomodoro-state" "$STATE_DIR/study-state"; do
-    if [ -f "$legacy" ]; then
-      MENU_STATE="$legacy"
-      break
-    fi
+    [[ ! -f "$legacy" ]] || { MENU_STATE=$legacy; break; }
   done
 fi
-if [ -f "$MENU_STATE" ]; then
+if [[ -f "$MENU_STATE" ]]; then
   # shellcheck disable=SC1090
-  . "$MENU_STATE"
+  source "$MENU_STATE"
 fi
-
-if [ "$RUNNING" = "true" ] && [ -n "$END_TIME" ]; then
-  r=$((END_TIME - $(date +%s)))
-  [ "$r" -lt 0 ] && r=0
-elif [ -n "$REMAINING" ]; then
-  r="$REMAINING"
+if [[ "$RUNNING" == true && -n "$END_TIME" ]]; then
+  remaining=$((END_TIME - $(date +%s)))
+  ((remaining >= 0)) || remaining=0
 else
-  r=0
+  remaining=${REMAINING:-0}
 fi
 
-# Collect both inputs before starting; Esc at either prompt cancels.
-if [ -z "$DURATION" ]; then
-  m=$(ask_minutes) || exit $?
-  [ -n "$m" ] || exit 0
-  task=$(ask_task) || exit 0
-  exec "$ENGINE" start "$m" "$task"
+# Enter with an empty task starts; Esc at either prompt cancels all inputs.
+if [[ -z "$DURATION" ]]; then
+  minutes=$(ask_minutes) || exit $?
+  [[ -n "$minutes" ]] || exit 0
+  task=$(rofi_input 'Countdown · Task' 'Optional · Enter to start' \
+    'What are you focusing on?') || exit 0
+  exec "$ENGINE" start "$minutes" "$task"
 fi
 
-if [ "$RUNNING" = "true" ]; then
-  ITEMS=("⏸ Pause")
-else
-  ITEMS=("▶ Resume")
-fi
-ITEMS+=("↺ Reset")
-ITEMS+=("＋ Add minutes...")
-
-choice=$(printf '%s\n' "${ITEMS[@]}" | rofi -dmenu -i -p "Countdown · $(format_time "$r")")
-
+choice=$(
+  {
+    if [[ "$RUNNING" == true ]]; then
+      rofi_item Pause ''
+    else
+      rofi_item Resume ''
+    fi
+    rofi_item Reset ''
+    rofi_item 'Add minutes…' ''
+  } | rofi_pick "Countdown · $(format_time "$remaining")" 3
+) || exit 0
 case "$choice" in
-  "⏸ "*) exec "$ENGINE" pause ;;
-  "▶ "*) exec "$ENGINE" resume ;;
-  "↺ Reset") exec "$ENGINE" reset ;;
-  "＋ Add minutes...")
-    m=$(ask_minutes "Countdown — add minutes (1–480)") || exit $?
-    [ -n "$m" ] || exit 0
-    exec "$ENGINE" add "$m"
+  0)
+    # The engine applies the requested action to its latest state.
+    if [[ "$RUNNING" == true ]]; then
+      exec "$ENGINE" pause
+    else
+      exec "$ENGINE" resume
+    fi
+    ;;
+  1) exec "$ENGINE" reset ;;
+  2)
+    minutes=$(ask_minutes 'Countdown · Add minutes') || exit $?
+    [[ -n "$minutes" ]] || exit 0
+    exec "$ENGINE" add "$minutes"
     ;;
 esac
+exit 0

@@ -40,6 +40,11 @@ Python and Bash implementations live in adjacent source files so editors can
 recognize their languages and the Nix stays focused on paths, dependencies, and
 service setup.
 
+Rofi's shared palette and the action/input themes live in `home/desktop/rofi.nix`.
+`home/desktop/rofi-menu.sh` provides presentation helpers installed under
+`~/.local/lib/`; workflow scripts retain their own actions and validation.
+Short menus close after an action or cancellation and do not reopen their parent.
+
 ## Tracing a behavior
 
 Start at the keybinding or Waybar module, follow the referenced command name to

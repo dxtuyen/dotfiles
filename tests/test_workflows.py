@@ -27,7 +27,7 @@ class WorkflowTests(unittest.TestCase):
         self.runtime = self.root / "runtime"
         self.state = self.home / ".local/state"
         self.bin = self.root / "bin"
-        for path in (self.home / ".local/bin", self.runtime, self.state, self.bin):
+        for path in (self.home / ".local/bin", self.home / ".local/lib", self.runtime, self.state, self.bin):
             path.mkdir(parents=True, exist_ok=True)
         self.clock = self.root / "clock"
         self.clock.write_text("1000000000")
@@ -39,6 +39,7 @@ class WorkflowTests(unittest.TestCase):
             XDG_STATE_HOME=str(self.state),
             PATH=str(self.bin) + os.pathsep + os.environ["PATH"],
             TEST_ROOT=str(self.root),
+            TEST_CAPTURE_MENUS="1",
         )
         self.command_stub = self.executable(
             self.root / "command-stub",
@@ -64,11 +65,21 @@ class WorkflowTests(unittest.TestCase):
                     i = int(index.read_text()) if index.exists() else 0
                     dialogs = json.loads(os.environ["TEST_DIALOGS"])
                     index.write_text(str(i + 1))
+                    if os.environ.get("TEST_CAPTURE_MENUS"):
+                        (root / f"menu-{i}").write_bytes(sys.stdin.buffer.read())
                     if os.environ.get("TEST_PAUSE_IN_MENU"):
                         subprocess.run([os.environ["HOME"] + "/.local/bin/countdown-engine", "pause"], check=True)
                     text, status = dialogs[i]
                     sys.stdout.write(text)
                     sys.exit(status)
+                elif name == "powerprofilesctl":
+                    if args == ["list"]:
+                        print(os.environ.get("TEST_PROFILE_LIST", "  power-saver:\\n* balanced:\\n  performance:"))
+                    elif args[:1] == ["set"] and os.environ.get("TEST_PROFILE_FAILURE"):
+                        print("Switch rejected", file=sys.stderr)
+                        sys.exit(1)
+                elif name == "pgrep":
+                    sys.exit(1)
                 elif name == "id":
                     print("0")
                 elif name == "df":
@@ -90,9 +101,17 @@ class WorkflowTests(unittest.TestCase):
         for name in (
             "systemctl", "pkill", "notify-send", "paplay", "swaymsg", "sioyek",
             "rofi", "id", "mountpoint", "df", "nix", "nix-env",
-            "nixos-rebuild", "nix-collect-garbage",
+            "nixos-rebuild", "nix-collect-garbage", "powerprofilesctl", "pgrep",
+            "wlsunset-apply", "screenshot", "foot",
         ):
             (self.bin / name).symlink_to(self.command_stub)
+        for name in ("wlsunset-apply", "screenshot"):
+            (self.home / ".local/bin" / name).symlink_to(self.command_stub)
+        helper = (SOURCE / "home/desktop/rofi-menu.sh").read_text()
+        (self.home / ".local/lib/rofi-menu.sh").write_text(helper.replace("@iconColor@", "#d4be98"))
+        for name in ("wlsunset-menu", "screenshot-menu"):
+            self.executable(self.home / ".local/bin" / name,
+                            (SOURCE / "home/scripts/desktop" / (name + ".sh")).read_text())
         self.executable(
             self.bin / "date",
             '#!/usr/bin/env bash\nif [ "${1:-}" = +%s ]; then cat "$TEST_ROOT/clock"; '
@@ -158,6 +177,93 @@ class WorkflowTests(unittest.TestCase):
     def history(self):
         path = self.state / "countdown-history.log"
         return path.read_text().splitlines() if path.exists() else []
+
+    def power_menu(self, *args, dialogs, **environment):
+        script = self.executable(
+            self.home / ".local/bin/utilities",
+            (SOURCE / "home/scripts/utilities/daily-menu.sh").read_text(),
+        )
+        return self.run_command(
+            script, *args, TEST_DIALOGS=json.dumps(dialogs),
+            TEST_CAPTURE_MENUS="1", **environment,
+        )
+
+    def test_power_profile_escape_closes_the_flow_without_actions(self):
+        self.power_menu("--power", dialogs=[
+            ["3", 0], ["", 1],
+        ])
+        self.assertIn("Power Profile", (self.root / "menu-0").read_text())
+        self.assertIn("Balanced · current", (self.root / "menu-1").read_text())
+        self.assertNotIn("Back", (self.root / "menu-1").read_text())
+        self.assertEqual(len(self.recorded("rofi")), 2)
+        self.assertFalse(self.recorded("systemctl"))
+        self.assertFalse(self.recorded("swaymsg"))
+        self.assertFalse([c for c in self.recorded("powerprofilesctl") if c[0] == "set"])
+
+    def test_power_profile_only_offers_supported_profiles(self):
+        self.power_menu("--power-profile", dialogs=[["1", 0]],
+                        TEST_PROFILE_LIST="* power-saver:\n  balanced:")
+        menu = (self.root / "menu-0").read_text()
+        self.assertNotIn("Performance", menu)
+        self.assertIn(["set", "balanced"], self.recorded("powerprofilesctl"))
+        self.assertEqual(self.recorded("notify-send")[0][-1], "Balanced")
+
+    def test_power_profile_failure_is_reported(self):
+        self.power_menu("--power-profile", dialogs=[["2", 0]],
+                        TEST_PROFILE_FAILURE="1", expected=1)
+        notifications = self.recorded("notify-send")
+        self.assertEqual(len(notifications), 1)
+        self.assertIn("critical", notifications[0])
+        self.assertIn("Switch rejected", notifications[0][-1])
+
+    def test_current_power_profile_is_not_set_again(self):
+        self.power_menu("--power-profile", dialogs=[["1", 0]])
+        self.assertEqual(self.recorded("powerprofilesctl"), [["list"]])
+        self.assertIn("Balanced · current", (self.root / "menu-0").read_text())
+        self.assertFalse(self.recorded("notify-send"))
+
+    def test_direct_power_profile_has_no_parent_row(self):
+        self.power_menu("--power-profile", dialogs=[["0", 0]])
+        menu = (self.root / "menu-0").read_text()
+        self.assertNotIn("Back", menu)
+        self.assertIn(["set", "power-saver"], self.recorded("powerprofilesctl"))
+
+    def test_display_escape_does_not_reopen_utilities(self):
+        self.power_menu(dialogs=[["1", 0], ["", 1]])
+        self.assertEqual(len(self.recorded("rofi")), 2)
+        self.assertNotIn("Back", (self.root / "menu-1").read_text())
+        self.assertFalse(self.recorded("wlsunset-apply"))
+
+    def test_display_choice_applies_one_mode(self):
+        self.power_menu(dialogs=[["1", 0], ["2", 0]])
+        self.assertEqual(self.recorded("wlsunset-apply"), [["natural"]])
+        self.assertEqual(len(self.recorded("rofi")), 2)
+
+    def test_screenshot_choices_keep_their_action_mapping(self):
+        for row, action in enumerate(("selection-clipboard", "fullscreen-clipboard",
+                                      "selection-save", "fullscreen-save")):
+            with self.subTest(action=action):
+                (self.root / "dialog-index").unlink(missing_ok=True)
+                self.run_command(self.home / ".local/bin/screenshot-menu",
+                                 TEST_DIALOGS=json.dumps([[str(row), 0]]))
+                self.assertEqual(self.recorded("screenshot")[-1], [action])
+
+    def test_screenshot_escape_does_not_capture(self):
+        self.run_command(self.home / ".local/bin/screenshot-menu",
+                         TEST_DIALOGS=json.dumps([["", 1]]))
+        self.assertFalse(self.recorded("screenshot"))
+
+    def test_power_profile_missing_current_does_not_offer_stale_choices(self):
+        self.power_menu("--power-profile", dialogs=[],
+                        TEST_PROFILE_LIST="  power-saver:\n  balanced:", expected=1)
+        self.assertFalse(self.recorded("rofi"))
+        self.assertEqual(self.recorded("powerprofilesctl"), [["list"]])
+        self.assertIn("critical", self.recorded("notify-send")[0])
+
+    def test_utilities_excludes_power_profile(self):
+        self.power_menu(dialogs=[["", 1]])
+        self.assertNotIn("Power Profile", (self.root / "menu-0").read_text())
+        self.assertFalse(self.recorded("powerprofilesctl"))
 
     def test_expiry_before_every_transition(self):
         for action in ("pause", "toggle", "resume", "lock-pause", "sleep-pause", "reset", "status"):
@@ -254,9 +360,21 @@ class WorkflowTests(unittest.TestCase):
 
     def test_stale_pause_menu_does_not_resume(self):
         self.engine("start", "10")
-        self.run_command("bash", self.menu, TEST_DIALOGS=json.dumps([["⏸ Pause", 0]]),
+        self.run_command("bash", self.menu, TEST_DIALOGS=json.dumps([["0", 0]]),
                          TEST_PAUSE_IN_MENU="1")
         self.assertEqual(self.field("RUNNING"), "false")
+
+    def test_countdown_add_cancel_does_not_change_the_session(self):
+        self.engine("start", "25")
+        before = (self.runtime / "countdown-state").read_text()
+        self.run_command("bash", self.menu, TEST_DIALOGS=json.dumps([["2", 0], ["", 1]]))
+        self.assertEqual((self.runtime / "countdown-state").read_text(), before)
+
+    def test_countdown_add_accepts_surrounding_whitespace(self):
+        self.engine("start", "25")
+        end = int(self.field("END_TIME"))
+        self.run_command("bash", self.menu, TEST_DIALOGS=json.dumps([["2", 0], ["  5 \t", 0]]))
+        self.assertEqual(int(self.field("END_TIME")), end + 300)
 
     def test_menu_cancellation_empty_task_and_whitespace(self):
         cases = (
