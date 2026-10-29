@@ -31,7 +31,7 @@ imports the user-level modules.
 | Sway keybindings | `home/desktop/sway.nix` | Commands in `home/scripts/desktop/` and `home/features/` |
 | Session lock, idle, and sleep | `home/desktop/session.nix` | Swaylock settings, session services, and the lock-screen / idle-suspend commands |
 | Waybar modules | `home/desktop/waybar.nix` | Countdown and system status modules |
-| Sway window management | `home/desktop/sway.nix` | Native scratchpad/resize mode, toggleable terminal popup, Alt+Tab urgent/recent window switching via swayr, Mod+Tab workspace overview via swayview, and Waybar scratchpad count |
+| Sway window management | `home/desktop/sway.nix` | Global automatic focus for urgent windows (including hidden scratchpad windows), native scratchpad/resize mode, toggleable terminal popup, Alt+Tab returns to the previously focused workspace, Mod+Tab workspace overview via swayview, and Waybar scratchpad count |
 | Countdown menu and timer | `home/features/countdown/default.nix` | Installs `countdown-menu.sh`, `countdown-engine.sh`, and `countdown-sleep-watch.sh`; `services.nix` declares Countdown services |
 | Wallpaper workflow | `home/features/wallpaper/default.nix` | `images.nix` generates desktop and lockscreen images from the shared palette at 1920×1080 by default, with optional host resolution overrides; swaybg and swaylock display the Nix store outputs |
 
@@ -50,4 +50,7 @@ Short menus close after an action or cancellation and do not reopen their parent
 Start at the keybinding or Waybar module, follow the referenced command name to
 its Home Manager module, then check whether that module installs a script or
 declares a systemd service. Sway handles window arrangement, resize behavior,
-and workspace back-and-forth directly; swayr tracks window focus history for Alt+Tab, while swayview provides the workspace overview on Mod+Tab.
+and workspace back-and-forth directly. The sway-focus-urgent service listens for
+window urgency events and focuses the requesting window, including hidden
+scratchpad windows, without per-app launchers. Alt+Tab returns to the previously
+focused workspace, while swayview provides the workspace overview on Mod+Tab.

@@ -2,6 +2,17 @@
 
 let
   theme = import ../theme.nix;
+  # One policy for every app: urgency also reveals hidden scratchpad windows.
+  focusUrgent = pkgs.writeShellScript "sway-focus-urgent" ''
+    set -euo pipefail
+    ${pkgs.sway}/bin/swaymsg -m -t subscribe '["window"]' \
+      | ${pkgs.jq}/bin/jq --unbuffered -r \
+          'select(.change == "urgent" and .container.urgent == true) | .container.id' \
+      | while IFS= read -r id; do
+          # The window may have closed since the event arrived.
+          ${pkgs.sway}/bin/swaymsg -q "[con_id=$id] focus" || true
+        done
+  '';
 in
 
 {
@@ -70,6 +81,8 @@ in
       # $mod + left/right mouse button = move/resize floating windows.
       floating_modifier $mod normal
       focus_follows_mouse yes
+      # Applies to all apps: focus eligible activation requests, not urgency alone.
+      focus_on_window_activation focus
       smart_borders off
 
       # Muted beige focus border; soft ochre indicates the next split.
@@ -129,10 +142,10 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Alt+Tab switches to the urgent or most recently used window.
+      # Return to the previously focused workspace; press again to switch back.
+      bindsym Mod1+Tab workspace back_and_forth
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.
       # Mod+c opens Countdown.
-      bindsym Mod1+Tab exec ${pkgs.swayr}/bin/swayr switch-to-urgent-or-lru-window
       # Toggle Sway's native scratchpad; Shift+Mod+- sends the focused window there.
       bindsym $mod+minus scratchpad show
       bindsym $mod+Shift+minus move scratchpad
@@ -250,20 +263,18 @@ in
     '';
   };
 
-  # Record window focus history for the Sway session.
-  systemd.user.services.swayrd = {
+  # Activation requests use focus_on_window_activation; urgency is handled here.
+  systemd.user.services.sway-focus-urgent = {
     Unit = {
-      Description = "Swayr window history daemon";
+      Description = "Automatically focus urgent Sway windows";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
     };
     Service = {
-      ExecStart = "${pkgs.swayr}/bin/swayrd";
+      ExecStart = focusUrgent;
       Restart = "on-failure";
-      RestartSec = 3;
+      RestartSec = 1;
     };
-    Install = {
-      WantedBy = [ "sway-session.target" ];
-    };
+    Install.WantedBy = [ "sway-session.target" ];
   };
 }
