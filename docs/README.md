@@ -44,6 +44,12 @@ Quick Lang reads the selection or clipboard and requires a Gemini key at `${XDG_
 
 PDFs open in Sioyek; `F8` toggles custom page colors. In Bash, `y` opens Yazi and follows its last directory on exit; `nt` opens a terminal or tmux window in the current directory.
 
+Neovim uses LazyVim with Gruvbox Material. Nix manages the editor and language
+tools; editable Lua, Extras and plugin versions live in
+[`home/programs/neovim/`](../home/programs/neovim/README.md). After the first
+launch, run `:LazyHealth`. In tmux, use `Ctrl+b` followed by `h/j/k/l` to select
+panes; LazyVim keeps `Ctrl+h/j/k/l` for editor windows.
+
 Yazi adds application choices only for PDF, HTML, and CSV files. For these files, `Enter` uses the system default and the built-in `Shift+O` opens the application menu; other file types keep Yazi's defaults. Menu choices affect only that launch. Change the default browser in the browser's settings. Choices are saved in the writable `~/.config/mimeapps.list`; Nix supplies lower-priority defaults in `~/.local/share/applications/mimeapps.list`, so rebuilds preserve your choices.
 
 Media keys adjust volume by 5% within 0–100% and screen brightness by 10%, with a 5% minimum. Volume down mutes at zero. Volume up restores a manually muted level, or raises zero to 5% and unmutes. Speaker and microphone mute keys toggle once per press without changing the selected level.
@@ -108,3 +114,4 @@ Keep credentials and mutable application data outside Git and back them up separ
 
 - [Wallpapers](../home/features/wallpaper/README.md): resolution, standalone builds, and attribution.
 - [Yanki stylesheet](../home/assets/anki/README.md): apply the custom Anki card CSS.
+- [LazyVim](../home/programs/neovim/README.md): editor structure, language tools, and plugin updates.

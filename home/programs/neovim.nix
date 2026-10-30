@@ -1,4 +1,12 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
+
+let
+  # Keep editable Lua and LazyVim's writable state in the dotfiles checkout.
+  nvimConfig = "${config.home.homeDirectory}/dotfiles/home/programs/neovim";
+  linkConfig = name: {
+    source = config.lib.file.mkOutOfStoreSymlink "${nvimConfig}/${name}";
+  };
+in
 
 {
   programs.neovim = {
@@ -6,19 +14,26 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    plugins = [ pkgs.vimPlugins.gruvbox-material ];
-    extraConfig = ''
-      set termguicolors
-      set background=dark
-      let g:gruvbox_material_background = 'medium'
-      let g:gruvbox_material_foreground = 'material'
-      let g:gruvbox_material_better_performance = 1
-      colorscheme gruvbox-material
-    '';
+    # Home Manager owns init.lua; lazy.nvim owns the plugin lifecycle.
+    initLua = builtins.readFile ./neovim/init.lua;
+    extraPackages = with pkgs; [
+      tree-sitter
+      lazygit
+      nil
+      nixfmt
+      statix
+      lua-language-server
+      stylua
+      bash-language-server
+      shfmt
+      shellcheck
+    ];
   };
 
-  home.sessionVariables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
+  xdg.configFile = {
+    "nvim/lua" = linkConfig "lua";
+    "nvim/lazy-lock.json" = linkConfig "lazy-lock.json";
+    "nvim/lazyvim.json" = linkConfig "lazyvim.json";
+    "nvim/stylua.toml" = linkConfig "stylua.toml";
   };
 }
