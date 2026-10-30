@@ -2,16 +2,9 @@
 
 let
   theme = import ../theme.nix;
-  # One policy for every app: urgency also reveals hidden scratchpad windows.
-  focusUrgent = pkgs.writeShellScript "sway-focus-urgent" ''
-    set -euo pipefail
-    ${pkgs.sway}/bin/swaymsg -m -t subscribe '["window"]' \
-      | ${pkgs.jq}/bin/jq --unbuffered -r \
-          'select(.change == "urgent" and .container.urgent == true) | .container.id' \
-      | while IFS= read -r id; do
-          # The window may have closed since the event arrived.
-          ${pkgs.sway}/bin/swaymsg -q "[con_id=$id] focus" || true
-        done
+  # Share one window-event subscription for focus history and urgency handling.
+  focusWindows = pkgs.writeShellScript "sway-window-focus" ''
+    exec ${pkgs.python3}/bin/python3 ${./window-focus.py} ${pkgs.sway}/bin/swaymsg "$@"
   '';
 in
 
@@ -142,8 +135,8 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Return to the previously focused workspace; press again to switch back.
-      bindsym Mod1+Tab workspace back_and_forth
+      # Return to the previously focused window; skip hidden scratchpads.
+      bindsym --no-repeat Mod1+Tab exec ${focusWindows} --previous
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.
       # Mod+c opens Countdown.
       # Toggle Sway's native scratchpad; Shift+Mod+- sends the focused window there.
@@ -263,15 +256,15 @@ in
     '';
   };
 
-  # Activation requests use focus_on_window_activation; urgency is handled here.
+  # Keep the existing service for urgency and the Alt+Tab focus history.
   systemd.user.services.sway-focus-urgent = {
     Unit = {
-      Description = "Automatically focus urgent Sway windows";
+      Description = "Track Sway window history and focus urgent windows";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
     };
     Service = {
-      ExecStart = focusUrgent;
+      ExecStart = "${focusWindows} --watch";
       Restart = "on-failure";
       RestartSec = 1;
     };

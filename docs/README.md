@@ -29,7 +29,8 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 | `` Super+` `` | Toggle the popup terminal |
 | `Super+1…9`, `Super+0` | Switch to workspace 1–10; add `Shift` to move a window |
 | `Super+H/J/K/L` or `Super+Arrow` | Focus by direction; add `Shift` to move a window |
-| `Alt+Tab` / `Super+Tab` | Previous workspace / workspace overview |
+| `Alt+Tab` / `Super+Tab` | Previously focused window / workspace overview |
+| `Super+[` / `Super+]` | Previous / next workspace; add `Shift` to move a window |
 | `Super+F` / `Super+Shift+Space` | Toggle fullscreen / floating mode |
 | `Super+-` / `Super+Shift+-` | Show scratchpad / send a window to it |
 | `Super+C` | Countdown |
@@ -37,6 +38,8 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 | `Super+Esc` / `Super+Shift+C` | Lock / reload Sway |
 | `Print` / `Alt+Print` | Copy a selected region / full screen; use `Shift+Print` / `Ctrl+Print` to save |
 | `Super+T` / `Super+Shift+T` / `Super+Ctrl+T` | Translate to English / Vietnamese / proofread English |
+
+`Alt+Tab` returns to the previously focused window across workspaces, skipping hidden scratchpad windows. The existing `sway-focus-urgent` service also records focus history in the session runtime directory; no separate switcher daemon is needed. Scratchpads can be shown manually with their existing shortcuts.
 
 Countdown inhibits automatic idle handling while running. Locking or sleeping pauses it; resume it manually after unlocking or waking. Idle handling normally locks at 300 seconds, turns displays off at 310 seconds, and requests suspend at 900 seconds only on battery power.
 
