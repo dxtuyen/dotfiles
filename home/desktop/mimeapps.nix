@@ -1,5 +1,10 @@
-# Default applications for Thunar, xdg-open, and Yazi.
-{ pkgs, lib, ... }:
+# Fallback applications; app-managed choices take precedence.
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # MIME types handled by Neovim.
@@ -22,6 +27,15 @@ let
 
   # Do not add spaces after semicolons; MIME list parsing does not trim them.
   sepMime = lib.concatStringsSep ";";
+
+  preserveMimeApps = pkgs.writeShellScript "preserve-mimeapps" ''
+    set -euo pipefail
+    target=$1
+    temp=$(mktemp "$target.XXXXXX")
+    trap 'rm -f "$temp"' EXIT
+    install -m 600 "$target" "$temp"
+    mv -T "$temp" "$target"
+  '';
 in
 
 {
@@ -48,14 +62,6 @@ in
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "writer.desktop";
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = "calc.desktop";
       "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "impress.desktop";
-
-      # Open web links and HTML files in Chrome.
-      "text/html" = "google-chrome.desktop";
-      "application/xhtml+xml" = "google-chrome.desktop";
-      "x-scheme-handler/http" = "google-chrome.desktop";
-      "x-scheme-handler/https" = "google-chrome.desktop";
-      "x-scheme-handler/about" = "google-chrome.desktop";
-      "x-scheme-handler/unknown" = "google-chrome.desktop";
 
       # Open text files in Neovim inside Foot.
       "text/plain" = "nvim.desktop";
@@ -85,6 +91,22 @@ in
       mpv
     ];
   };
+
+  # Keep Home Manager's lower-priority applications/mimeapps.list, but let
+  # applications write ~/.config/mimeapps.list without a rebuild resetting it.
+  # Browser defaults are chosen in the browser's settings.
+  xdg.configFile."mimeapps.list".enable = false;
+
+  # Preserve existing choices before linkGeneration removes the old HM link.
+  # Once this is a regular file, subsequent activations leave it alone.
+  home.activation.mutableMimeApps =
+    lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
+      ''
+        mimeAppsFile=${lib.escapeShellArg "${config.xdg.configHome}/mimeapps.list"}
+        if [[ -L "$mimeAppsFile" && $(readlink "$mimeAppsFile") == /nix/store/*-home-manager-files/* ]]; then
+          run ${preserveMimeApps} "$mimeAppsFile"
+        fi
+      '';
 
   # Desktop entry for Neovim inside Foot.
   xdg.desktopEntries.nvim = {

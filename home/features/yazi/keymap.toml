@@ -10,4 +10,4 @@ prepend_keymap = [
   { on = "b", run = 'shell --block "$SHELL"', desc = "Open a shell here (in Yazi's window)" },
 ]
 
-# Keep the default `l`, `Right`, trash, and delete keybindings unchanged.
+# Keep the default Shift+O (open with), navigation, trash, and delete bindings.

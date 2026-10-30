@@ -26,6 +26,7 @@ in
     anki
     bluetui
     google-chrome
+    brave
     # E-book reader.
     foliate
     imv # Image viewer.
