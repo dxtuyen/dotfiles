@@ -296,7 +296,6 @@ git status --short
 git diff -- hosts/laptop/hardware-configuration.nix modules/nixos/
 nix fmt
 nix flake check --no-build
-nix build .#checks.x86_64-linux.workflows --no-link --print-build-logs
 sudo nixos-rebuild switch --flake .#laptop
 ```
 
@@ -350,7 +349,6 @@ On first connection, compare the host fingerprint with [GitHub's published finge
 ```bash
 cd ~/dotfiles
 git remote set-url origin git@github.com:dxtuyen/dotfiles.git
-git config core.hooksPath .githooks
 ```
 
 Restore documents, collections, database backups, and required credentials separately. Keep private keys, passwords, and API keys outside Git. See the [maintenance notes](../README.md#maintenance) for later updates and recovery.

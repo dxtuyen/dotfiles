@@ -61,12 +61,19 @@ Media keys adjust volume by 5% within 0–100% and screen brightness by 10%, wit
 ```bash
 nix fmt -- --check
 nix flake check --no-build
-nix build .#checks.x86_64-linux.workflows --no-link --print-build-logs
 nixos-rebuild build --flake .#laptop
 sudo nixos-rebuild switch --flake .#laptop
 ```
 
-Use `nix fmt` to fix formatting. CI runs the first three checks; the workflow suite uses isolated state and command stubs, so verify affected desktop and hardware behavior manually. Enable the same checks before pushing with `git config core.hooksPath .githooks`.
+Use `nix fmt` to fix formatting. Pushes and pull requests run only formatting and flake evaluation in CI. Git pushes do not run local checks.
+
+When changing desktop scripts, run the optional regression suite locally:
+
+```bash
+nix build .#checks.x86_64-linux.workflows --no-link --print-build-logs
+```
+
+You can also run the suite in GitHub Actions by selecting **Nix checks → Run workflow**. It uses isolated state and command stubs, so verify affected desktop and hardware behavior manually.
 
 `nswitch` uses `~/dotfiles` and the current hostname; `nh os switch` uses the path in `modules/nixos/core.nix`. Reload Sway after activation for compositor changes, log in again for session environment changes, and reboot for a new kernel.
 
