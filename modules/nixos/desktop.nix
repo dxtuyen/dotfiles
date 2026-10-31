@@ -50,6 +50,10 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
     wireplumber.enable = true;
+    # x11-bell crashes PipeWire when Sway's Xwayland display disconnects.
+    extraConfig.pipewire."99-disable-x11-bell" = {
+      "context.properties"."module.x11.bell" = false;
+    };
   };
   services.power-profiles-daemon.enable = true;
   hardware.bluetooth = {
