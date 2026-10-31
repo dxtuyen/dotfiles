@@ -39,8 +39,11 @@ or the Nix package list require a rebuild. Keep the default LazyVim keymaps;
 press Space to discover commands with which-key.
 
 Baseline language support is Nix (`nil`, `nixfmt`, `statix`), Lua
-(`lua-language-server`, `stylua`) and Bash (`bash-language-server`, `shfmt`,
-`shellcheck`). Bash's language server uses ShellCheck for diagnostics. Other
+(`lua-language-server`, `stylua`), Bash (`bash-language-server`, `shfmt`,
+`shellcheck`) and Python (`pyright`, `ruff`). Python uses Pyright for type
+checking and Ruff for linting, formatting and import actions. Use a project-local
+`.venv` for Python dependencies; `<leader>cv` selects its environment through
+the Python Extra. Bash's language server uses ShellCheck for diagnostics. Other
 languages can be enabled through `:LazyExtras`; install their external tools
 with Nix in `programs.neovim.extraPackages` (or a project's development shell).
 Mason is disabled, so enabling an Extra does not install its tools automatically.

@@ -27,6 +27,8 @@ in
       bash-language-server
       shfmt
       shellcheck
+      pyright
+      ruff
     ];
   };
 
