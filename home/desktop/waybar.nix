@@ -115,7 +115,7 @@ in
         "tooltip-format" = "Power profile: {profile}";
         "on-click" = "~/.local/bin/power-profile-menu";
         "format-icons" = {
-          performance = "";
+          performance = "";
           balanced = "";
           "power-saver" = "";
         };
