@@ -52,8 +52,8 @@ in
   # Keep firmware updates but stop the daemon from blocking greetd at login.
   systemd.services.fwupd.before = lib.mkForce [ "shutdown.target" ];
 
-  # Close lid -> suspend; docked -> ignore. The screen always locks on wake
-  # thanks to swayidle's before-sleep.
+  # Close lid -> suspend, even on AC; docked -> ignore. session-lock confirms
+  # the screen lock before sleep, independently of Countdown's idle inhibition.
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "suspend";

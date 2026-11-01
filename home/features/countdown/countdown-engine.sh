@@ -384,6 +384,7 @@ case "${1:-status}" in
     read_state
     finished_duration=""
     changed=0
+    inhibition_cleared=0
     action="$1"
     case "$action" in
       pause|resume|toggle) clear_sleep_marker ;;
@@ -396,13 +397,27 @@ case "${1:-status}" in
     else
       pause_current || exit 1
     fi
+    # A confirmed lock ends manual keep-awake mode, including before sleep.
+    # Keep this under the same lock as pausing Countdown so neither the daemon
+    # nor a concurrent toggle can restore a stale inhibition state.
+    case "$action" in
+      lock-pause|sleep-pause)
+        if [ -f "$MANUAL_FLAG" ]; then
+          rm -f -- "$MANUAL_FLAG" || exit 1
+          inhibition_cleared=1
+          sync_idle_inhibit
+        fi
+        ;;
+    esac
     if [ "$action" = sleep-pause ] && [ -n "$DURATION" ]; then
       touch "$SLEEP_MARKER"
     fi
     state_unlock
     notify_finished
-    if [ "$changed" -eq 1 ]; then
+    if [ "$changed" -eq 1 ] || [ "$inhibition_cleared" -eq 1 ]; then
       notify_waybar
+    fi
+    if [ "$changed" -eq 1 ]; then
       case "$action" in
         resume) notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Resumed ▶" ;;
         pause) notify-send -a countdown -i "chronometer" -t 2000 "Focus" "Paused ⏸" ;;

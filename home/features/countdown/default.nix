@@ -13,11 +13,6 @@ let
     executable = true;
     text = builtins.readFile ./countdown-menu.sh;
   };
-  countdownSleepWatch = pkgs.writeTextFile {
-    name = "countdown-sleep-watch";
-    executable = true;
-    text = builtins.readFile ./countdown-sleep-watch.sh;
-  };
 in
 {
   imports = [ ./services.nix ];
@@ -28,6 +23,5 @@ in
       source = countdownEngine;
     };
     ".local/bin/countdown".source = countdownMenu;
-    ".local/bin/countdown-sleep-watch".source = countdownSleepWatch;
   };
 }

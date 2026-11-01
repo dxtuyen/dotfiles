@@ -325,6 +325,51 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(self.field("RUNNING"), "false")
                 self.assertEqual(self.field("REMAINING"), "480")
 
+    def test_manual_lock_clears_inhibition_without_a_countdown(self):
+        self.engine("inhibit-toggle")
+        self.engine("idle-allowed", expected=1)
+        self.calls.unlink(missing_ok=True)
+        self.run_command("bash", SOURCE / "home/desktop/lock-screen.sh")
+        self.engine("idle-allowed")
+        state = json.loads(self.engine("inhibit"))
+        self.assertEqual(state["class"], "idle")
+        self.assertFalse(state["manual"])
+        self.assertEqual((self.root / "swayidle.service").read_text(), "active")
+        self.assertIn(["-RTMIN+7", "waybar"], self.recorded("pkill"))
+        self.assertFalse(any("session paused" in " ".join(call)
+                             for call in self.recorded("notify-send")))
+
+    def test_lock_clears_manual_and_countdown_inhibition_together(self):
+        self.engine("inhibit-toggle")
+        self.engine("start", "10")
+        self.advance(120)
+        self.engine("lock-pause")
+        self.engine("idle-allowed")
+        self.assertEqual(self.field("RUNNING"), "false")
+        self.assertEqual(self.field("REMAINING"), "480")
+        self.assertFalse((self.runtime / "inhibit-manual").exists())
+        self.assertEqual((self.root / "swayidle.service").read_text(), "active")
+
+    def test_sleep_lock_clears_inhibition_and_wake_does_not_restore_it(self):
+        self.engine("inhibit-toggle")
+        self.engine("start", "10")
+        self.advance(120)
+        self.engine("sleep-pause")
+        self.engine("idle-allowed")
+        self.advance(3600)
+        self.engine("sleep-resume")
+        self.engine("idle-allowed")
+        self.assertEqual(self.field("RUNNING"), "false")
+        self.assertEqual(self.field("REMAINING"), "480")
+        self.assertFalse((self.runtime / "inhibit-manual").exists())
+
+    def test_ordinary_pause_preserves_manual_inhibition(self):
+        self.engine("inhibit-toggle")
+        self.engine("start", "10")
+        self.engine("pause")
+        self.engine("idle-allowed", expected=1)
+        self.assertTrue((self.runtime / "inhibit-manual").exists())
+
     def test_concurrent_expiry_logs_once(self):
         self.engine("start", "1")
         self.advance(61)

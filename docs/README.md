@@ -41,7 +41,22 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 
 `Alt+Tab` returns to the previously focused window across workspaces, skipping hidden scratchpad windows. The existing `sway-focus-urgent` service also records focus history in the session runtime directory; no separate switcher daemon is needed. Scratchpads can be shown manually with their existing shortcuts.
 
-Countdown inhibits automatic idle handling while running. Locking or sleeping pauses it; resume it manually after unlocking or waking. Idle handling normally locks at 300 seconds, turns displays off at 310 seconds, and requests suspend at 900 seconds only on battery power.
+Countdown inhibits automatic locking and idle suspend while running. Locking pauses it and clears manual idle inhibition; resume Countdown manually after unlocking or waking. Unlocking does not restore the old manual inhibition setting. The lock is confirmed before changing Countdown or inhibition state.
+
+The idle policy lives in [`home/desktop/session.nix`](../home/desktop/session.nix):
+
+| Condition | Behavior |
+| --- | --- |
+| No activity for 5 minutes | Lock the session |
+| Lock manually while idle inhibition is on | Turn inhibition off and pause Countdown; automatic idle handling resumes |
+| Locked, then inactive for 10 seconds | Turn displays off; input turns them on for authentication |
+| No activity for 15 minutes, on battery | Request suspend |
+| No activity for 15 minutes, external power connected | Keep running with the screen locked/off; recheck power every 30 seconds |
+| Input, idle inhibition, or logout | Cancel pending idle power checks |
+| Wake from sleep | Turn displays on and give active idle handling a fresh deadline; keep Countdown paused |
+| Close the lid | Suspend even on external power; ignore when docked |
+
+External power takes precedence over a battery reporting discharge; peripheral power supplies are ignored. `session-lock` is the single sleep/wake listener, independent of Countdown inhibition. `locked-display` follows the lifetime of `swaylock.service`, so unlocking also stops its display timeout. Physical sleep and charging behavior still need a hardware check after activation.
 
 Quick Lang reads the selection or clipboard and requires a Gemini key at `${XDG_CONFIG_HOME:-$HOME/.config}/quick-lang/api.key`. It sends the text to the service and copies the result to the clipboard. Screenshots are saved under `~/Pictures/Screenshots/`.
 
@@ -106,7 +121,7 @@ Start troubleshooting with failed units and the relevant journal:
 ```bash
 systemctl --user --failed
 journalctl -b -u greetd
-journalctl --user -b -u swayidle -u session-lock -u countdown-engine
+journalctl --user -b -u swayidle -u session-lock -u locked-display -u idle-suspend -u countdown-engine
 ```
 
 For a specific unit, use `systemctl --user status UNIT` and `journalctl --user -b -u UNIT`. For hibernation problems, compare `swapon --show`, `lsblk -f`, and the `resume=` argument in `/proc/cmdline`.

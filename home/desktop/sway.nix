@@ -251,8 +251,7 @@ in
       bindsym XF86MonBrightnessUp exec ~/.local/bin/media-notify brightness-up
       bindsym XF86MonBrightnessDown exec ~/.local/bin/media-notify brightness-down
 
-      # Lock after 300s, turn off the display after 310s, and suspend after 900s on battery.
-      # Countdown temporarily stops and restarts this service.
+      # Lock, display power and idle suspend are managed in session.nix.
     '';
   };
 
