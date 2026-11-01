@@ -30,7 +30,7 @@ case "${1:-}" in
     # This laptop supports all three profiles; Waybar shows the active one.
     ids=(power-saver balanced performance)
     labels=('Power Saver' Balanced Performance)
-    icons=('' '' '')
+    icons=('' '' '')
     choice=$(
       for i in "${!ids[@]}"; do
         rofi_item "${labels[i]}" "${icons[i]}"
