@@ -3,6 +3,7 @@
   stdenv,
   acl,
   cmake,
+  dbus,
   fcitx5,
   fetchFromGitHub,
   gettext,
@@ -26,15 +27,15 @@ let
     ]
   );
 in
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "fcitx5-lotus";
-  version = "6.0.3";
+  version = "6.0.4";
 
   src = fetchFromGitHub {
     owner = "LotusInputMethod";
     repo = "fcitx5-lotus";
-    tag = "v6.0.3";
-    hash = "sha256-WClUYW4DU/hy6F5Q2yylSPWqxkTtca/LlV36Ekmba0o=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-d/U2Tu6+mCxmO1QDWU5C54jYLifLh5IO9L9x/lkRPgI=";
   };
 
   nativeBuildInputs = [
@@ -48,6 +49,7 @@ stdenv.mkDerivation {
 
   buildInputs = [
     acl
+    dbus
     fcitx5
     kdePackages.extra-cmake-modules
     libevdev
@@ -80,4 +82,4 @@ stdenv.mkDerivation {
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
   };
-}
+})
