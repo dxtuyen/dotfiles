@@ -7,8 +7,34 @@
 
 let
   theme = import ../theme.nix;
+  configureGoldenDict = pkgs.writeShellApplication {
+    name = "goldendict-anki-config";
+    runtimeInputs = [
+      pkgs.python3
+      pkgs.procps
+    ];
+    text = ''
+      exec python3 ${./configure-goldendict.py} \
+        --config ${lib.escapeShellArg "${config.xdg.configHome}/goldendict/config"} \
+        --dictionary ${lib.escapeShellArg "${config.home.homeDirectory}/Dictionary/Longman"} \
+        "$@"
+    '';
+  };
+  longmanSetup = pkgs.writeShellApplication {
+    name = "anki-longman-setup";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      ${configureGoldenDict}/bin/goldendict-anki-config
+      exec python3 ${../assets/anki}/apply-longman.py "$@"
+    '';
+  };
 in
 {
+  home.packages = [
+    configureGoldenDict
+    longmanSetup
+  ];
+
   # Preserve Longman's layout; substitute colors from the shared palette.
   xdg.configFile."goldendict/article-style.css" = {
     source = pkgs.replaceVars ../assets/goldendict/longman.css {
@@ -30,16 +56,9 @@ in
     force = true;
   };
 
-  # GoldenDict keeps these preferences in its app-managed config. Update only
-  # the appearance fields so dictionary and user settings remain untouched.
-  home.activation.goldendictDarkMode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    configFile="${config.xdg.configHome}/goldendict/config"
-    if [ -f "$configFile" ]; then
-      run ${pkgs.gnused}/bin/sed -i \
-        -e 's#<displayStyle>[^<]*</displayStyle>#<displayStyle>modern</displayStyle>#' \
-        -e 's#<darkMode>[^<]*</darkMode>#<darkMode>1</darkMode>#' \
-        -e 's#<darkReaderMode>[^<]*</darkReaderMode>#<darkReaderMode>0</darkReaderMode>#' \
-        "$configFile"
-    fi
+  # Seed a fresh install and update only managed preferences in existing XML.
+  # A running GoldenDict would overwrite edits when it exits, so defer those.
+  home.activation.goldendictPreferences = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${configureGoldenDict}/bin/goldendict-anki-config --skip-running
   '';
 }

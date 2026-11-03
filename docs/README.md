@@ -138,5 +138,5 @@ Keep credentials and mutable application data outside Git and back them up separ
 ## Feature notes
 
 - [Wallpapers](../home/features/wallpaper/README.md): resolution, standalone builds, and attribution.
-- [Yanki stylesheet](../home/assets/anki/README.md): apply the custom Anki card CSS.
+- [Anki templates and styles](../home/assets/anki/README.md): apply the Longman vocabulary templates or Yanki CSS.
 - [LazyVim](../home/programs/neovim/README.md): editor structure, language tools, and plugin updates.

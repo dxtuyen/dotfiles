@@ -27,6 +27,7 @@ The swap label must match `boot.resumeDevice = "/dev/disk/by-label/swap"` in the
 Before booting the installer:
 
 1. Back up documents, Anki collections, database exports, SSH keys, application state, and any uncommitted repository changes to another device or service.
+   For vocabulary, finish Anki Sync (including media) on the old machine and keep the complete `~/Dictionary/Longman` directory, including its dictionary and audio/resource files. Commit and push reviewed dotfiles changes before cloning them on another machine; local-only files do not travel with a clone.
 2. Check that the backup can be read. Keep a copy of this runbook accessible from another device.
 3. Connect the laptop to AC power and arrange internet access.
 4. Download a NixOS minimal `x86_64-linux` ISO from the [official download page](https://nixos.org/download/), verify it using the published checksum, and write the image to a USB drive with an image-writing tool. Writing the USB also replaces its contents.
@@ -352,6 +353,100 @@ git remote set-url origin git@github.com:dxtuyen/dotfiles.git
 ```
 
 Restore documents, collections, database backups, and required credentials separately. Keep private keys, passwords, and API keys outside Git. See the [maintenance notes](../README.md#maintenance) for later updates and recovery.
+
+### Restore GoldenDict → Anki
+
+The rebuild in step 11 installs Anki, GoldenDict-ng, `goldendict-anki-config`, and
+`anki-longman-setup`. Home Manager prepares GoldenDict's appearance, dictionary
+path, Anki endpoint, and field mapping. It creates a minimal config on a fresh
+install and preserves other dictionaries, groups, and preferences on an existing
+install. If GoldenDict is running during a rebuild, the update is deferred until
+you quit it and run the setup command.
+
+AnkiWeb carries the `Longman` note type, its templates, vocabulary, review history,
+and media. Its back template automatically displays one English meaning, one
+example, and one phrase from each new GoldenDict selection, with IPA/part of
+speech when provided. Extra senses and dictionary navigation stay under the
+collapsed **Full selection** section. This uses the template itself, with no
+additional background service; the original note fields remain intact.
+AnkiConnect, GoldenDict preferences, and dictionary files are separate
+from AnkiWeb sync. The repository does not contain account passwords or the
+Longman dictionary itself.
+
+Follow these steps once on each new computer:
+
+1. **Restore the Anki collection.** Open Anki, click **Sync**, and sign in to the
+   same AnkiWeb account used on the old machine. When the new machine has an empty
+   collection and AnkiWeb has your existing data, choose **Download from AnkiWeb**
+   if prompted. Wait for both collection and media sync to finish. Confirm that
+   the `LongMan` deck and `Longman` note type are present. Do this before creating
+   a new note type. See the [Anki syncing manual](https://docs.ankiweb.net/syncing.html).
+2. **Install AnkiConnect.** In Anki, open **Tools → Add-ons → Get Add-ons**, enter
+   `2055492159`, install it, then quit and reopen Anki. This is a one-time step per
+   computer. GoldenDict uses the add-on's default local endpoint,
+   `http://127.0.0.1:8765`. Keep Anki open during setup and when adding words.
+3. **Restore the dictionary files.** Copy the complete backed-up Longman directory
+   to `~/Dictionary/Longman`. Keep `.mdx`, `.mdd`, and any accompanying audio or
+   resource files together in their original layout. The files must be directly
+   under that directory for the configured nonrecursive dictionary path.
+4. **Quit GoldenDict completely.** Use **Quit/Exit** in its tray menu; closing the
+   window may only hide it. Also close Anki's card template editor if it is open.
+5. **Complete the setup with one command:**
+
+   ```bash
+   anki-longman-setup
+   ```
+
+   It fills in the GoldenDict settings below and verifies/applies the repository's
+   Anki templates. Running it again is safe; it does not change note contents or
+   review scheduling and writes no backup files. If the templates already match,
+   it leaves them as they are. It does not log in to AnkiWeb or sync for you.
+
+   | GoldenDict setting | Managed value |
+   | --- | --- |
+   | AnkiConnect | Enabled, host `127.0.0.1`, port `8765` |
+   | Deck / Model | `LongMan` / `Longman` (capitalization matters) |
+   | Word / Text / Sentence | `Word` / `selected_text` / `marked_sentence` |
+   | Add audio | Enabled |
+   | Dictionary path | `~/Dictionary/Longman` |
+
+6. **Check the connection and dictionary.** With Anki open, run:
+
+   ```bash
+   curl --fail --silent --show-error http://127.0.0.1:8765 \
+     -H 'Content-Type: application/json' \
+     -d '{"action":"version","version":6}'
+   ```
+
+   Expect a numeric `result` and `"error": null`. Open GoldenDict. If Longman does
+   not appear, open **Edit → Dictionaries → Sources**, verify the configured path,
+   and rescan the dictionary files. For a word you actually want to learn, select
+   its definition and example, then use **Send to Anki**. Its back should
+   automatically show one English meaning/example, pronunciation metadata when
+   present, audio, and a collapsed **Full selection** link. Selecting an entire
+   entry uses the first ordinary sense; select a specific sense when you want a
+   different one. In Anki's browser, preview the card to check the short layout;
+   the editor intentionally still contains the complete imported selection.
+7. **Sync Anki again** after setup or adding vocabulary so the current templates,
+   notes, and media reach the other devices.
+
+Only for a genuinely fresh collection with no existing AnkiWeb vocabulary to
+restore, replace the command in step 5 with:
+
+```bash
+anki-longman-setup --initialize
+```
+
+This creates the `Longman` note type and an empty `LongMan` deck if missing. It
+does not create cards or overwrite an existing collection. The normal command
+stops when the note type/deck is missing and asks you to sync first.
+
+If the setup command is missing, confirm that the checkout includes these changes
+and that step 11's rebuild completed. If AnkiConnect cannot be reached, confirm
+that Anki has been restarted after installing the add-on. A warning about a
+running GoldenDict means you need to quit its tray process before retrying.
+Template files and the manual template-only command are documented in the
+[Anki workflow notes](../../home/assets/anki/README.md).
 
 ## Optional QEMU/KVM preparation
 
