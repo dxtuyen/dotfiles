@@ -8,6 +8,11 @@
 }
 
 .yanki {
+  --yanki-link: #0969da;
+  --yanki-muted-bg: rgba(128, 128, 128, 0.1);
+  --yanki-border: rgba(128, 128, 128, 0.5);
+  --yanki-highlight-bg: #fff0a6;
+  --yanki-highlight-text: #242424;
   box-sizing: border-box;
   width: 100%;
   max-width: 46rem;
@@ -34,6 +39,82 @@
 .yanki ul,
 .yanki ol {
   padding-left: 1.4em;
+}
+
+/* Style existing Markdown output without changing its content or behavior. */
+.yanki blockquote,
+.yanki .admonition {
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  border-left: 3px solid var(--yanki-border);
+  background-color: var(--yanki-muted-bg);
+  overflow-wrap: anywhere;
+}
+
+.yanki .admonition {
+  border-left-color: var(--yanki-link);
+}
+
+.yanki .admonition-title {
+  color: var(--yanki-link);
+  font-weight: bold;
+}
+
+.yanki blockquote > :first-child,
+.yanki .admonition > :first-child {
+  margin-top: 0;
+}
+
+.yanki blockquote > :last-child,
+.yanki .admonition > :last-child {
+  margin-bottom: 0;
+}
+
+.yanki a:not(.replay-button):not(.soundLink) {
+  color: var(--yanki-link);
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.yanki :not(pre) > code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background-color: var(--yanki-muted-bg);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+
+.yanki mark {
+  padding: 0.05em 0.15em;
+  border-radius: 3px;
+  color: var(--yanki-highlight-text);
+  background-color: var(--yanki-highlight-bg);
+}
+
+.yanki img,
+.yanki video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Keep Markdown tables visibly divided in both light and night modes. */
+.yanki table {
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+}
+
+.yanki th,
+.yanki td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--yanki-border);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.yanki th {
+  background-color: rgba(128, 128, 128, 0.12);
 }
 
 /* Center equations that fit; let oversized equations scroll from the left edge. */
@@ -72,6 +153,13 @@
 .night_mode .card {
   color: #e1e4e8;
   background-color: #1e1e1e;
+}
+
+.nightMode .yanki,
+.night_mode .yanki {
+  --yanki-link: #79b8ff;
+  --yanki-highlight-bg: #66551c;
+  --yanki-highlight-text: #fff3bf;
 }
 
 /* Activate the dark Shiki palette, which is present in Yanki's generated HTML. */
