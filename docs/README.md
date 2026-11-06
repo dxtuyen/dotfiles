@@ -74,6 +74,29 @@ Media keys adjust volume by 5% within 0–100% and screen brightness by 10%, wit
 
 ## Maintenance
 
+### Start MySQL and virtual machines when needed
+
+MySQL and libvirt do not start at boot. Start and stop MySQL manually:
+
+```bash
+sudo systemctl start mysql
+sudo systemctl stop mysql
+```
+
+For virtual machines, run `sudo systemctl start libvirtd`, then open
+`virt-manager` and start the desired guest. Shut down guests in virt-manager
+before stopping the host services:
+
+```bash
+sudo systemctl stop libvirt-guests.service libvirtd.service libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket virtlogd.socket virtlockd.socket virtlogd.service virtlockd.service
+```
+
+Libvirt sockets also stay off at boot, so opening a client alone does not start
+the daemon. Guests from the previous session are not automatically resumed;
+guests explicitly marked for autostart in libvirt can still start when you
+manually start the daemon. The `vm-nixos` helper runs QEMU directly and needs no
+libvirt service.
+
 ### Build and validate
 
 ```bash
