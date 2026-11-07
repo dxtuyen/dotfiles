@@ -50,6 +50,13 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
     wireplumber.enable = true;
+    # Use software volume for Bluetooth audio: some headsets are too loud
+    # at the lowest hardware volume step. Applies to all Bluetooth devices.
+    wireplumber.extraConfig."99-bluetooth-software-volume" = {
+      "monitor.bluez.properties" = {
+        "bluez5.enable-hw-volume" = false;
+      };
+    };
     # x11-bell crashes PipeWire when Sway's Xwayland display disconnects.
     extraConfig.pipewire."99-disable-x11-bell" = {
       "context.properties"."module.x11.bell" = false;
