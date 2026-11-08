@@ -29,7 +29,7 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 | `` Super+` `` | Toggle the popup terminal |
 | `Super+1…9`, `Super+0` | Switch to workspace 1–10; add `Shift` to move a window |
 | `Super+H/J/K/L` or `Super+Arrow` | Focus by direction; add `Shift` to move a window |
-| `Alt+Tab` / `Super+Tab` | Previously focused window / workspace overview |
+| `Alt+Tab` / `Super+Tab` | Previously focused workspace / workspace overview |
 | `Super+[` / `Super+]` | Previous / next workspace; add `Shift` to move a window |
 | `Super+F` / `Super+Shift+Space` | Toggle fullscreen / floating mode |
 | `Super+-` / `Super+Shift+-` | Show scratchpad / send a window to it |
@@ -39,7 +39,9 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 | `Print` / `Alt+Print` | Copy a selected region / full screen; use `Shift+Print` / `Ctrl+Print` to save |
 | `Super+T` / `Super+Shift+T` / `Super+Ctrl+T` | Translate to English / Vietnamese / proofread English |
 
-`Alt+Tab` returns to the previously focused window across workspaces, skipping hidden scratchpad windows. The existing `sway-focus-urgent` service also records focus history in the session runtime directory; no separate switcher daemon is needed. Scratchpads can be shown manually with their existing shortcuts.
+`Alt+Tab` uses Sway's native `workspace back_and_forth` command to return to the workspace you just left. For example, after switching from workspace 2 to 5, Alt+Tab returns to 2; pressing it again returns to 5. Holding Alt and pressing Tab again continues toggling between those two workspaces. It does not cycle windows or the full workspace history, and needs no switcher or history daemon. `Super+Tab` still opens the workspace overview.
+
+The `sway-focus-urgent` service only handles automatic focus for urgent windows; `focus_on_window_activation focus` is also preserved. Rebuild and reload Sway (`Super+Shift+C`) to use the new binding.
 
 Countdown inhibits automatic locking and idle suspend while running. Locking pauses it and clears manual idle inhibition; resume Countdown manually after unlocking or waking. Unlocking does not restore the old manual inhibition setting. The lock is confirmed before changing Countdown or inhibition state.
 

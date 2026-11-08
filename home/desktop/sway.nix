@@ -2,7 +2,7 @@
 
 let
   theme = import ../theme.nix;
-  # Share one window-event subscription for focus history and urgency handling.
+  # Preserve automatic focus for urgent windows.
   focusWindows = pkgs.writeShellScript "sway-window-focus" ''
     exec ${pkgs.python3}/bin/python3 ${./window-focus.py} ${pkgs.sway}/bin/swaymsg "$@"
   '';
@@ -135,8 +135,8 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym $mod+d exec $menu
-      # Return to the previously focused window; skip hidden scratchpads.
-      bindsym --no-repeat Mod1+Tab exec ${focusWindows} --previous
+      # Return to the workspace just left; repeat to toggle between the two.
+      bindsym --no-repeat Mod1+Tab workspace back_and_forth
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.
       # Mod+c opens Countdown.
       # Toggle Sway's native scratchpad; Shift+Mod+- sends the focused window there.
@@ -255,10 +255,10 @@ in
     '';
   };
 
-  # Keep the existing service for urgency and the Alt+Tab focus history.
+  # Urgency handling is independent of workspace switching.
   systemd.user.services.sway-focus-urgent = {
     Unit = {
-      Description = "Track Sway window history and focus urgent windows";
+      Description = "Focus urgent Sway windows";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
     };
