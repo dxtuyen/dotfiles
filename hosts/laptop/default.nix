@@ -23,6 +23,7 @@
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
+    sharedModules = [ inputs.nix-flatpak.homeManagerModules.nix-flatpak ];
     backupFileExtension = "backup"; # overwrite old file as *.backup instead of failing the build
     extraSpecialArgs = { inherit inputs userName; };
     users.${userName} = import ../../home;

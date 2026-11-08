@@ -13,6 +13,9 @@ in
   programs.sway.enable = true;
   programs.dconf.enable = true;
 
+  # Brave is distributed through Flathub after its removal from nixpkgs.
+  services.flatpak.enable = true;
+
   # Enable remote and virtual filesystems for GIO and Thunar.
   services.gvfs.enable = true;
 
@@ -41,7 +44,7 @@ in
 
   systemd.tmpfiles.rules = [
     # WebKitGTK expects dictionaries under /usr/share/hyphen; provide the en_US link.
-    "L+/usr/share/hyphen - - - - ${pkgs.hyphenDicts.en_US}/share/hyphen"
+    "L+ /usr/share/hyphen - - - - ${pkgs.hyphenDicts.en_US}/share/hyphen"
   ];
 
   services.pipewire = {

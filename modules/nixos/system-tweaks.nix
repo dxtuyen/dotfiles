@@ -1,6 +1,9 @@
 { ... }:
 
 {
+  # Upgrade NixOS manually after reviewing and validating flake.lock changes.
+  system.autoUpgrade.enable = false;
+
   # Kill memory-heavy processes before the desktop runs out of memory.
   services.earlyoom = {
     enable = true;

@@ -7,6 +7,21 @@ in
 # User packages from the nixos-unstable revision pinned in flake.lock.
 {
 
+  services.flatpak = {
+    enable = true;
+    packages = [ "com.brave.Browser" ];
+    remotes = [
+      {
+        name = "flathub";
+        location = "https://dl.flathub.org/repo/flathub.flatpakrepo";
+      }
+    ];
+    update.auto = {
+      enable = true;
+      onCalendar = "daily";
+    };
+  };
+
   home.packages = with pkgs; [
     rofi
     swayview # overview and switcher for Sway workspaces (Mod+Tab)
@@ -26,7 +41,9 @@ in
     anki
     bluetui
     google-chrome
-    brave
+    (pkgs.writeShellScriptBin "brave" ''
+      exec ${pkgs.flatpak}/bin/flatpak run --user com.brave.Browser "$@"
+    '')
     # E-book reader.
     foliate
     imv # Image viewer.

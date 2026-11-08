@@ -15,6 +15,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-flatpak.url = "github:gmodena/nix-flatpak/latest";
+
     # Use only the generator source, with this system's pinned Nixpkgs.
     nix-wallpaper = {
       url = "github:lunik1/nix-wallpaper";

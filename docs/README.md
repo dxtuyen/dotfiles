@@ -120,6 +120,23 @@ You can also run the suite in GitHub Actions by selecting **Nix checks → Run w
 
 ### Update and roll back
 
+NixOS upgrades are manual. Update `flake.lock`, review the changes, and use
+the build and validation steps above before running `nswitch`. NixOS has no
+automatic upgrade timer; Flatpak applications update independently below.
+
+Brave is installed per user from Flathub because the pinned nixpkgs removed
+its package. `nix-flatpak` manages Flathub, Brave, and daily updates through
+the Home Manager configuration in `home/packages.nix`. Switch the system to
+apply changes; no separate install command is needed. For a manual update:
+
+```bash
+flatpak update --user
+```
+
+The Flatpak profile lives in `~/.var/app/com.brave.Browser/config/BraveSoftware`.
+When migrating, close Brave and copy the original `~/.config/BraveSoftware`
+there before the first launch; retain the original as a backup.
+
 ```bash
 nix flake update
 git diff -- flake.lock
