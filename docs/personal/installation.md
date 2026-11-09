@@ -191,14 +191,14 @@ Inspect the relevant files before building:
 | `hosts/laptop/default.nix` | Hostname, imports, and integrated Home Manager user |
 | `hosts/laptop/hardware-configuration.nix` | Newly generated mounts, UUIDs, disk swap, and hardware modules |
 | `modules/nixos/core.nix` | UEFI bootloader, account, network, timezone, and `nh` checkout path |
-| `modules/nixos/laptop.nix` | Intel graphics, resume label, sleep mode, battery thresholds, and lid handling |
+| `modules/nixos/laptop/default.nix` | Intel graphics, resume label, sleep mode, battery thresholds, and lid handling |
 
 For the current laptop, retain the intended laptop settings. On different physical hardware, adapt them before installation. Do not increase either `stateVersion` merely because a newer ISO is being used.
 
 **For the practice VM only**, edit the temporary guest checkout with `nano`:
 
 1. In `modules/nixos/core.nix`, change `boot.loader.efi.canTouchEfiVariables = true;` to `false;`. The helper does not provide a persistent writable OVMF variables drive; the installed system can use the fallback EFI loader.
-2. In `modules/nixos/laptop.nix`, change `boot.initrd.kernelModules = [ "i915" ];` to `boot.initrd.kernelModules = [ ];`.
+2. In `modules/nixos/laptop/default.nix`, change `boot.initrd.kernelModules = [ "i915" ];` to `boot.initrd.kernelModules = [ ];`.
 3. In the same file, remove `"mem_sleep_default=deep"` from `boot.kernelParams`, leaving an empty list if there are no other entries. The generated guest hardware file supplies the appropriate virtual device modules.
 
 Keep these VM edits inside the guest checkout. VM practice covers installation and desktop use; it does not verify physical battery, lid, or hibernation behavior.
@@ -446,7 +446,7 @@ and that step 11's rebuild completed. If AnkiConnect cannot be reached, confirm
 that Anki has been restarted after installing the add-on. A warning about a
 running GoldenDict means you need to quit its tray process before retrying.
 Template files and the manual template-only command are documented in the
-[Anki workflow notes](../../home/assets/anki/README.md).
+[Anki workflow notes](../../home/features/vocabulary/assets/anki/README.md).
 
 ## Optional QEMU/KVM preparation
 

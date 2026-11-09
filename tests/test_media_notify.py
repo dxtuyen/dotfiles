@@ -96,7 +96,7 @@ class MediaNotifyTests(unittest.TestCase):
         stub.chmod(0o755)
         for name in ("wpctl", "brightnessctl", "notify-send"):
             (self.bin / name).symlink_to(stub)
-        text = (SOURCE / "home/scripts/media/media-notify.sh").read_text()
+        text = (SOURCE / "home/desktop/media/scripts/media-notify.sh").read_text()
         text = text.replace("@flock@", shutil.which("flock")).replace("@timeout@", shutil.which("timeout"))
         self.script = self.root / "media-notify"
         self.script.write_text(text)

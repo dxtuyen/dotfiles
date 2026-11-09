@@ -1,7 +1,7 @@
 { config, ... }:
 
 let
-  theme = import ../theme.nix;
+  theme = import ../../shared/theme.nix;
   # Use Font Awesome for consistent icon sizing and alignment.
   faSpan = s: "<span font_family='Font Awesome 7 Free'>${s}</span>";
 in

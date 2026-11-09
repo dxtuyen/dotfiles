@@ -18,6 +18,7 @@ For another machine, first [adapt the hardware and user settings](docs/README.md
 
 ```text
 home/           Home Manager, applications, and desktop workflows
+shared/         Pure data shared by NixOS and Home Manager
 hosts/          Host configuration and hardware settings
 modules/nixos/  System modules and services
 pkgs/           Local package definitions
@@ -27,4 +28,4 @@ docs/           Guides and reference
 
 ## Documentation
 
-See the [configuration notes](docs/README.md) for editing, desktop shortcuts, and maintenance.
+See the [architecture guide](docs/architecture.md) and [configuration notes](docs/README.md) for editing, desktop shortcuts, and maintenance.

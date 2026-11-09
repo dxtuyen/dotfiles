@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  theme = import ../theme.nix;
+  theme = import ../../shared/theme.nix;
 in
 
 # A compact two-line prompt using the shared Gruvbox palette.

@@ -4,55 +4,6 @@
   programs.bash = {
     enable = true;
     shellAliases.nswitch = ''cd "$HOME/dotfiles" && sudo nixos-rebuild switch --flake ".#$(hostname -s)"'';
-    initExtra = ''
-      export PATH="$HOME/.local/bin:$PATH"
-
-      # OSC 7 sets the working directory; OSC 2 sets the terminal title.
-      __foot_escape_uri_path() {
-        local LC_ALL=C
-        local path="$1" escaped="" char hex
-        while [ -n "$path" ]; do
-          char="''${path:0:1}"
-          path="''${path:1}"
-          case "$char" in
-            [a-zA-Z0-9/._~-]) escaped+="$char" ;;
-            *) printf -v hex '%%%02X' "'$char"; escaped+="$hex" ;;
-          esac
-        done
-        __foot_osc7_path="$escaped"
-      }
-
-      __set_window_title() {
-        local dir="$PWD"
-        case "$dir" in
-          "$HOME"|"$HOME"/*) dir="~''${dir#"$HOME"}" ;;
-        esac
-        printf '\033]2;%s\007' "$dir"
-        __foot_escape_uri_path "$PWD"
-        printf '\033]7;file://%s%s\033\\' "''${HOSTNAME:-localhost}" "$__foot_osc7_path"
-      }
-      PROMPT_COMMAND="__set_window_title''${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
-
-      # Open a new tmux window or Foot terminal in the current directory.
-      nt() {
-        if [ -n "''${TMUX:-}" ]; then
-          tmux new-window -c "$PWD"
-        else
-          foot --working-directory "$PWD" >/dev/null 2>&1 &
-          disown
-        fi
-      }
-
-      # Open Yazi and change to its last directory on exit.
-      # Kept custom to avoid Home Manager's Yazi package override.
-      function y() {
-        local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-        yazi "$@" --cwd-file="$tmp"
-        if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-          builtin cd -- "$cwd"
-        fi
-        rm -f -- "$tmp"
-      }
-    '';
+    initExtra = builtins.readFile ./scripts/interactive.sh;
   };
 }

@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 
-ASSETS = Path(__file__).resolve().parents[1] / "home/assets/anki"
+ASSETS = Path(__file__).resolve().parents[1] / "home/features/vocabulary/assets/anki"
 BROWSER = next(
     (path for name in ("google-chrome-stable", "chromium", "chromium-browser")
      if (path := shutil.which(name))),

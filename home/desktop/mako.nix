@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  theme = import ../theme.nix;
+  theme = import ../../shared/theme.nix;
   iconTheme = import ./icon-theme.nix { inherit pkgs; };
 in
 

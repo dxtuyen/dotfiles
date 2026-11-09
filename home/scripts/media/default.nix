@@ -1,5 +1,0 @@
-{ ... }:
-
-{
-  imports = [ ./media-notify.nix ];
-}

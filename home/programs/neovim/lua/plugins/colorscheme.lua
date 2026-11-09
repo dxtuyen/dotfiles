@@ -4,7 +4,7 @@ return {
     lazy = false,
     priority = 1000,
     init = function()
-      -- Same palette settings as home/theme.nix.
+      -- Same palette settings as shared/theme.nix.
       vim.g.gruvbox_material_background = "medium"
       vim.g.gruvbox_material_foreground = "material"
       vim.g.gruvbox_material_better_performance = 1

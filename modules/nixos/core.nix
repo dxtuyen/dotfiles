@@ -6,7 +6,7 @@
 }:
 
 let
-  theme = import ../../home/theme.nix;
+  theme = import ../../shared/theme.nix;
 in
 {
   # Run garbage collection weekly and keep the last seven days.

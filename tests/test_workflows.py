@@ -106,20 +106,21 @@ class WorkflowTests(unittest.TestCase):
             (self.bin / name).symlink_to(self.command_stub)
         for name in ("wlsunset-apply", "screenshot"):
             (self.home / ".local/bin" / name).symlink_to(self.command_stub)
-        helper = (SOURCE / "home/desktop/rofi-menu.sh").read_text()
+        helper = (SOURCE / "home/desktop/rofi/scripts/rofi-menu.sh").read_text()
         (self.home / ".local/lib/rofi-menu.sh").write_text(helper.replace("@iconColor@", "#d4be98"))
         for name in ("wlsunset-menu", "screenshot-menu"):
+            feature = "display" if name == "wlsunset-menu" else "screenshot"
             self.executable(self.home / ".local/bin" / name,
-                            (SOURCE / "home/scripts/desktop" / (name + ".sh")).read_text())
+                            (SOURCE / "home/desktop" / feature / "scripts" / (name + ".sh")).read_text())
         self.executable(
             self.bin / "date",
             '#!/usr/bin/env bash\nif [ "${1:-}" = +%s ]; then cat "$TEST_ROOT/clock"; '
             'else exec ' + shlex.quote(shutil.which("date")) + ' "$@"; fi\n',
         )
-        text = (SOURCE / "home/features/countdown/countdown-engine.sh").read_text()
+        text = (SOURCE / "home/features/countdown/scripts/countdown-engine.sh").read_text()
         text = text.replace("@flock@", shutil.which("flock")).replace("@jq@", shutil.which("jq"))
         self.engine_path = self.executable(self.home / ".local/bin/countdown-engine", text)
-        self.menu = SOURCE / "home/features/countdown/countdown-menu.sh"
+        self.menu = SOURCE / "home/features/countdown/scripts/countdown-menu.sh"
 
     def executable(self, path, text):
         if text.startswith("#!/usr/bin/env "):
@@ -180,7 +181,7 @@ class WorkflowTests(unittest.TestCase):
     def power_menu(self, *args, dialogs, **environment):
         script = self.executable(
             self.home / ".local/bin/utilities",
-            (SOURCE / "home/scripts/utilities/daily-menu.sh").read_text(),
+            (SOURCE / "home/desktop/menus/scripts/utilities.sh").read_text(),
         )
         return self.run_command(
             script, *args, TEST_DIALOGS=json.dumps(dialogs),
@@ -329,7 +330,7 @@ class WorkflowTests(unittest.TestCase):
         self.engine("inhibit-toggle")
         self.engine("idle-allowed", expected=1)
         self.calls.unlink(missing_ok=True)
-        self.run_command("bash", SOURCE / "home/desktop/lock-screen.sh")
+        self.run_command("bash", SOURCE / "home/desktop/session/scripts/lock-screen.sh")
         self.engine("idle-allowed")
         state = json.loads(self.engine("inhibit"))
         self.assertEqual(state["class"], "idle")
@@ -453,12 +454,8 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(actions, [["status"]] + ([expected] if expected else []))
 
     def pdf_script(self):
-        text = (SOURCE / "home/features/sioyek/open.nix").read_text()
-        body = textwrap.dedent(re.search(r"text = ''\n(.*?)\n\s*'';", text, re.S).group(1))
-        for package, command in (("jq", "jq"), ("sway", "swaymsg"), ("sioyek", "sioyek")):
-            target = shutil.which("jq") if command == "jq" else str(self.bin / command)
-            body = body.replace('${pkgs.' + package + '}/bin/' + command, target)
-        return self.executable(self.root / "sioyek-open", body)
+        return self.executable(self.root / "sioyek-open",
+                               (SOURCE / "home/programs/sioyek/scripts/sioyek-open.sh").read_text())
 
     def test_same_name_pdf_forwards_requested_path(self):
         tree = {"nodes": [{"id": 42, "app_id": "sioyek", "name": "notes.pdf - Sioyek"}]}

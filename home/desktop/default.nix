@@ -2,16 +2,22 @@
 
 {
   imports = [
+    ./display
     ./fcitx5.nix
-    ./goldendict.nix
     ./gtk.nix
+    ./input
     ./mako.nix
+    ./media
+    ./menus
     ./mimeapps.nix
     ./qt.nix
-    ./rofi.nix
-    ./session.nix
-    ./sway.nix
+    ./rofi
+    ./screenshot
+    ./session
+    ./sway
     ./thunar.nix
     ./waybar.nix
+    ./wallpaper
+    ./windows
   ];
 }

@@ -10,14 +10,14 @@ Commands run from the repository root. The system target is `laptop`; rebuilding
 | Host imports and hardware | [hosts/laptop/](../hosts/laptop/) |
 | Boot, networking, hardware, and system services | [modules/nixos/](../modules/nixos/) |
 | User packages and application settings | [packages.nix](../home/packages.nix), [programs/](../home/programs/) |
-| Window rules and keyboard shortcuts | [sway.nix](../home/desktop/sway.nix) |
+| Window rules and keyboard shortcuts | [Sway module](../home/desktop/sway/default.nix) |
 | Status bar and notifications | [waybar.nix](../home/desktop/waybar.nix), [mako.nix](../home/desktop/mako.nix) |
 | Default applications | [mimeapps.nix](../home/desktop/mimeapps.nix) |
-| Colors and toolkit appearance | [theme.nix](../home/theme.nix), [gtk.nix](../home/desktop/gtk.nix), [qt.nix](../home/desktop/qt.nix) |
-| Workflows and user commands | [features/](../home/features/), [scripts/](../home/scripts/) |
+| Colors and toolkit appearance | [theme.nix](../shared/theme.nix), [gtk.nix](../home/desktop/gtk.nix), [qt.nix](../home/desktop/qt.nix) |
+| Workflows and user commands | [features/](../home/features/), [desktop/](../home/desktop/) |
 | Bash helpers and shell tools | [shell/](../home/shell/) |
 
-The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep system settings under `modules/nixos/` and user settings under `home/`. Longer scripts live beside their Nix installation modules.
+The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep system settings under `modules/nixos/` and user settings under `home/`. Runtime logic lives in the owning module's `scripts/` directory; Nix handles configuration and packaging. See the [architecture guide](architecture.md) for ownership rules.
 
 ## Desktop essentials
 
@@ -45,7 +45,7 @@ The `sway-focus-urgent` service only handles automatic focus for urgent windows;
 
 Countdown inhibits automatic locking and idle suspend while running. Locking pauses it and clears manual idle inhibition; resume Countdown manually after unlocking or waking. Unlocking does not restore the old manual inhibition setting. The lock is confirmed before changing Countdown or inhibition state.
 
-The idle policy lives in [`home/desktop/session.nix`](../home/desktop/session.nix):
+The idle policy lives in [`home/desktop/session/default.nix`](../home/desktop/session/default.nix):
 
 | Condition | Behavior |
 | --- | --- |
@@ -128,9 +128,10 @@ automatic upgrade timer; Flatpak applications update independently below.
 
 Brave is installed per user from Flathub because the pinned nixpkgs removed
 its package. TickTick is also installed per user from Flathub instead of
-using the browser app. `nix-flatpak` manages Flathub, Brave, TickTick, and daily
-updates through the Home Manager configuration in `home/packages.nix`. Switch the system to
-apply changes; no separate install command is needed. For a manual update:
+using the browser app. Super Productivity uses Flathub for application updates
+independent of the pinned nixpkgs revision. `nix-flatpak` manages Flathub, these
+applications, and daily updates through `home/packages.nix`. Switch the system
+to apply changes; no separate install command is needed. For a manual update:
 
 ```bash
 flatpak update --user
@@ -139,6 +140,10 @@ flatpak update --user
 The Flatpak profile lives in `~/.var/app/com.brave.Browser/config/BraveSoftware`.
 When migrating, close Brave and copy the original `~/.config/BraveSoftware`
 there before the first launch; retain the original as a backup.
+
+For Super Productivity, close the application and copy `~/.config/superProductivity`
+to `~/.var/app/com.super_productivity.SuperProductivity/config/superProductivity`
+before the first Flatpak launch. Retain the original profile as a backup.
 
 ```bash
 nix flake update
@@ -173,13 +178,13 @@ For a specific unit, use `systemctl --user status UNIT` and `journalctl --user -
 
 1. Regenerate `hosts/laptop/hardware-configuration.nix` on the target and verify its filesystems and swap devices.
 2. Review `userName` and the target in `flake.nix`, plus the hostname and imports in `hosts/laptop/default.nix`.
-3. Check `modules/nixos/laptop.nix` for Intel graphics, resume, sleep, lid handling, and battery settings. Review packages, Git identity, and personal paths under `home/`.
+3. Check `modules/nixos/laptop/default.nix` for Intel graphics, resume, sleep, lid handling, and battery settings. Review packages, Git identity, and personal paths under `home/`.
 4. Use `~/dotfiles`, or update the `nh` path and `nswitch` alias to match the checkout location. Build and validate before activation.
 
 Keep credentials and mutable application data outside Git and back them up separately.
 
 ## Feature notes
 
-- [Wallpapers](../home/features/wallpaper/README.md): resolution, standalone builds, and attribution.
-- [Anki templates and styles](../home/assets/anki/README.md): apply the Longman vocabulary templates or Yanki CSS.
+- [Wallpapers](../home/desktop/wallpaper/README.md): resolution, standalone builds, and attribution.
+- [Anki templates and styles](../home/features/vocabulary/assets/anki/README.md): apply the Longman vocabulary templates or Yanki CSS.
 - [LazyVim](../home/programs/neovim/README.md): editor structure, language tools, and plugin updates.

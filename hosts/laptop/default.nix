@@ -12,7 +12,7 @@
     ../../modules/nixos/desktop.nix
     ../../modules/nixos/development.nix
     ../../modules/nixos/input-method.nix
-    ../../modules/nixos/laptop.nix
+    ../../modules/nixos/laptop
     ../../modules/nixos/system-tweaks.nix
     ../../modules/nixos/virtualisation.nix
   ];

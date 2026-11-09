@@ -2,11 +2,13 @@
 
 {
   imports = [
-    ./btop.nix
+    ./btop
     ./foot.nix
     ./git.nix
-    ./neovim.nix
+    ./neovim
+    ./sioyek
     ./starship.nix
     ./tmux.nix
+    ./yazi
   ];
 }

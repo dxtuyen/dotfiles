@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  theme = import ../theme.nix;
+  theme = import ../../shared/theme.nix;
   iconTheme = import ./icon-theme.nix { inherit pkgs; };
   # QPalette roles, in Qt order (WindowText through PlaceholderText).
   # Fusion consumes this palette directly; no extra style engine is needed.

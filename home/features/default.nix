@@ -3,8 +3,9 @@
 {
   imports = [
     ./countdown
-    ./sioyek
-    ./wallpaper
-    ./yazi
+    ./training-vm
+    ./translation
+    ./trash-clean
+    ./vocabulary
   ];
 }

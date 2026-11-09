@@ -7,7 +7,7 @@
 { lib, ... }:
 
 let
-  theme = import ../theme.nix;
+  theme = import ../../shared/theme.nix;
   hex = color: builtins.substring 1 6 color;
   # Foot names ANSI slots 0–7 regular0–7 and slots 8–15 bright0–7.
   ansiColors = builtins.listToAttrs (

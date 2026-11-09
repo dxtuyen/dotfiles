@@ -19,8 +19,8 @@ def load_script(name, path):
     return module
 
 
-goldendict = load_script("configure_goldendict", "home/desktop/configure-goldendict.py")
-longman = load_script("apply_longman", "home/assets/anki/apply-longman.py")
+goldendict = load_script("configure_goldendict", "home/features/vocabulary/scripts/configure-goldendict.py")
+longman = load_script("apply_longman", "home/features/vocabulary/scripts/apply-longman.py")
 
 
 class GoldenDictConfigurationTests(unittest.TestCase):

@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 
 FOCUS = runpy.run_path(str(Path(__file__).resolve().parents[1]
-                          / "home/desktop/window-focus.py"))
+                          / "home/desktop/sway/scripts/window-focus.py"))
 
 
 def window(wid, focused=False):

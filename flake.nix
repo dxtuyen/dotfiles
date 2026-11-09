@@ -33,9 +33,10 @@
     }:
     let
       system = "x86_64-linux";
+      userName = "doxuantuyen";
       pkgs = nixpkgs.legacyPackages.${system};
       # Preview aliases use the same resolution as the laptop's Home Manager config.
-      wallpapers = import ./home/features/wallpaper/images.nix {
+      wallpapers = import ./home/desktop/wallpaper/images.nix {
         inherit pkgs inputs;
         wallpaperResolution =
           self.nixosConfigurations.laptop.config.home-manager.extraSpecialArgs.wallpaperResolution or { };
@@ -47,22 +48,87 @@
         wallpaper-lockscreen = wallpapers.lockscreen;
       };
 
-      checks.${system}.workflows =
-        pkgs.runCommand "workflow-regressions"
-          {
-            nativeBuildInputs = with pkgs; [
-              python3
-              bash
-              coreutils
-              jq
-              util-linux
+      checks.${system} = {
+        workflows =
+          pkgs.runCommand "workflow-regressions"
+            {
+              nativeBuildInputs = with pkgs; [
+                python3
+                bash
+                coreutils
+                jq
+                util-linux
+                sway-unwrapped
+                foot
+              ];
+              FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
+            }
+            ''
+              cd ${self}
+              python3 -m unittest discover -s tests -v
+              touch "$out"
+            '';
+
+        # Build packaged commands and lint sourced shell helpers.
+        scripts =
+          let
+            homeConfig = self.nixosConfigurations.laptop.config.home-manager.users.${userName};
+            commands = [
+              "obsidian-toggle"
+              "sway-popup"
+              "scratchpad-terminal"
+              "screenshot"
+              "screenshot-menu"
+              "toggle-touchpad"
+              "wlsunset-apply"
+              "wlsunset-menu"
+              "refresh-session"
+              "idle-suspend"
+              "lock-screen"
+              "session-resume"
+              "media-notify"
+              "utilities"
+              "power-profile-menu"
+              "dict-toggle"
+              "quick-lang"
+              "vm-nixos"
+              "trash-clean"
+              "countdown-engine"
+              "countdown"
+              "sioyek-open"
+              "sioyek"
             ];
-          }
-          ''
-            cd ${self}
-            python3 -m unittest discover -s tests -v
-            touch "$out"
-          '';
+          in
+          pkgs.runCommand "script-checks"
+            {
+              nativeBuildInputs = [ pkgs.shellcheck ];
+              scripts = map (name: homeConfig.home.file.".local/bin/${name}".source) commands;
+              # Keep activation-only and system command helpers in the build graph.
+              btopActivation = homeConfig.home.activation.btopMaterial.data;
+              vocabularyPackages = builtins.filter (
+                package:
+                builtins.elem (nixpkgs.lib.getName package) [
+                  "goldendict-anki-config"
+                  "anki-longman-setup"
+                ]
+              ) homeConfig.home.packages;
+              batteryCommand =
+                self.nixosConfigurations.laptop.config.systemd.services.battery-threshold.serviceConfig.ExecStart;
+              runner = builtins.head (
+                nixpkgs.lib.splitString " " (
+                  toString homeConfig.systemd.user.services."wlsunset@".Service.ExecStart
+                )
+              );
+            }
+            ''
+              for script in $scripts; do
+                test -x "$script"
+              done
+              test -x "$runner"
+              shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/rofi/scripts/rofi-menu.sh}
+              touch "$out"
+            '';
+      };
 
       formatter.${system} = pkgs.writeShellApplication {
         name = "nixfmt";
@@ -75,8 +141,7 @@
       nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {
-          inherit inputs;
-          userName = "doxuantuyen";
+          inherit inputs userName;
         };
         modules = [
           home-manager.nixosModules.home-manager

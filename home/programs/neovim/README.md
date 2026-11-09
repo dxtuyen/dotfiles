@@ -5,11 +5,11 @@ changes add Gruvbox Material and use Nix-provided language tools.
 
 ## Ownership
 
-- `../neovim.nix` installs Neovim and external tools, generates `init.lua`, and
+- `default.nix` installs Neovim and external tools, generates `init.lua`, and
   links the editable configuration into `~/.config/nvim`.
 - `lua/config/` contains the starter bootstrap and local editor settings.
 - `lua/plugins/` contains plugin overrides. `colorscheme.lua` matches the
-  Gruvbox Material settings in `../../theme.nix`; `tools.lua` uses Nix tools
+  Gruvbox Material settings in `../../../shared/theme.nix`; `tools.lua` uses Nix tools
   instead of Mason downloads.
 - `lazyvim.json` records Extras; `lazy-lock.json` records plugin versions. Both
   are writable links to this checkout and should be committed after changes.
@@ -17,7 +17,7 @@ changes add Gruvbox Material and use Nix-provided language tools.
   normal XDG data/state/cache directories, outside this repository.
 
 The links assume the checkout is at `~/dotfiles`, like the system's existing
-rebuild aliases. Update `nvimConfig` in `../neovim.nix` if the checkout moves.
+rebuild aliases. Update `nvimConfig` in `default.nix` if the checkout moves.
 Existing files elsewhere under `~/.config/nvim` are preserved.
 
 ## Apply and maintain
@@ -25,7 +25,7 @@ Existing files elsewhere under `~/.config/nvim` are preserved.
 From the repository root, include new files in Git before rebuilding a Git flake:
 
 ```bash
-git add home/programs/neovim.nix home/programs/neovim home/programs/tmux.nix home/programs/default.nix
+git add home/programs/neovim/default.nix home/programs/neovim home/programs/tmux.nix home/programs/default.nix
 sudo nixos-rebuild switch --flake .#laptop
 nvim
 ```

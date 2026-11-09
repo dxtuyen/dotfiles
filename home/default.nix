@@ -16,7 +16,6 @@
     ./programs
     ./desktop
     ./features
-    ./scripts
   ];
 
   programs.home-manager.enable = true;

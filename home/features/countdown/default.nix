@@ -1,27 +1,43 @@
 { pkgs, ... }:
 
 let
-  countdownEngine = pkgs.writeTextFile {
+  countdownEngine = pkgs.writeShellApplication {
     name = "countdown-engine";
-    executable = true;
+    # State transitions explicitly handle errors; preserve their exit behavior.
+    bashOptions = [ ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.util-linux
+      pkgs.jq
+      pkgs.systemd
+      pkgs.procps
+      pkgs.libnotify
+      pkgs.pulseaudio
+    ];
     text =
       builtins.replaceStrings [ "@flock@" "@jq@" ] [ "${pkgs.util-linux}/bin/flock" "${pkgs.jq}/bin/jq" ]
-        (builtins.readFile ./countdown-engine.sh);
+        (builtins.readFile ./scripts/countdown-engine.sh);
   };
-  countdownMenu = pkgs.writeTextFile {
-    name = "countdown-menu";
-    executable = true;
-    text = builtins.readFile ./countdown-menu.sh;
+  countdownMenu = pkgs.writeShellApplication {
+    name = "countdown";
+    bashOptions = [ "nounset" ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.rofi
+      pkgs.libnotify
+    ];
+    extraShellCheckFlags = [ "--external-sources" ];
+    text =
+      builtins.replaceStrings
+        [ "# shellcheck source=../../../desktop/rofi/scripts/rofi-menu.sh" ]
+        [ "# shellcheck source=${../../desktop/rofi/scripts/rofi-menu.sh}" ]
+        (builtins.readFile ./scripts/countdown-menu.sh);
   };
 in
 {
   imports = [ ./services.nix ];
-
   home.file = {
-    ".local/bin/countdown-engine" = {
-      executable = true;
-      source = countdownEngine;
-    };
-    ".local/bin/countdown".source = countdownMenu;
+    ".local/bin/countdown-engine".source = "${countdownEngine}/bin/countdown-engine";
+    ".local/bin/countdown".source = "${countdownMenu}/bin/countdown";
   };
 }

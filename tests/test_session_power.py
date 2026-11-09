@@ -49,7 +49,7 @@ class SessionPowerTests(unittest.TestCase):
             (self.bin / name).symlink_to(stub)
         (self.home / ".local/bin/countdown-engine").symlink_to(stub)
         for name in ("idle-suspend", "lock-screen", "session-resume"):
-            script = (SOURCE / "home/desktop" / (name + ".sh")).read_text()
+            script = (SOURCE / "home/desktop/session/scripts" / (name + ".sh")).read_text()
             script = script.replace("/sys/class/power_supply", str(self.supply))
             (self.bin / name).write_text(script)
 
