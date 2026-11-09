@@ -127,8 +127,9 @@ the build and validation steps above before running `nswitch`. NixOS has no
 automatic upgrade timer; Flatpak applications update independently below.
 
 Brave is installed per user from Flathub because the pinned nixpkgs removed
-its package. `nix-flatpak` manages Flathub, Brave, and daily updates through
-the Home Manager configuration in `home/packages.nix`. Switch the system to
+its package. TickTick is also installed per user from Flathub instead of
+using the browser app. `nix-flatpak` manages Flathub, Brave, TickTick, and daily
+updates through the Home Manager configuration in `home/packages.nix`. Switch the system to
 apply changes; no separate install command is needed. For a manual update:
 
 ```bash

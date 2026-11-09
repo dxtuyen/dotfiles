@@ -9,7 +9,10 @@ in
 
   services.flatpak = {
     enable = true;
-    packages = [ "com.brave.Browser" ];
+    packages = [
+      "com.brave.Browser"
+      "com.ticktick.TickTick"
+    ];
     remotes = [
       {
         name = "flathub";
