@@ -26,6 +26,7 @@ The host imports NixOS modules and [home/default.nix](../home/default.nix). Keep
 | Shortcut | Action |
 | --- | --- |
 | `Super+Enter` / `Super+D` | Open a terminal / application launcher |
+| `Super+I` | Launch TickTick or hide/show its window without quitting |
 | `` Super+` `` | Toggle the popup terminal |
 | `Super+1…9`, `Super+0` | Switch to workspace 1–10; add `Shift` to move a window |
 | `Super+H/J/K/L` or `Super+Arrow` | Focus by direction; add `Shift` to move a window |

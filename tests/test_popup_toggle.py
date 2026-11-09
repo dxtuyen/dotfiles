@@ -44,12 +44,24 @@ class PopupToggleTests(unittest.TestCase):
         state = tree(workspace("1", focused=True), workspace("2", floating=[group(window())]))
         self.assertEqual(popup(state, "obsidian"), "[con_id=50] scratchpad show")
 
-    def test_visible_unfocused_group_hides(self):
+    def test_visible_unfocused_group_is_focused_without_hiding(self):
         other = window(99, focused=True)
         other["app_id"] = "code"
         state = tree(workspace("1", [other], [group(window())]))
+        self.assertEqual(popup(state, "obsidian"), "[con_id=42] focus")
+
+    def test_focused_sibling_hides_the_whole_popup_group(self):
+        other = window(43, focused=True)
+        other["app_id"] = "foot"
+        state = tree(workspace("1", floating=[group(window(), other)]))
         self.assertEqual(popup(state, "obsidian"),
                          "[con_id=50] fullscreen disable, move scratchpad")
+
+    def test_visible_unfocused_tiled_window_is_focused(self):
+        other = window(99, focused=True)
+        other["app_id"] = "code"
+        state = tree(workspace("1", [other, window()]))
+        self.assertEqual(popup(state, "obsidian"), "[con_id=42] focus")
 
     def test_tiled_popup_hides_without_immediately_reopening(self):
         state = tree(workspace("1", [window(focused=True)]))

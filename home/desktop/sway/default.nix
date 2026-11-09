@@ -2,7 +2,11 @@
 
 let
   theme = import ../../../shared/theme.nix;
-  obsidianPopup = import ../windows/obsidian-popup.nix;
+  obsidianPopup = import ../windows/obsidian-popup.nix { };
+  ticktickPopup = import ../windows/obsidian-popup.nix {
+    width = 60;
+    height = 75;
+  };
   swayview = pkgs.callPackage ../../../pkgs/swayview.nix { };
   # Preserve automatic focus for urgent windows.
   focusWindows = pkgs.writeShellScript "sway-window-focus" ''
@@ -100,12 +104,15 @@ in
       # Obsidian popup; Mod+o launches it or toggles its scratchpad window.
       for_window [app_id="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}
       for_window [class="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}
+      # TickTick opens floating; Mod+i toggles it without quitting the app.
+      for_window [app_id="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}
+      for_window [class="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
       for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
-      # GoldenDict popup; Mod+g toggles it and closing hides it to the tray.
+      # GoldenDict uses the shared focus-first popup toggle on Mod+g.
       for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
       # Sioyek: new windows open on the focused workspace.
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
@@ -146,6 +153,7 @@ in
       bindsym $mod+Return exec $term
       bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym --no-repeat $mod+o exec ~/.local/bin/obsidian-toggle
+      bindsym --no-repeat $mod+i exec ~/.local/bin/ticktick-toggle
       bindsym $mod+d exec $menu
       # Return to the workspace just left; repeat to toggle between the two.
       bindsym --no-repeat Mod1+Tab workspace back_and_forth

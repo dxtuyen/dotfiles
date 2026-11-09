@@ -75,6 +75,7 @@
             homeConfig = self.nixosConfigurations.laptop.config.home-manager.users.${userName};
             commands = [
               "obsidian-toggle"
+              "ticktick-toggle"
               "sway-popup"
               "scratchpad-terminal"
               "screenshot"

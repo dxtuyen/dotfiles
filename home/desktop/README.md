@@ -13,7 +13,7 @@ feature/
 Each module owns its configuration, command packaging and related services:
 
 - `sway/`: compositor configuration, shortcuts, window rules and focus watcher.
-- `windows/`: Obsidian and popup terminal toggles; shared Obsidian geometry.
+- `windows/`: Obsidian, TickTick and popup terminal toggles; shared Obsidian geometry.
 - `session/`: lock, idle, suspend, resume and session refresh commands/services.
 - `rofi/`: Rofi themes and the shared menu presentation helper.
 - `display/`: display temperature commands, menu and wlsunset service template.
@@ -27,7 +27,8 @@ Shell behavior lives in `scripts/`; Nix declares dependencies and installs the
 existing `~/.local/bin` entry points. `writeShellApplication` checks the packaged
 commands with ShellCheck. Rofi menus source the helper installed by `rofi/`.
 
-Obsidian's initial geometry is defined in `windows/obsidian-popup.nix`.
+Initial popup geometry is defined in `windows/obsidian-popup.nix`: Obsidian
+defaults to 70% × 85%, and Sway requests 60% × 75% for TickTick.
 Subsequent window resizing and split layouts are owned by Sway.
 
 ## Popup and layout behavior
@@ -38,7 +39,11 @@ Splitting a floating window creates a group inside that floating popup.
 `sway-popup` handles application toggles:
 
 - Mod+O hides/shows the entire floating group containing Obsidian.
+- Mod+I launches TickTick Flatpak or hides/shows its floating window group without quitting it.
+- Mod+G uses the same toggle for GoldenDict, with its Qt theme environment preserved.
 - Mod+grave hides/shows the entire floating group containing the popup terminal.
+- A visible unfocused popup is focused first; only a focused popup group is hidden.
+- Popups on another workspace are recalled to the current workspace and focused.
 - Split children stay together, including when recalled to another workspace.
 - Group geometry is left to Sway; the script never resizes or detaches members.
 - Before launching an absent popup, focus moves up to the workspace so its first

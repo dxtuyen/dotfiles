@@ -140,6 +140,9 @@ class SwayWindowTests(unittest.TestCase):
                             self.windows("popup-check")[0].floating_root["id"])
         self.toggle()
         self.assertEqual(self.windows("terminal-check")[0].workspace["name"], "1")
+        self.assertTrue(self.windows("popup-check")[0].node["focused"])
+        self.assertEqual(self.windows("other-check")[0].workspace["name"], "1")
+        self.toggle()
         self.assertEqual(self.windows("other-check")[0].workspace["name"], "__i3_scratch")
 
     def test_split_then_terminal_shortcut_is_independent_for_both_directions(self):

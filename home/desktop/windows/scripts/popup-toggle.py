@@ -63,7 +63,10 @@ def popup_command(tree, pattern):
     selector = f'[con_id={target["id"]}] '
     hidden = (ctx.workspace or {}).get("name") == "__i3_scratch"
     if not hidden and current is not None and ctx.workspace == current:
-        return selector + "fullscreen disable, move scratchpad"
+        if any(item.node.get("focused") for item in contexts(target)):
+            return selector + "fullscreen disable, move scratchpad"
+        # Showing an already visible scratchpad toggles it off, so only focus it.
+        return f'[con_id={ctx.node["id"]}] focus'
     if target.get("scratchpad_state", "none") != "none":
         return selector + "scratchpad show"
 
