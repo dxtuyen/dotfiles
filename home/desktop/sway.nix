@@ -68,7 +68,7 @@ in
       # Gruvbox Material styling
       gaps inner 5
       gaps outer 3
-      gaps top 0
+      gaps bottom 0
       default_border pixel 2
       default_floating_border pixel 2
       # Give tabbed/stacking titles room without adding titlebars to tiled windows.

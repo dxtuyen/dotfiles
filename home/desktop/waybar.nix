@@ -11,10 +11,11 @@ in
     enable = true;
     systemd.enable = true;
     settings.mainBar = {
-      position = "top";
+      position = "bottom";
       height = 30;
       spacing = 2;
       "modules-left" = [
+        "custom/swayview"
         "sway/workspaces"
         "sway/scratchpad"
         "sway/mode"
@@ -66,6 +67,12 @@ in
         "tooltip-format-connected" = "{controller_alias} · {num_connections} connected\n{device_enumerate}";
         "tooltip-format-enumerate-connected" = "{device_alias}";
         "on-click" = "foot --app-id=bluetui -T Bluetooth bluetui";
+      };
+      "custom/swayview" = {
+        format = faSpan "";
+        tooltip = true;
+        "tooltip-format" = "Workspace overview · Super+Tab";
+        "on-click" = "pkill -x swayview || swayview";
       };
       # Keep 1–5 visible; other workspaces appear only while they exist in Sway.
       "sway/workspaces" = {
@@ -186,7 +193,7 @@ in
         border-radius: 0;
       }
 
-      /* A quiet, continuous Gruvbox bar with a thin lower edge. */
+      /* A quiet, continuous Gruvbox bar with a thin edge facing the windows. */
       @define-color txt ${theme.fg2};
       @define-color txt-strong ${theme.fg0};
       @define-color muted ${theme.gray};
@@ -194,7 +201,7 @@ in
       window#waybar {
         background: ${theme.bg0};
         color: @txt;
-        border-bottom: 1px solid ${theme.bg2};
+        border-top: 1px solid ${theme.bg2};
       }
 
       #workspaces,
@@ -209,7 +216,19 @@ in
         padding: 0 4px;
       }
 
-      #workspaces { margin-left: 8px; padding: 0; }
+      /* A compact overview launcher leading into the numbered workspaces. */
+      #custom-swayview {
+        color: @txt;
+        background: transparent;
+        min-width: 18px;
+        margin: 0 2px 0 8px;
+        padding: 0 5px;
+      }
+      #custom-swayview:hover {
+        color: @txt-strong;
+        background: ${theme.bg1};
+      }
+      #workspaces { margin-left: 0; padding: 0; }
       #scratchpad { margin: 0 5px; padding: 0 2px; color: @txt; }
       #workspaces button {
         color: @txt;
