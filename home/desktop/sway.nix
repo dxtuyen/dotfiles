@@ -71,6 +71,10 @@ in
       gaps top 0
       default_border pixel 2
       default_floating_border pixel 2
+      # Give tabbed/stacking titles room without adding titlebars to tiled windows.
+      font pango:JetBrains Mono 10
+      titlebar_padding 10 5
+      title_align left
       # $mod + left/right mouse button = move/resize floating windows.
       floating_modifier $mod normal
       focus_follows_mouse yes
@@ -78,9 +82,10 @@ in
       focus_on_window_activation focus
       smart_borders off
 
+      # Brighter selected tabs; inactive groups retain a quieter selection.
       # Muted beige focus border; soft ochre indicates the next split.
-      client.focused           ${theme.fg3} ${theme.bg1} ${theme.fg0} ${theme.splitIndicator} ${theme.fg3}
-      client.focused_inactive  ${theme.bg3} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
+      client.focused           ${theme.fg3} ${theme.bg2} ${theme.fg0} ${theme.splitIndicator} ${theme.fg3}
+      client.focused_inactive  ${theme.bg3} ${theme.bg1} ${theme.fg1} ${theme.bg3} ${theme.bg3}
       client.unfocused         ${theme.bg2} ${theme.bg0} ${theme.fg3} ${theme.bg2} ${theme.bg2}
       client.urgent            ${theme.orange} ${theme.bg0} ${theme.orange} ${theme.bg3} ${theme.orange}
       client.placeholder       ${theme.bg0} ${theme.bg0} ${theme.fg1} ${theme.bg3} ${theme.bg3}
