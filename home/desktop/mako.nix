@@ -26,8 +26,8 @@ in
       width = 350;
       height = 600;
       default-timeout = 5000;
-      # Play at the system volume, without inheriting personal mpv settings.
-      on-notify = "exec ${pkgs.mpv}/bin/mpv --no-config --no-video --really-quiet ${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/message.oga";
+      # Notifications are silent; Countdown plays its own completion alarm.
+      on-notify = "none";
       background-color = theme.bg0;
       text-color = theme.fg1;
       border-color = theme.fg3;
@@ -46,9 +46,6 @@ in
       # Countdown: border follows the shared Gruvbox beige accent.
       "app-name=countdown".border-color = theme.fg3;
       "app-name=countdown".default-timeout = 5000;
-      # Completion already plays its own alarm; other Countdown messages keep
-      # the normal notification sound.
-      "app-name=countdown category=countdown.finished".on-notify = "none";
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };
