@@ -10,7 +10,7 @@ let
   };
   obsidianToggle = pkgs.writeShellApplication {
     name = "obsidian-toggle";
-    text = ''exec ${popupToggle}/bin/sway-popup popup-obsidian -- obsidian'';
+    text = "exec ${popupToggle}/bin/sway-popup popup-obsidian -- obsidian";
   };
   ticktickToggle = pkgs.writeShellApplication {
     name = "ticktick-toggle";

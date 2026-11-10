@@ -6,14 +6,15 @@ import sys
 
 
 def focus(swaymsg, wid):
-    # Sway may have closed the window since the event or snapshot arrived.
+    # The window may have closed since the event arrived.
     subprocess.run([swaymsg, "-q", f"[con_id={wid}] focus"], check=False)
 
 
 def watch(swaymsg):
     with subprocess.Popen(
         [swaymsg, "-r", "-m", "-t", "subscribe", '["window"]'],
-        stdout=subprocess.PIPE, text=True,
+        stdout=subprocess.PIPE,
+        text=True,
     ) as events:
         for line in events.stdout:
             event = json.loads(line)
@@ -27,11 +28,9 @@ def watch(swaymsg):
 
 
 def main():
-    swaymsg, mode = sys.argv[1:]
-    if mode == "--watch":
-        watch(swaymsg)
-    else:
+    if len(sys.argv) != 3 or sys.argv[2] != "--watch":
         raise SystemExit("Usage: window-focus.py SWAYMSG --watch")
+    watch(sys.argv[1])
 
 
 if __name__ == "__main__":
