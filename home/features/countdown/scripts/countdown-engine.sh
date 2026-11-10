@@ -207,19 +207,43 @@ notify_clock() {
   pkill -RTMIN+8 waybar 2>/dev/null || true
 }
 
+stop_state_watcher() {
+  kill "$COUNTDOWN_WATCH_PID" 2>/dev/null || true
+  wait "$COUNTDOWN_WATCH_PID" 2>/dev/null || true
+}
+
 daemon_loop() {
-  local reconcile=0
+  local events event status next_sync=0 dirty=1
+  local -a read_timeout
+
+  # Watch the directory because write_state replaces the state file atomically.
+  # Subscribe BEFORE taking the first snapshot so start/resume cannot be lost
+  # between reading an idle state and going to sleep. The watcher must not
+  # inherit the state lock, which could otherwise block every command forever.
+  exec {events}< <(
+    export LC_ALL=C
+    exec inotifywait --monitor --event moved_to,moved_from,close_write,delete \
+      --include '/(countdown-state|inhibit-manual)$' --format change "$STATE_DIR" 9>&- 2>&1
+  )
+  COUNTDOWN_WATCH_PID=$!
+  trap stop_state_watcher EXIT
+  while IFS= read -r -u "$events" event; do
+    [ "$event" = 'Watches established.' ] && break
+    [ "$event" = 'Setting up watches.' ] || echo "countdown-engine: $event" >&2
+  done
+  [ "$event" = 'Watches established.' ] || return 1
+
   while true; do
     read_state
-    # Repair interrupted state transitions and service reloads independently of
-    # Waybar. Routine clock updates still read an atomic, lock-free snapshot.
-    if [ "$reconcile" -eq 0 ]; then
+    # Reconcile on changes/startup and every five seconds while there is an
+    # active timer or manual inhibitor to protect. Idle needs no periodic work.
+    if [ "$dirty" -eq 1 ] || [ "$SECONDS" -ge "$next_sync" ]; then
       state_lock
       read_state
       sync_idle_inhibit
       state_unlock
+      next_sync=$((SECONDS + 5))
     fi
-    reconcile=$(((reconcile + 1) % 5))
     if session_expired; then
       state_lock
       read_state
@@ -231,10 +255,30 @@ daemon_loop() {
       state_unlock
       notify_finished
     fi
-    if [ "$RUNNING" = "true" ]; then
+    if [ "$dirty" -eq 1 ]; then
+      notify_waybar
+    elif [ "$RUNNING" = "true" ]; then
       notify_clock
     fi
-    sleep 1
+    dirty=0
+
+    # read blocks in the kernel: no sleep subprocess and no polling at all
+    # while paused/empty, unless manual keep-awake needs health reconciliation.
+    read_timeout=()
+    if [ "$RUNNING" = "true" ]; then
+      read_timeout=(-t 1)
+    elif [ -f "$MANUAL_FLAG" ]; then
+      read_timeout=(-t 5)
+    fi
+    if IFS= read -r -u "$events" "${read_timeout[@]}" event; then
+      [ "$event" = change ] || { echo "countdown-engine: $event" >&2; return 1; }
+      dirty=1
+    else
+      status=$?
+      # A timeout is expected while running. EOF means the watcher failed;
+      # fail the worker too so systemd restarts both and restores the watch.
+      [ "$status" -gt 128 ] || { echo "countdown-engine: state watcher stopped" >&2; return 1; }
+    fi
   done
 }
 
@@ -311,7 +355,7 @@ resume_current() {
 case "${1:-status}" in
   start)
     minutes="${2:-}"
-    # Integer 1-480 (presets set in the rofi menu).
+    # Integer 1-480 (validated by the countdown menu).
     if ! [[ "$minutes" =~ ^[1-9][0-9]*$ ]] || [ "$minutes" -lt 1 ] || [ "$minutes" -gt 480 ]; then
       echo "Usage: countdown-engine start <1-480>" >&2
       exit 1
@@ -462,7 +506,8 @@ case "${1:-status}" in
   status)
     read_state
     finished_duration=""
-    # Waybar also polls independently, so an explicitly stopped worker can recover.
+    # Explicit status requests can also recover a stopped worker. Waybar's
+    # render commands below only read snapshots and never start services.
     systemctl --user --quiet is-active countdown-engine.service || ensure_daemon
     if session_expired; then
       state_lock
@@ -508,8 +553,6 @@ case "${1:-status}" in
     ;;
 
   status-control)
-    # Reuse status recovery/expiry handling, then show the action for the state.
-    "$0" status >/dev/null
     read_state
     if [ -z "$DURATION" ]; then
       text=""
@@ -529,8 +572,8 @@ case "${1:-status}" in
     ;;
 
   status-time)
-    # Refresh the visible time every second; state transitions are recovered by status.
-    "$0" status >/dev/null
+    # The worker handles expiry; rendering must not spawn status/service checks
+    # on every clock tick, or restart a deliberately stopped worker.
     read_state
     remaining=$(get_remaining)
     if [ -z "$DURATION" ]; then
@@ -587,7 +630,6 @@ case "${1:-status}" in
 
   inhibit)
     # JSON state for Waybar and options.
-    "$0" status >/dev/null 2>&1
     read_state
     manual_json=false
     [ -f "$MANUAL_FLAG" ] && manual_json=true

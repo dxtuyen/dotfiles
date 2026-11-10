@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 set -u
-# shellcheck source=../../rofi/scripts/rofi-menu.sh
-source "$HOME/.local/lib/rofi-menu.sh"
+# shellcheck source=../../fuzzel/scripts/menu.sh
+source "$HOME/.local/lib/menu.sh"
 
 case "${1:-}" in
   --power)
     choice=$(
       {
-        rofi_item Lock ''
-        rofi_item Suspend ''
-        rofi_item Hibernate ''
-        rofi_item 'Power Profile' ''
-        rofi_item 'Exit Sway' ''
-        rofi_item Reboot ''
-        rofi_item 'Power off' ''
-      } | rofi_pick Power 7
+        menu_item Lock ''
+        menu_item Suspend ''
+        menu_item Hibernate ''
+        menu_item 'Power Profile' ''
+        menu_item 'Exit Sway' ''
+        menu_item Reboot ''
+        menu_item 'Power off' ''
+      } | menu_pick Power 7
     ) || exit 0
     case "$choice" in
       0) exec "$HOME/.local/bin/lock-screen" ;;
@@ -33,8 +33,8 @@ case "${1:-}" in
     icons=('' '' '')
     choice=$(
       for i in "${!ids[@]}"; do
-        rofi_item "${labels[i]}" "${icons[i]}"
-      done | rofi_pick 'Power Profile' 3
+        menu_item "${labels[i]}" "${icons[i]}"
+      done | menu_pick 'Power Profile' 3
     ) || exit 0
     [[ "$choice" =~ ^[0-2]$ ]] || exit 0
     if error=$(powerprofilesctl set "${ids[choice]}" 2>&1); then
@@ -49,17 +49,17 @@ case "${1:-}" in
   *)
     choice=$(
       {
-        rofi_item Idle ''
-        rofi_item Display ''
-        rofi_item Wi-Fi ''
-        rofi_item Bluetooth ''
-        rofi_item Audio ''
-      } | rofi_pick Utilities 5
+        menu_item Idle ''
+        menu_item Display ''
+        menu_item Wi-Fi ''
+        menu_item Bluetooth ''
+        menu_item Audio ''
+      } | menu_pick Utilities 5
     ) || exit 0
     case "$choice" in
       0) exec "$HOME/.local/bin/countdown-engine" inhibit-toggle ;;
       1) exec "$HOME/.local/bin/wlsunset-menu" ;;
-      2) exec foot --app-id=wifitui -T Wi-Fi wifitui ;;
+      2) exec "$HOME/.local/bin/wifi-menu" ;;
       3) exec foot --app-id=bluetui -T Bluetooth bluetui ;;
       4) exec foot --app-id=wiremix -T Audio wiremix ;;
     esac

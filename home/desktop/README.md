@@ -15,17 +15,18 @@ Each module owns its configuration, command packaging and related services:
 - `sway/`: compositor configuration, shortcuts, window rules and focus watcher.
 - `windows/`: Obsidian, TickTick and popup terminal toggles; shared Obsidian geometry.
 - `session/`: lock, idle, suspend, resume and session refresh commands/services.
-- `rofi/`: Rofi themes and the shared menu presentation helper.
+- `fuzzel/`: application launcher, shared colors and menu presentation helper.
 - `display/`: display temperature commands, menu and wlsunset service template.
 - `screenshot/`: capture actions and their menu.
 - `input/`: touchpad event toggle; Sway owns the actual input settings.
 - `media/`: volume, microphone and brightness control notifications.
 - `menus/`: utilities, session power actions and power profile selection.
+- `network.nix`: wifui terminal window and advanced connection editor.
 - `wallpaper/`: generated wallpaper images and the background service.
 
 Shell behavior lives in `scripts/`; Nix declares dependencies and installs the
 existing `~/.local/bin` entry points. `writeShellApplication` checks the packaged
-commands with ShellCheck. Rofi menus source the helper installed by `rofi/`.
+commands with ShellCheck. Fuzzel menus source the helper installed by `fuzzel/`.
 
 Initial popup geometry is defined in `windows/obsidian-popup.nix`: Obsidian
 defaults to 70% × 85%, and Sway requests 60% × 75% for TickTick.
@@ -71,6 +72,24 @@ Logs remain available through `journalctl --user -u 'wlsunset@*'`.
 When migrating from the previous unmanaged background process, rebuild and log
 out/in once so the old process exits before the managed instance starts.
 
+## Wi-Fi
+
+The Waybar network icon and Utilities → Wi-Fi open `wifi-menu`, which runs
+wifui in a floating Foot window with the NetworkManager backend. NetworkManager
+continues to manage connections. Right-clicking the network icon opens
+`nm-connection-editor` for advanced connection settings. No network applet is
+autostarted.
+
+wifui provides Vim-style navigation (`j`/`k`), search (`/`), saved networks
+(`Tab`), connect/disconnect (`Enter`), forget (`f`), autoconnect (`a`) and Wi-Fi
+sharing (`s`). Quit with `q` or `Esc`. Bluetooth and audio use Bluetui and WireMix.
+
+`pkgs/wifui.nix` pins the upstream source and Cargo dependencies because wifui is
+not available in the current Nixpkgs pin. To update it, change the revision and
+version, refresh the source and Cargo hashes, then build `nix build .#wifui`
+(the build also runs upstream unit tests, except one UI test that needs a live
+Wi-Fi backend outside the sandbox). Keep connection handling upstream.
+
 ## Session power and Countdown
 
 Edit `shared/session-policy.nix` to change the idle deadlines and sleep policy.
@@ -109,13 +128,22 @@ target ordering to avoid a dependency cycle. Failed locking never activates it.
   and reacquires the inhibitor. The worker reconciles its own inhibitor after
   interrupted transitions or service restarts, without controlling Swayidle.
 
+The worker watches state changes with inotify. A paused/empty session waits for
+an event without polling; start/resume wakes it immediately. A running session
+updates the clock every second and reconciles its inhibitor every five seconds.
+Manual keep-awake without a running timer only needs the five-second health
+check. Waybar renders read-only snapshots at startup and on signals, with no
+background poll or nested service checks. Systemd restarts a failed worker;
+worker startup refreshes Waybar and restores its state watch and inhibitor.
+
 After rebuilding, log out/in once to start the new event subscribers together.
 The automated tests use isolated state and do not lock or suspend the desktop;
 test physical suspend/hibernate and resume separately on the laptop.
 
 ## Checks
 
-Run `python3 -m unittest discover -s tests -v` from the repository root. Desktop
+Run `python3 -m unittest discover -s tests -v` from the repository root (requires
+`inotifywait` for Countdown worker tests). Desktop
 regression tests use temporary state and mocked commands; they do not change the
 running desktop. Run `nix build .#checks.x86_64-linux.scripts --no-link` to build the
 packaged commands and run their ShellCheck checks. Vocabulary integration is

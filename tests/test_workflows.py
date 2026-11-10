@@ -13,7 +13,6 @@ import tempfile
 import textwrap
 import time
 import unittest
-import xml.etree.ElementTree as ET
 
 
 SOURCE = Path(__file__).resolve().parents[1]
@@ -60,7 +59,7 @@ class WorkflowTests(unittest.TestCase):
                         unit.write_text("active" if action == "start" else "inactive")
                 elif name == "swaymsg" and args[:1] == ["-t"]:
                     print(os.environ.get("TEST_TREE", '{"nodes": []}'))
-                elif name == "rofi":
+                elif name == "fuzzel":
                     import subprocess
                     index = root / "dialog-index"
                     i = int(index.read_text()) if index.exists() else 0
@@ -99,15 +98,15 @@ class WorkflowTests(unittest.TestCase):
         )
         for name in (
             "systemctl", "pkill", "notify-send", "paplay", "swaymsg", "sioyek",
-            "rofi", "id", "mountpoint", "df", "nix", "nix-env",
+            "fuzzel", "id", "mountpoint", "df", "nix", "nix-env",
             "nixos-rebuild", "nix-collect-garbage", "powerprofilesctl", "pgrep",
             "wlsunset-apply", "screenshot", "foot",
         ):
             (self.bin / name).symlink_to(self.command_stub)
-        for name in ("wlsunset-apply", "screenshot"):
+        for name in ("wlsunset-apply", "screenshot", "wifi-menu"):
             (self.home / ".local/bin" / name).symlink_to(self.command_stub)
-        helper = (SOURCE / "home/desktop/rofi/scripts/rofi-menu.sh").read_text()
-        (self.home / ".local/lib/rofi-menu.sh").write_text(helper.replace("@iconColor@", "#d4be98"))
+        helper = (SOURCE / "home/desktop/fuzzel/scripts/menu.sh").read_text()
+        (self.home / ".local/lib/menu.sh").write_text(helper)
         for name in ("wlsunset-menu", "screenshot-menu"):
             feature = "display" if name == "wlsunset-menu" else "screenshot"
             self.executable(self.home / ".local/bin" / name,
@@ -155,8 +154,8 @@ class WorkflowTests(unittest.TestCase):
     def advance(self, seconds):
         self.clock.write_text(str(int(self.clock.read_text()) + seconds))
 
-    def wait_until(self, predicate):
-        deadline = time.monotonic() + 8
+    def wait_until(self, predicate, timeout=8):
+        deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if predicate():
                 return
@@ -197,7 +196,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("Power Profile", (self.root / "menu-0").read_text())
         self.assertIn("Balanced", (self.root / "menu-1").read_text())
         self.assertNotIn("Back", (self.root / "menu-1").read_text())
-        self.assertEqual(len(self.recorded("rofi")), 2)
+        self.assertEqual(len(self.recorded("fuzzel")), 2)
         self.assertFalse(self.recorded("systemctl"))
         self.assertFalse(self.recorded("swaymsg"))
         self.assertFalse(self.recorded("powerprofilesctl"))
@@ -239,14 +238,14 @@ class WorkflowTests(unittest.TestCase):
 
     def test_display_escape_does_not_reopen_utilities(self):
         self.power_menu(dialogs=[["1", 0], ["", 1]])
-        self.assertEqual(len(self.recorded("rofi")), 2)
+        self.assertEqual(len(self.recorded("fuzzel")), 2)
         self.assertNotIn("Back", (self.root / "menu-1").read_text())
         self.assertFalse(self.recorded("wlsunset-apply"))
 
     def test_display_choice_applies_one_mode(self):
         self.power_menu(dialogs=[["1", 0], ["2", 0]])
         self.assertEqual(self.recorded("wlsunset-apply"), [["natural"]])
-        self.assertEqual(len(self.recorded("rofi")), 2)
+        self.assertEqual(len(self.recorded("fuzzel")), 2)
 
     def test_screenshot_choices_keep_their_action_mapping(self):
         for row, action in enumerate(("selection-clipboard", "fullscreen-clipboard",
@@ -276,15 +275,18 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn("Power Profile", (self.root / "menu-0").read_text())
         self.assertFalse(self.recorded("powerprofilesctl"))
 
-    def test_rofi_menu_labels_remain_literal_text(self):
+    def test_utilities_wifi_opens_the_shared_wifi_command(self):
+        self.power_menu(dialogs=[["2", 0]])
+        self.assertEqual(self.recorded("wifi-menu"), [[]])
+        self.assertFalse(self.recorded("systemctl"))
+
+    def test_fuzzel_menu_labels_remain_literal_text(self):
         label = 'A & B <b>literal</b> · tiếng Việt'
         row = self.run_command(
-            "bash", "-c", 'source "$1"; rofi_item "$2" "$3"', "rofi-item",
-            self.home / ".local/lib/rofi-menu.sh", label, "",
+            "bash", "-c", 'source "$1"; menu_item "$2" "$3"', "menu-item",
+            self.home / ".local/lib/menu.sh", label, "",
         )
-        rendered = ET.fromstring("<root>" + row + "</root>")
-        self.assertEqual("".join(rendered.itertext()), "\t" + label + "\n")
-        self.assertEqual([child.tag for child in rendered], ["span"])
+        self.assertEqual(row, "  " + label + "\n")
 
     def test_expiry_before_every_transition(self):
         for action in ("pause", "toggle", "resume", "lock-pause", "sleep-pause", "reset", "status"):
@@ -436,6 +438,67 @@ class WorkflowTests(unittest.TestCase):
         (self.root / "countdown-engine.service").write_text("inactive")
         self.engine("status")
         self.assertEqual((self.root / "countdown-engine.service").read_text(), "active")
+
+    def test_waybar_rendering_is_read_only_and_does_not_start_services(self):
+        self.engine("start", "10", "Reading")
+        before = (self.runtime / "countdown-state").read_text()
+        self.calls.unlink()
+        for command in ("status-time", "status-control", "inhibit"):
+            rendered = json.loads(self.engine(command))
+            self.assertEqual(rendered["class"], "running")
+        self.assertEqual(self.recorded("systemctl"), [])
+        self.assertEqual((self.runtime / "countdown-state").read_text(), before)
+
+    def test_empty_and_paused_worker_waits_until_a_state_change(self):
+        process = self.worker()
+        self.wait_until(lambda: ["-RTMIN+7", "waybar"] in self.recorded("pkill"))
+        # Observe longer than the old five-second reconciliation interval:
+        # an empty session must neither refresh UI nor touch any services.
+        time.sleep(0.1)
+        before = self.calls.read_text()
+        time.sleep(6)
+        self.assertEqual(self.calls.read_text(), before)
+
+        self.engine("start", "10")
+        self.wait_until(lambda: self.recorded("systemctl").count(
+            ["--user", "--no-block", "start", "countdown-idle-inhibit.service"]) >= 2,
+            timeout=2.5)
+        self.engine("pause")
+        self.wait_until(lambda: self.recorded("systemctl").count(
+            ["--user", "--no-block", "stop", "countdown-idle-inhibit.service"]) >= 3,
+            timeout=2.5)
+        time.sleep(0.1)
+        before = self.calls.read_text()
+        time.sleep(6)
+        self.assertEqual(self.calls.read_text(), before)
+
+        self.engine("resume")
+        self.wait_until(lambda: self.recorded("systemctl").count(
+            ["--user", "--no-block", "start", "countdown-idle-inhibit.service"]) >= 4,
+            timeout=2.5)
+        self.assertIsNone(process.poll())
+
+    def test_worker_observes_atomic_state_replacement_while_paused(self):
+        self.engine("start", "10")
+        self.engine("pause")
+        self.calls.unlink()
+        self.worker()
+        self.wait_until(lambda: ["-RTMIN+7", "waybar"] in self.recorded("pkill"))
+        state = self.runtime / "countdown-state"
+        updated = self.runtime / "countdown-state.updated"
+        updated.write_text(re.sub(r'REMAINING="[^"]*"', 'REMAINING="0"', state.read_text()))
+        updated.replace(state)
+        self.wait_until(lambda: len(self.history()) == 1, timeout=2.5)
+        self.assertEqual(self.field("DURATION"), "")
+
+    def test_watcher_failure_fails_worker_for_systemd_to_restart(self):
+        process = self.worker()
+        self.wait_until(lambda: ["-RTMIN+7", "waybar"] in self.recorded("pkill"))
+        children = Path(f"/proc/{process.pid}/task/{process.pid}/children").read_text().split()
+        watcher = next(int(pid) for pid in children
+                       if b"inotifywait" in Path(f"/proc/{pid}/cmdline").read_bytes())
+        os.kill(watcher, signal.SIGTERM)
+        self.assertEqual(process.wait(timeout=3), 1)
 
     def test_idle_condition_and_reconciliation(self):
         self.engine("idle-allowed")

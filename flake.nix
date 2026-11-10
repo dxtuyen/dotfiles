@@ -44,6 +44,7 @@
     in
     {
       packages.${system} = {
+        wifui = pkgs.callPackage ./pkgs/wifui.nix { };
         wallpaper-desktop = wallpapers.desktop;
         wallpaper-lockscreen = wallpapers.lockscreen;
       };
@@ -58,6 +59,7 @@
                 coreutils
                 jq
                 util-linux
+                inotify-tools
                 sway-unwrapped
                 foot
               ];
@@ -115,6 +117,7 @@
               "media-notify"
               "utilities"
               "power-profile-menu"
+              "wifi-menu"
               "dict-toggle"
               "quick-lang"
               "vm-nixos"
@@ -155,7 +158,7 @@
                 test -x "$script"
               done
               test -x "$runner"
-              shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/rofi/scripts/rofi-menu.sh}
+              shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/fuzzel/scripts/menu.sh}
               python3 ${./tests/check_session_units.py} ${sessionUnits} \
                 ${pkgs.systemd}/example/systemd/user \
                 ${homeConfig.home.file.".local/bin/countdown-engine".source}

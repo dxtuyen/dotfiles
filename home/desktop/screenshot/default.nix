@@ -14,12 +14,12 @@ let
   };
   screenshotMenu = pkgs.writeShellApplication {
     name = "screenshot-menu";
-    runtimeInputs = [ pkgs.rofi ];
+    runtimeInputs = [ pkgs.fuzzel ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../rofi/scripts/rofi-menu.sh" ]
-        [ "# shellcheck source=${../rofi/scripts/rofi-menu.sh}" ]
+        [ "# shellcheck source=../../fuzzel/scripts/menu.sh" ]
+        [ "# shellcheck source=${../fuzzel/scripts/menu.sh}" ]
         (builtins.readFile ./scripts/screenshot-menu.sh);
   };
 in

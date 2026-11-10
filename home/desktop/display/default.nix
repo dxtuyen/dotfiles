@@ -19,14 +19,14 @@ let
     name = "wlsunset-menu";
     runtimeInputs = [
       pkgs.systemd
-      pkgs.rofi
+      pkgs.fuzzel
       pkgs.libnotify
     ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../rofi/scripts/rofi-menu.sh" ]
-        [ "# shellcheck source=${../rofi/scripts/rofi-menu.sh}" ]
+        [ "# shellcheck source=../../fuzzel/scripts/menu.sh" ]
+        [ "# shellcheck source=${../fuzzel/scripts/menu.sh}" ]
         (builtins.readFile ./scripts/wlsunset-menu.sh);
   };
 in

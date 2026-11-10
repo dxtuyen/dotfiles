@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Countdown menu: collect inputs before starting, or manage the active session.
 set -u
-# shellcheck source=../../../desktop/rofi/scripts/rofi-menu.sh
-source "$HOME/.local/lib/rofi-menu.sh"
+# shellcheck source=../../../desktop/fuzzel/scripts/menu.sh
+source "$HOME/.local/lib/menu.sh"
 
 ENGINE="$HOME/.local/bin/countdown-engine"
 for candidate in "$HOME/.local/bin/pomodoro-engine" "$HOME/.local/bin/study"; do
@@ -19,7 +19,7 @@ format_time() {
 
 ask_minutes() {
   local title=${1:-Countdown · Minutes} minutes
-  minutes=$(rofi_input "$title" '1–480 · Enter to continue' 'Enter minutes…') || return 0
+  minutes=$(menu_input "$title" '1–480 · Enter to continue' 'Enter minutes…') || return 0
   minutes="${minutes#"${minutes%%[![:space:]]*}"}"
   minutes="${minutes%"${minutes##*[![:space:]]}"}"
   [[ -n "$minutes" ]] || return 0
@@ -58,7 +58,7 @@ fi
 if [[ -z "$DURATION" ]]; then
   minutes=$(ask_minutes) || exit $?
   [[ -n "$minutes" ]] || exit 0
-  task=$(rofi_input 'Countdown · Task' 'Optional · Enter to start' \
+  task=$(menu_input 'Countdown · Task' 'Optional · Enter to start' \
     'What are you focusing on?') || exit 0
   exec "$ENGINE" start "$minutes" "$task"
 fi
@@ -66,13 +66,13 @@ fi
 choice=$(
   {
     if [[ "$RUNNING" == true ]]; then
-      rofi_item Pause ''
+      menu_item Pause ''
     else
-      rofi_item Resume ''
+      menu_item Resume ''
     fi
-    rofi_item Reset ''
-    rofi_item 'Add minutes…' ''
-  } | rofi_pick "Countdown · $(format_time "$remaining")" 3
+    menu_item Reset ''
+    menu_item 'Add minutes…' ''
+  } | menu_pick "Countdown · $(format_time "$remaining")" 3
 ) || exit 0
 case "$choice" in
   0)

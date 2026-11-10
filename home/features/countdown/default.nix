@@ -11,6 +11,7 @@ let
       pkgs.jq
       pkgs.systemd
       pkgs.procps
+      pkgs.inotify-tools
       pkgs.libnotify
       pkgs.pulseaudio
     ];
@@ -29,14 +30,14 @@ let
     bashOptions = [ "nounset" ];
     runtimeInputs = [
       pkgs.coreutils
-      pkgs.rofi
+      pkgs.fuzzel
       pkgs.libnotify
     ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../../desktop/rofi/scripts/rofi-menu.sh" ]
-        [ "# shellcheck source=${../../desktop/rofi/scripts/rofi-menu.sh}" ]
+        [ "# shellcheck source=../../../desktop/fuzzel/scripts/menu.sh" ]
+        [ "# shellcheck source=${../../desktop/fuzzel/scripts/menu.sh}" ]
         (builtins.readFile ./scripts/countdown-menu.sh);
   };
 in

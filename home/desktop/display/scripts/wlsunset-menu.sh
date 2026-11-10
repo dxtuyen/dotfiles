@@ -19,16 +19,14 @@ if [[ "${1:-}" == status ]]; then
   exit 0
 fi
 
-# shellcheck source=../../rofi/scripts/rofi-menu.sh
-source "$HOME/.local/lib/rofi-menu.sh"
+# shellcheck source=../../fuzzel/scripts/menu.sh
+source "$HOME/.local/lib/menu.sh"
 ids=(warm white natural)
 labels=('Warm · 4000K' 'Cool · 6500K' 'Natural · automatic')
 icons=('' '' '')
-active=-1
 selected=0
 for i in "${!ids[@]}"; do
   if [[ "${ids[i]}" == "$mode" ]]; then
-    active=$i
     selected=$i
   fi
 done
@@ -36,8 +34,8 @@ choice=$(
   for i in "${!ids[@]}"; do
     text=${labels[i]}
     [[ "${ids[i]}" != "$mode" ]] || text+=' · current'
-    rofi_item "$text" "${icons[i]}"
-  done | rofi_pick Display 3 "$selected" "$active"
+    menu_item "$text" "${icons[i]}"
+  done | menu_pick Display 3 "$selected"
 ) || exit 0
 [[ "$choice" =~ ^[0-2]$ ]] || exit 0
 next_mode=${ids[choice]}

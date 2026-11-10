@@ -6,21 +6,20 @@ let
     name = "utilities";
     bashOptions = [ "nounset" ];
     runtimeInputs = [
-      pkgs.rofi
+      pkgs.fuzzel
       pkgs.systemd
       pkgs.power-profiles-daemon
       pkgs.sway
       pkgs.libnotify
       pkgs.foot
-      pkgs.wifitui
       pkgs.bluetui
       pkgs.wiremix
     ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../rofi/scripts/rofi-menu.sh" "@sleepAction@" ]
-        [ "# shellcheck source=${../rofi/scripts/rofi-menu.sh}" sessionPolicy.sleepAction ]
+        [ "# shellcheck source=../../fuzzel/scripts/menu.sh" "@sleepAction@" ]
+        [ "# shellcheck source=${../fuzzel/scripts/menu.sh}" sessionPolicy.sleepAction ]
         (builtins.readFile ./scripts/utilities.sh);
   };
   powerProfileMenu = pkgs.writeShellApplication {
@@ -31,7 +30,6 @@ in
 {
   home.packages = [
     pkgs.wiremix
-    pkgs.wifitui
     pkgs.bluetui
   ];
   home.file = {

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 set -u
-# shellcheck source=../../rofi/scripts/rofi-menu.sh
-source "$HOME/.local/lib/rofi-menu.sh"
+# shellcheck source=../../fuzzel/scripts/menu.sh
+source "$HOME/.local/lib/menu.sh"
 
 choice=$(
   {
-    rofi_item 'Selection → Clipboard' ''
-    rofi_item 'Screen → Clipboard' ''
-    rofi_item 'Selection → File' ''
-    rofi_item 'Screen → File' ''
-  } | rofi_pick Screenshot 4 0 -1 \
+    menu_item 'Selection → Clipboard' ''
+    menu_item 'Screen → Clipboard' ''
+    menu_item 'Selection → File' ''
+    menu_item 'Screen → File' ''
+  } | menu_pick Screenshot 4 0 \
     $'Print / Alt+Print: clipboard\nShift+Print / Ctrl+Print: file'
 ) || exit 0
 

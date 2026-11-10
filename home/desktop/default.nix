@@ -10,8 +10,9 @@
     ./media
     ./menus
     ./mimeapps.nix
+    ./network.nix
     ./qt.nix
-    ./rofi
+    ./fuzzel
     ./screenshot
     ./session
     ./sway

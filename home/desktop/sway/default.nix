@@ -49,7 +49,7 @@ in
       set $up k
       set $right l
       set $term foot
-      set $menu rofi -show drun
+      set $menu fuzzel
 
       # Applets & daemons
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
@@ -110,6 +110,7 @@ in
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
       for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
+      for_window [app_id="wifui"] floating enable, resize set width 60 ppt height 65 ppt
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
       # GoldenDict joins the native scratchpad for Mod+g.
@@ -126,9 +127,6 @@ in
 
       # Thunar popup; Mod+Shift+Space toggles it back to tiling.
       for_window [app_id="(?i)^thunar$"] floating enable, resize set width 40 ppt height 65 ppt
-
-      # Wi-Fi popup.
-      for_window [app_id="wifitui"] floating enable, resize set 750 px 500 px
 
       # Dialog/popup rules
       for_window [window_role="pop-up"] floating enable

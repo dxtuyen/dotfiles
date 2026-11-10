@@ -45,7 +45,8 @@ in
       };
       network = {
         interval = 5;
-        "on-click" = "foot --app-id=wifitui -T 'Wi-Fi' wifitui";
+        "on-click" = "~/.local/bin/wifi-menu";
+        "on-click-right" = "nm-connection-editor";
         format-wifi = "${faSpan ""} {signalStrength}%";
         format-ethernet = "${faSpan ""} LAN";
         format-disconnected = faSpan "";
@@ -156,8 +157,8 @@ in
       "custom/countdown" = {
         exec = "~/.local/bin/countdown-engine status-time";
         signal = 8;
-        # Recover even when the worker no longer sends refresh signals.
-        interval = 5;
+        # Commands and worker startup/recovery send signals; idle needs no poll.
+        interval = "once";
         return-type = "json";
         escape = true;
         "hide-empty-text" = true;
@@ -171,6 +172,7 @@ in
         format = faSpan "{text}";
         escape = true;
         signal = 7;
+        interval = "once";
         return-type = "json";
         "on-click" = "~/.local/bin/countdown-engine inhibit-toggle";
       };
