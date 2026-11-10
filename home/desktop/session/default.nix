@@ -3,33 +3,26 @@
 let
   theme = import ../../../shared/theme.nix;
   hex = color: builtins.substring 1 6 color;
-  policy = {
-    lockSeconds = 300;
-    lockedDisplaySeconds = 10;
-    suspendSeconds = 900;
-    powerCheckSeconds = 30;
-  };
+  policy = import ../../../shared/session-policy.nix;
   sessionEnvironment = [
     "PATH=/run/current-system/sw/bin:/etc/profiles/per-user/${config.home.username}/bin:%h/.local/bin"
   ];
   idleSuspend = pkgs.writeShellApplication {
     name = "idle-suspend";
     runtimeInputs = [ pkgs.systemd ];
-    text = builtins.readFile ./scripts/idle-suspend.sh;
+    text = builtins.replaceStrings [ "@sleepAction@" ] [ policy.sleepAction ] (
+      builtins.readFile ./scripts/idle-suspend.sh
+    );
   };
   lockScreen = pkgs.writeShellApplication {
     name = "lock-screen";
-    runtimeInputs = [
-      pkgs.systemd
-      pkgs.coreutils
-    ];
+    runtimeInputs = [ pkgs.systemd ];
     text = builtins.readFile ./scripts/lock-screen.sh;
   };
   sessionResume = pkgs.writeShellApplication {
     name = "session-resume";
     runtimeInputs = [
       pkgs.systemd
-      pkgs.coreutils
       pkgs.sway
     ];
     text = builtins.readFile ./scripts/session-resume.sh;
@@ -41,6 +34,18 @@ let
   };
 in
 {
+  assertions = [
+    {
+      assertion =
+        policy.screenOffSeconds > 0
+        && policy.screenOffSeconds < policy.lockSeconds
+        && policy.lockSeconds < policy.suspendSeconds
+        && policy.lockedDisplaySeconds > 0
+        && policy.powerCheckSeconds > 0;
+      message = "Session idle deadlines must be positive and ordered: screen off < lock < sleep.";
+    }
+  ];
+
   home.packages = [
     pkgs.swaylock
     pkgs.swayidle
@@ -74,27 +79,30 @@ in
     };
   };
 
-  # Countdown inhibits automatic locking/sleep, but never a lock already requested.
+  # Swayidle respects standard logind/Wayland idle inhibitors. This module has
+  # no knowledge of the applications that hold them.
   systemd.user.services.swayidle = {
     Unit = {
-      Description = "Idle manager for Wayland (lock → screen off → suspend)";
+      Description = "Idle manager for Wayland (screen off → lock → sleep)";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
       StartLimitIntervalSec = 60;
     };
     Service = {
       Type = "simple";
-      ExecCondition = "%h/.local/bin/countdown-engine idle-allowed";
       Environment = sessionEnvironment;
       Restart = "on-failure";
       RestartSec = 3;
       ExecStart = ''
         ${pkgs.swayidle}/bin/swayidle -w \
           idlehint ${toString policy.lockSeconds} \
+          timeout ${toString policy.screenOffSeconds} '${pkgs.sway}/bin/swaymsg "output * power off"' \
+          resume '${pkgs.sway}/bin/swaymsg "output * power on"' \
           timeout ${toString policy.lockSeconds} '%h/.local/bin/lock-screen' \
           timeout ${toString policy.suspendSeconds} '${pkgs.systemd}/bin/systemctl --user start idle-suspend.timer' \
           resume '${pkgs.systemd}/bin/systemctl --user stop idle-suspend.timer idle-suspend.service'
       '';
+      ExecStopPost = "-${pkgs.sway}/bin/swaymsg 'output * power on'";
     };
     Install = {
       WantedBy = [ "sway-session.target" ];
@@ -102,7 +110,8 @@ in
   };
 
   # Poll only after the idle deadline, so unplugging later is handled too.
-  # Binding the timer to swayidle also cancels checks on inhibition or a crash.
+  # Binding the timer to swayidle cancels checks on service stop or crash;
+  # the sleep command rechecks inhibitors before each attempt.
   systemd.user.timers.idle-suspend = {
     Unit = {
       Description = "Recheck battery power while the Sway session is idle";
@@ -124,7 +133,7 @@ in
 
   systemd.user.services.idle-suspend = {
     Unit = {
-      Description = "Suspend an idle session only when running on battery";
+      Description = "Sleep an idle session only when running on battery";
       BindsTo = [ "idle-suspend.timer" ];
       After = [ "idle-suspend.timer" ];
     };
@@ -142,7 +151,10 @@ in
       Description = "Sway screen lock";
       After = [ "sway-session.target" ];
       PartOf = [ "sway-session.target" ];
-      Wants = [ "locked-display.service" ];
+      Wants = [
+        "locked-display.service"
+        "session-locked.target"
+      ];
     };
     Service = {
       Type = "forking";
@@ -152,8 +164,19 @@ in
     };
   };
 
+  # A generic, confirmed-lock lifecycle for optional application subscribers.
+  # Disabling target default ordering lets subscribers run AFTER the target;
+  # the target itself cannot activate until swaylock confirms the lock.
+  systemd.user.targets.session-locked.Unit = {
+    Description = "Session is locked";
+    DefaultDependencies = false;
+    BindsTo = [ "swaylock.service" ];
+    After = [ "swaylock.service" ];
+    PartOf = [ "swaylock.service" ];
+  };
+
   # Start only after swaylock confirms the lock, and stop as soon as it exits.
-  # This stays independent of Countdown's manual inhibition of swayidle.
+  # Application subscribers release their own idle inhibitors on lock.
   systemd.user.services.locked-display = {
     Unit = {
       Description = "Turn off locked displays after a short idle period";
@@ -175,8 +198,7 @@ in
     };
   };
 
-  # Keep logind events independent of idle inhibition by Countdown. Only this
-  # daemon handles sleep/lock events, even when the main swayidle is running.
+  # Explicit lock and sleep requests must work even while idle is inhibited.
   systemd.user.services.session-lock = {
     Unit = {
       Description = "Lock the Sway session before sleep and on logind requests";
@@ -190,7 +212,7 @@ in
       RestartSec = 2;
       ExecStart = ''
         ${pkgs.swayidle}/bin/swayidle -w \
-          before-sleep '%h/.local/bin/lock-screen --sleep' \
+          before-sleep '%h/.local/bin/lock-screen' \
           lock '%h/.local/bin/lock-screen' \
           after-resume '%h/.local/bin/session-resume' \
           unlock 'swaymsg "output * power on"'

@@ -35,22 +35,22 @@ class SessionPowerTests(unittest.TestCase):
             name, args = pathlib.Path(sys.argv[0]).name, sys.argv[1:]
             with open(os.environ["SESSION_TEST_COMMANDS"], "a") as stream:
                 stream.write(json.dumps([name, *args]) + "\\n")
-            if name == "countdown-engine":
-                if args == ["idle-allowed"]:
-                    sys.exit(int(os.environ.get("SESSION_TEST_INHIBITED", "0")))
-                sys.exit(int(os.environ.get("SESSION_TEST_ENGINE_FAILURE", "0")))
+            if name == "busctl":
+                if os.environ.get("SESSION_TEST_BUS_FAILURE"):
+                    sys.exit(1)
+                print('s "' + os.environ.get("SESSION_TEST_INHIBITED", "") + '"')
             if name == "systemctl" and args == ["--user", "start", "swaylock.service"]:
                 sys.exit(int(os.environ.get("SESSION_TEST_LOCK_FAILURE", "0")))
             if name == "swaymsg":
                 sys.exit(int(os.environ.get("SESSION_TEST_DISPLAY_FAILURE", "0")))
         '''))
         stub.chmod(0o755)
-        for name in ("systemctl", "swaymsg"):
+        for name in ("systemctl", "swaymsg", "busctl"):
             (self.bin / name).symlink_to(stub)
-        (self.home / ".local/bin/countdown-engine").symlink_to(stub)
         for name in ("idle-suspend", "lock-screen", "session-resume"):
             script = (SOURCE / "home/desktop/session/scripts" / (name + ".sh")).read_text()
             script = script.replace("/sys/class/power_supply", str(self.supply))
+            script = script.replace("@sleepAction@", "suspend-then-hibernate")
             (self.bin / name).write_text(script)
 
     def supply_device(self, name, **attributes):
@@ -71,7 +71,7 @@ class SessionPowerTests(unittest.TestCase):
         return [json.loads(line) for line in self.commands.read_text().splitlines()]
 
     def suspended(self, **environment):
-        return ["systemctl", "suspend"] in self.run_script("idle-suspend", **environment)
+        return ["systemctl", "suspend-then-hibernate"] in self.run_script("idle-suspend", **environment)
 
     def test_battery_discharge_requests_suspend(self):
         self.supply_device("BAT0", type="Battery", status="Discharging")
@@ -99,7 +99,17 @@ class SessionPowerTests(unittest.TestCase):
 
     def test_inhibition_is_rechecked_before_suspend(self):
         self.supply_device("BAT0", type="Battery", status="Discharging")
-        self.assertFalse(self.suspended(SESSION_TEST_INHIBITED="1"))
+        for inhibitors in ("idle", "sleep:idle", "idle:shutdown"):
+            with self.subTest(inhibitors=inhibitors):
+                self.assertFalse(self.suspended(SESSION_TEST_INHIBITED=inhibitors))
+
+    def test_unrelated_inhibitors_do_not_disable_idle_policy(self):
+        self.supply_device("BAT0", type="Battery", status="Discharging")
+        self.assertTrue(self.suspended(SESSION_TEST_INHIBITED="handle-lid-switch"))
+
+    def test_unavailable_inhibition_state_keeps_machine_awake(self):
+        self.supply_device("BAT0", type="Battery", status="Discharging")
+        self.assertFalse(self.suspended(SESSION_TEST_BUS_FAILURE="1"))
 
     def test_missing_or_unknown_battery_state_keeps_machine_awake(self):
         self.assertFalse(self.suspended())
@@ -123,24 +133,14 @@ class SessionPowerTests(unittest.TestCase):
         self.supply_device("peripheral", type="USB", scope="Device", online=1)
         self.assertTrue(self.suspended())
 
-    def test_lock_is_confirmed_before_countdown_is_paused(self):
+    def test_lock_works_without_countdown_installed(self):
         self.assertEqual(self.run_script("lock-screen"), [
             ["systemctl", "--user", "start", "swaylock.service"],
-            ["countdown-engine", "lock-pause"],
         ])
 
-    def test_lock_failure_propagates_without_pausing_countdown(self):
+    def test_lock_failure_propagates(self):
         self.assertEqual(self.run_script("lock-screen", expected=1, SESSION_TEST_LOCK_FAILURE="1"), [
             ["systemctl", "--user", "start", "swaylock.service"],
-        ])
-
-    def test_countdown_failure_does_not_fail_a_confirmed_lock(self):
-        self.run_script("lock-screen", SESSION_TEST_ENGINE_FAILURE="1")
-
-    def test_sleep_uses_same_lock_path_and_preserves_sleep_marker(self):
-        self.assertEqual(self.run_script("lock-screen", "--sleep"), [
-            ["systemctl", "--user", "start", "swaylock.service"],
-            ["countdown-engine", "sleep-pause"],
         ])
 
     def test_invalid_lock_action_does_nothing(self):
@@ -149,14 +149,9 @@ class SessionPowerTests(unittest.TestCase):
     def test_wake_cancels_old_deadline_and_refreshes_active_idle_service(self):
         self.assertEqual(self.run_script("session-resume"), [
             ["systemctl", "--user", "--no-block", "stop", "idle-suspend.timer", "idle-suspend.service"],
-            ["countdown-engine", "sleep-resume"],
             ["systemctl", "--user", "--no-block", "try-restart", "swayidle.service", "locked-display.service"],
             ["swaymsg", "output * power on"],
         ])
-
-    def test_countdown_failure_does_not_prevent_display_wake(self):
-        calls = self.run_script("session-resume", SESSION_TEST_ENGINE_FAILURE="1")
-        self.assertIn(["swaymsg", "output * power on"], calls)
 
     def test_display_failure_does_not_skip_idle_reset(self):
         calls = self.run_script("session-resume", expected=1, SESSION_TEST_DISPLAY_FAILURE="1")

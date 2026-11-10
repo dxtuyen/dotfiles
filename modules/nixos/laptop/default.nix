@@ -1,6 +1,7 @@
 { lib, pkgs, ... }:
 
 let
+  sessionPolicy = import ../../../shared/session-policy.nix;
   batteryThreshold = pkgs.writeShellApplication {
     name = "set-battery-threshold";
     text = builtins.readFile ./scripts/set-battery-threshold.sh;
@@ -27,15 +28,17 @@ in
     "mem_sleep_default=deep"
   ];
 
+  systemd.sleep.settings.Sleep.HibernateDelaySec = sessionPolicy.hibernateDelay;
+
   services.fwupd.enable = true;
   # Keep firmware updates but stop the daemon from blocking greetd at login.
   systemd.services.fwupd.before = lib.mkForce [ "shutdown.target" ];
 
-  # Close lid -> suspend, even on AC; docked -> ignore. session-lock confirms
-  # the screen lock before sleep, independently of Countdown's idle inhibition.
+  # Close lid -> sleep, even on AC; docked -> ignore. Session locking and
+  # application sleep observers independently handle logind's sleep event.
   services.logind.settings.Login = {
-    HandleLidSwitch = "suspend";
-    HandleLidSwitchExternalPower = "suspend";
+    HandleLidSwitch = sessionPolicy.sleepAction;
+    HandleLidSwitchExternalPower = sessionPolicy.sleepAction;
     HandleLidSwitchDocked = "ignore";
   };
 

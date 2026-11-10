@@ -26,6 +26,9 @@ done
 # Missing/unknown battery state, or a desktop without a battery: stay awake.
 [ "$discharging" = true ] || exit 0
 
-# Recheck inhibition at execution time, not only when the timer was armed.
-"$HOME/.local/bin/countdown-engine" idle-allowed || exit 0
-exec systemctl suspend
+# A timer may already be armed when an application acquires an idle inhibitor.
+# Recheck the standard logind state, and stay awake if it cannot be read.
+inhibited=$(busctl --system get-property org.freedesktop.login1 \
+  /org/freedesktop/login1 org.freedesktop.login1.Manager BlockInhibited) || exit 0
+case "$inhibited" in *idle*) exit 0 ;; esac
+exec systemctl @sleepAction@

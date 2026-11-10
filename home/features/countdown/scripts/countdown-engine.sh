@@ -108,14 +108,15 @@ idle_inhibited() {
     [ -f "$MANUAL_FLAG" ]
 }
 
-# Queue changes without waiting for swayidle's ExecCondition, which reads state
-# through this engine too. Callers may still hold the state lock.
+# Own only our inhibitor. Logind and the session manager decide how to honor it.
+# Never wait on a unit while holding the state lock: its startup may need us.
 sync_idle_inhibit() {
+  local action=stop
   if idle_inhibited; then
-    systemctl --user --no-block stop swayidle.service 2>/dev/null || true
-  else
-    systemctl --user --no-block start swayidle.service 2>/dev/null || true
+    action=start
   fi
+  systemctl --user --no-block "$action" countdown-idle-inhibit.service ||
+    echo "countdown-engine: failed to $action idle inhibitor; worker will retry" >&2
 }
 
 write_state() {
@@ -563,7 +564,7 @@ case "${1:-status}" in
     ;;
 
   idle-allowed)
-    # Used by swayidle's ExecCondition and idle-suspend; never change state here.
+    # Read-only diagnostic; the session manager does not call into Countdown.
     read_state
     if idle_inhibited; then exit 1; fi
     ;;

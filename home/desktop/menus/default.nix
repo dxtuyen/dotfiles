@@ -1,6 +1,7 @@
 { pkgs, ... }:
 
 let
+  sessionPolicy = import ../../../shared/session-policy.nix;
   utilities = pkgs.writeShellApplication {
     name = "utilities";
     bashOptions = [ "nounset" ];
@@ -18,8 +19,8 @@ let
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../rofi/scripts/rofi-menu.sh" ]
-        [ "# shellcheck source=${../rofi/scripts/rofi-menu.sh}" ]
+        [ "# shellcheck source=../../rofi/scripts/rofi-menu.sh" "@sleepAction@" ]
+        [ "# shellcheck source=${../rofi/scripts/rofi-menu.sh}" sessionPolicy.sleepAction ]
         (builtins.readFile ./scripts/utilities.sh);
   };
   powerProfileMenu = pkgs.writeShellApplication {

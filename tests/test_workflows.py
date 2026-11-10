@@ -182,7 +182,8 @@ class WorkflowTests(unittest.TestCase):
     def power_menu(self, *args, dialogs, **environment):
         script = self.executable(
             self.home / ".local/bin/utilities",
-            (SOURCE / "home/desktop/menus/scripts/utilities.sh").read_text(),
+            (SOURCE / "home/desktop/menus/scripts/utilities.sh").read_text().replace(
+                "@sleepAction@", "suspend-then-hibernate"),
         )
         return self.run_command(
             script, *args, TEST_DIALOGS=json.dumps(dialogs),
@@ -200,6 +201,14 @@ class WorkflowTests(unittest.TestCase):
         self.assertFalse(self.recorded("systemctl"))
         self.assertFalse(self.recorded("swaymsg"))
         self.assertFalse(self.recorded("powerprofilesctl"))
+
+    def test_explicit_sleep_uses_suspend_then_hibernate(self):
+        self.power_menu("--power", dialogs=[["1", 0]])
+        self.assertEqual(self.recorded("systemctl"), [["suspend-then-hibernate"]])
+
+    def test_explicit_hibernation_remains_immediate(self):
+        self.power_menu("--power", dialogs=[["2", 0]])
+        self.assertEqual(self.recorded("systemctl"), [["hibernate"]])
 
     def test_power_profile_choices_only_set_the_selected_profile(self):
         profiles = (("power-saver", "Power Saver"), ("balanced", "Balanced"),
@@ -327,16 +336,16 @@ class WorkflowTests(unittest.TestCase):
                 self.assertEqual(self.field("RUNNING"), "false")
                 self.assertEqual(self.field("REMAINING"), "480")
 
-    def test_manual_lock_clears_inhibition_without_a_countdown(self):
+    def test_lock_event_clears_inhibition_without_a_countdown(self):
         self.engine("inhibit-toggle")
         self.engine("idle-allowed", expected=1)
         self.calls.unlink(missing_ok=True)
-        self.run_command("bash", SOURCE / "home/desktop/session/scripts/lock-screen.sh")
+        self.engine("lock-pause")
         self.engine("idle-allowed")
         state = json.loads(self.engine("inhibit"))
         self.assertEqual(state["class"], "idle")
         self.assertFalse(state["manual"])
-        self.assertEqual((self.root / "swayidle.service").read_text(), "active")
+        self.assertEqual((self.root / "countdown-idle-inhibit.service").read_text(), "inactive")
         self.assertIn(["-RTMIN+7", "waybar"], self.recorded("pkill"))
         self.assertFalse(any("session paused" in " ".join(call)
                              for call in self.recorded("notify-send")))
@@ -350,7 +359,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.field("RUNNING"), "false")
         self.assertEqual(self.field("REMAINING"), "480")
         self.assertFalse((self.runtime / "inhibit-manual").exists())
-        self.assertEqual((self.root / "swayidle.service").read_text(), "active")
+        self.assertEqual((self.root / "countdown-idle-inhibit.service").read_text(), "inactive")
 
     def test_sleep_lock_clears_inhibition_and_wake_does_not_restore_it(self):
         self.engine("inhibit-toggle")
@@ -419,7 +428,7 @@ class WorkflowTests(unittest.TestCase):
         self.advance(61)
         self.wait_until(lambda: self.field("DURATION") == "")
         self.assertIsNone(second.poll())
-        self.assertEqual((self.root / "swayidle.service").read_text(), "active")
+        self.assertEqual((self.root / "countdown-idle-inhibit.service").read_text(), "inactive")
         self.wait_until(lambda: len(self.history()) == 1)
 
     def test_status_recovers_a_stopped_worker(self):
@@ -432,18 +441,42 @@ class WorkflowTests(unittest.TestCase):
         self.engine("idle-allowed")
         self.engine("start", "10")
         self.engine("idle-allowed", expected=1)
-        idle = self.root / "swayidle.service"
-        idle.write_text("active")
+        inhibitor = self.root / "countdown-idle-inhibit.service"
+        inhibitor.write_text("inactive")
         self.worker()
-        self.wait_until(lambda: idle.read_text() == "inactive")
+        self.wait_until(lambda: inhibitor.read_text() == "active")
         self.engine("pause")
         self.engine("idle-allowed")
         self.engine("inhibit-toggle")
         self.engine("idle-allowed", expected=1)
-        idle.write_text("active")
-        self.wait_until(lambda: idle.read_text() == "inactive")
+        inhibitor.write_text("inactive")
+        self.wait_until(lambda: inhibitor.read_text() == "active")
         self.engine("inhibit-toggle")
         self.engine("idle-allowed")
+
+    def test_countdown_never_controls_system_idle_services(self):
+        self.engine("start", "10")
+        self.engine("lock-pause")
+        self.engine("sleep-pause")
+        self.engine("sleep-resume")
+        self.engine("resume")
+        self.engine("reset")
+        touched = {args[-1] for args in self.recorded("systemctl")}
+        self.assertEqual(touched, {"countdown-engine.service", "countdown-idle-inhibit.service"})
+
+    def test_repeated_lock_events_keep_time_and_do_not_resume_on_unlock(self):
+        self.engine("start", "10")
+        self.advance(120)
+        self.engine("lock-pause")
+        self.advance(3600)
+        self.engine("lock-pause")
+        self.engine("status")
+        self.assertEqual(self.field("RUNNING"), "false")
+        self.assertEqual(self.field("REMAINING"), "480")
+        self.assertEqual((self.root / "countdown-idle-inhibit.service").read_text(), "inactive")
+        self.engine("resume")
+        self.assertEqual(self.field("RUNNING"), "true")
+        self.assertEqual((self.root / "countdown-idle-inhibit.service").read_text(), "active")
 
     def test_stale_pause_menu_does_not_resume(self):
         self.engine("start", "10")

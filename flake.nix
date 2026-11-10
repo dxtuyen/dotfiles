@@ -73,6 +73,31 @@
         scripts =
           let
             homeConfig = self.nixosConfigurations.laptop.config.home-manager.users.${userName};
+            sessionUnitNames = [
+              "sway-session.target"
+              "session-locked.target"
+              "swaylock.service"
+              "locked-display.service"
+              "session-lock.service"
+              "swayidle.service"
+              "idle-suspend.service"
+              "idle-suspend.timer"
+              "countdown-engine.service"
+              "countdown-idle-inhibit.service"
+              "countdown-lock-pause.service"
+              "countdown-sleep.service"
+            ];
+            sessionUnitFiles = nixpkgs.lib.filterAttrs (
+              name: _:
+              nixpkgs.lib.hasPrefix "systemd/user/" name
+              && builtins.elem (builtins.baseNameOf name) sessionUnitNames
+            ) homeConfig.xdg.configFile;
+            sessionUnits = pkgs.linkFarm "session-unit-checks" (
+              nixpkgs.lib.mapAttrsToList (name: file: {
+                name = nixpkgs.lib.removePrefix "systemd/user/" name;
+                path = file.source;
+              }) sessionUnitFiles
+            );
             commands = [
               "obsidian-toggle"
               "ticktick-toggle"
@@ -102,7 +127,11 @@
           in
           pkgs.runCommand "script-checks"
             {
-              nativeBuildInputs = [ pkgs.shellcheck ];
+              nativeBuildInputs = [
+                pkgs.shellcheck
+                pkgs.python3
+                pkgs.systemd
+              ];
               scripts = map (name: homeConfig.home.file.".local/bin/${name}".source) commands;
               # Keep activation-only and system command helpers in the build graph.
               btopActivation = homeConfig.home.activation.btopMaterial.data;
@@ -127,6 +156,9 @@
               done
               test -x "$runner"
               shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/rofi/scripts/rofi-menu.sh}
+              python3 ${./tests/check_session_units.py} ${sessionUnits} \
+                ${pkgs.systemd}/example/systemd/user \
+                ${homeConfig.home.file.".local/bin/countdown-engine".source}
               touch "$out"
             '';
       };

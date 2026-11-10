@@ -18,7 +18,7 @@ case "${1:-}" in
     ) || exit 0
     case "$choice" in
       0) exec "$HOME/.local/bin/lock-screen" ;;
-      1) exec systemctl suspend ;;
+      1) exec systemctl @sleepAction@ ;;
       2) exec systemctl hibernate ;;
       3) exec "$0" --power-profile ;;
       4) exec swaymsg exit ;;
