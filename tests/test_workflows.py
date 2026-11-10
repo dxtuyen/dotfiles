@@ -59,18 +59,24 @@ class WorkflowTests(unittest.TestCase):
                         unit.write_text("active" if action == "start" else "inactive")
                 elif name == "swaymsg" and args[:1] == ["-t"]:
                     print(os.environ.get("TEST_TREE", '{"nodes": []}'))
-                elif name == "fuzzel":
+                elif name == "tofi":
                     import subprocess
                     index = root / "dialog-index"
                     i = int(index.read_text()) if index.exists() else 0
                     dialogs = json.loads(os.environ["TEST_DIALOGS"])
                     index.write_text(str(i + 1))
+                    menu = sys.stdin.read()
                     if os.environ.get("TEST_CAPTURE_MENUS"):
-                        (root / f"menu-{i}").write_bytes(sys.stdin.buffer.read())
+                        (root / f"menu-{i}").write_text(menu)
                     if os.environ.get("TEST_PAUSE_IN_MENU"):
                         subprocess.run([os.environ["HOME"] + "/.local/bin/countdown-engine", "pause"], check=True)
                     text, status = dialogs[i]
-                    sys.stdout.write(text)
+                    # Tofi returns the selected label, while dialog fixtures
+                    # identify the displayed row. Empty stdin is a text prompt.
+                    rows = menu.splitlines()
+                    if text.isdecimal() and int(text) < len(rows):
+                        text = rows[int(text)]
+                    sys.stdout.write(text + ("\\n" if status == 0 else ""))
                     sys.exit(status)
                 elif name == "powerprofilesctl":
                     if args[:1] == ["set"] and os.environ.get("TEST_PROFILE_FAILURE"):
@@ -98,14 +104,14 @@ class WorkflowTests(unittest.TestCase):
         )
         for name in (
             "systemctl", "pkill", "notify-send", "paplay", "swaymsg", "sioyek",
-            "fuzzel", "id", "mountpoint", "df", "nix", "nix-env",
+            "tofi", "id", "mountpoint", "df", "nix", "nix-env",
             "nixos-rebuild", "nix-collect-garbage", "powerprofilesctl", "pgrep",
             "wlsunset-apply", "screenshot", "foot",
         ):
             (self.bin / name).symlink_to(self.command_stub)
         for name in ("wlsunset-apply", "screenshot", "wifi-menu"):
             (self.home / ".local/bin" / name).symlink_to(self.command_stub)
-        helper = (SOURCE / "home/desktop/fuzzel/scripts/menu.sh").read_text()
+        helper = (SOURCE / "home/desktop/tofi/scripts/menu.sh").read_text()
         (self.home / ".local/lib/menu.sh").write_text(helper)
         for name in ("wlsunset-menu", "screenshot-menu"):
             feature = "display" if name == "wlsunset-menu" else "screenshot"
@@ -196,7 +202,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("Power Profile", (self.root / "menu-0").read_text())
         self.assertIn("Balanced", (self.root / "menu-1").read_text())
         self.assertNotIn("Back", (self.root / "menu-1").read_text())
-        self.assertEqual(len(self.recorded("fuzzel")), 2)
+        self.assertEqual(len(self.recorded("tofi")), 2)
         self.assertFalse(self.recorded("systemctl"))
         self.assertFalse(self.recorded("swaymsg"))
         self.assertFalse(self.recorded("powerprofilesctl"))
@@ -238,14 +244,14 @@ class WorkflowTests(unittest.TestCase):
 
     def test_display_escape_does_not_reopen_utilities(self):
         self.power_menu(dialogs=[["1", 0], ["", 1]])
-        self.assertEqual(len(self.recorded("fuzzel")), 2)
+        self.assertEqual(len(self.recorded("tofi")), 2)
         self.assertNotIn("Back", (self.root / "menu-1").read_text())
         self.assertFalse(self.recorded("wlsunset-apply"))
 
     def test_display_choice_applies_one_mode(self):
         self.power_menu(dialogs=[["1", 0], ["2", 0]])
         self.assertEqual(self.recorded("wlsunset-apply"), [["natural"]])
-        self.assertEqual(len(self.recorded("fuzzel")), 2)
+        self.assertEqual(len(self.recorded("tofi")), 2)
 
     def test_screenshot_choices_keep_their_action_mapping(self):
         for row, action in enumerate(("selection-clipboard", "fullscreen-clipboard",
@@ -280,7 +286,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.recorded("wifi-menu"), [[]])
         self.assertFalse(self.recorded("systemctl"))
 
-    def test_fuzzel_menu_labels_remain_literal_text(self):
+    def test_tofi_menu_labels_remain_literal_text(self):
         label = 'A & B <b>literal</b> · tiếng Việt'
         row = self.run_command(
             "bash", "-c", 'source "$1"; menu_item "$2" "$3"', "menu-item",

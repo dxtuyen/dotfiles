@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Countdown menu: collect inputs before starting, or manage the active session.
 set -u
-# shellcheck source=../../../desktop/fuzzel/scripts/menu.sh
+# shellcheck source=../../../desktop/tofi/scripts/menu.sh
 source "$HOME/.local/lib/menu.sh"
 
 ENGINE="$HOME/.local/bin/countdown-engine"

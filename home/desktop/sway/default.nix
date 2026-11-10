@@ -49,7 +49,7 @@ in
       set $up k
       set $right l
       set $term foot
-      set $menu fuzzel
+      set $menu tofi-drun
 
       # Applets & daemons
       exec ${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1
@@ -152,7 +152,7 @@ in
       bindsym --no-repeat $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym --no-repeat $mod+o exec ~/.local/bin/obsidian-toggle
       bindsym --no-repeat $mod+i exec ~/.local/bin/ticktick-toggle
-      bindsym $mod+d exec $menu
+      bindsym --no-repeat $mod+d exec $menu
       # Return to the workspace just left; repeat to toggle between the two.
       bindsym --no-repeat Mod1+Tab workspace back_and_forth
       # Mod+u opens utilities; Mod+p and the Waybar power button open power actions.

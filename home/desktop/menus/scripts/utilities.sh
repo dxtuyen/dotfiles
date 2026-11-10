@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -u
-# shellcheck source=../../fuzzel/scripts/menu.sh
+# shellcheck source=../../tofi/scripts/menu.sh
 source "$HOME/.local/lib/menu.sh"
 
 case "${1:-}" in

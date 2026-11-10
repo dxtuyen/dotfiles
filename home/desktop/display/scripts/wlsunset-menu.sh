@@ -19,7 +19,7 @@ if [[ "${1:-}" == status ]]; then
   exit 0
 fi
 
-# shellcheck source=../../fuzzel/scripts/menu.sh
+# shellcheck source=../../tofi/scripts/menu.sh
 source "$HOME/.local/lib/menu.sh"
 ids=(warm white natural)
 labels=('Warm · 4000K' 'Cool · 6500K' 'Natural · automatic')

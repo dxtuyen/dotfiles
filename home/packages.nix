@@ -8,7 +8,6 @@
     packages = [
       "com.brave.Browser"
       "com.ticktick.TickTick"
-      "com.super_productivity.SuperProductivity"
     ];
     remotes = [
       {

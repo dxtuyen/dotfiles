@@ -15,7 +15,7 @@ Each module owns its configuration, command packaging and related services:
 - `sway/`: compositor configuration, shortcuts, window rules and focus watcher.
 - `windows/`: Obsidian, TickTick and popup terminal toggles; shared Obsidian geometry.
 - `session/`: lock, idle, suspend, resume and session refresh commands/services.
-- `fuzzel/`: application launcher, shared colors and menu presentation helper.
+- `tofi/`: application launcher, shared colors and menu presentation helper.
 - `display/`: display temperature commands, menu and wlsunset service template.
 - `screenshot/`: capture actions and their menu.
 - `input/`: touchpad event toggle; Sway owns the actual input settings.
@@ -26,7 +26,17 @@ Each module owns its configuration, command packaging and related services:
 
 Shell behavior lives in `scripts/`; Nix declares dependencies and installs the
 existing `~/.local/bin` entry points. `writeShellApplication` checks the packaged
-commands with ShellCheck. Fuzzel menus source the helper installed by `fuzzel/`.
+commands with ShellCheck. Tofi menus source the helper installed by `tofi/`.
+
+`Mod+D` opens `tofi-drun`, with application usage history enabled. Navigate with
+the arrow keys or Ctrl+J/K, confirm with Enter and close with Esc. Tofi does not
+provide mouse selection or application icons; utility menu symbols are font
+glyphs. The font is loaded directly from its Nix store file to avoid startup
+font lookup. Utility menus disable history and map selected labels back to their
+actions. Display puts the current mode first because Tofi 0.9.1 has no initial
+selection option. Countdown text prompts accept an empty task and treat Esc as
+cancellation. GIO launches desktop entries directly; `xdg-terminal-exec` selects
+Foot for applications with `Terminal=true`.
 
 Initial popup geometry is defined in `windows/obsidian-popup.nix`: Obsidian
 defaults to 70% × 85%, and Sway requests 60% × 75% for TickTick.

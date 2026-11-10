@@ -12,7 +12,7 @@
     ./mimeapps.nix
     ./network.nix
     ./qt.nix
-    ./fuzzel
+    ./tofi
     ./screenshot
     ./session
     ./sway

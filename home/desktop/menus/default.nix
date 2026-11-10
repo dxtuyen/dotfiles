@@ -6,7 +6,7 @@ let
     name = "utilities";
     bashOptions = [ "nounset" ];
     runtimeInputs = [
-      pkgs.fuzzel
+      pkgs.tofi
       pkgs.systemd
       pkgs.power-profiles-daemon
       pkgs.sway
@@ -18,8 +18,8 @@ let
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../fuzzel/scripts/menu.sh" "@sleepAction@" ]
-        [ "# shellcheck source=${../fuzzel/scripts/menu.sh}" sessionPolicy.sleepAction ]
+        [ "# shellcheck source=../../tofi/scripts/menu.sh" "@sleepAction@" ]
+        [ "# shellcheck source=${../tofi/scripts/menu.sh}" sessionPolicy.sleepAction ]
         (builtins.readFile ./scripts/utilities.sh);
   };
   powerProfileMenu = pkgs.writeShellApplication {

@@ -30,14 +30,14 @@ let
     bashOptions = [ "nounset" ];
     runtimeInputs = [
       pkgs.coreutils
-      pkgs.fuzzel
+      pkgs.tofi
       pkgs.libnotify
     ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../../desktop/fuzzel/scripts/menu.sh" ]
-        [ "# shellcheck source=${../../desktop/fuzzel/scripts/menu.sh}" ]
+        [ "# shellcheck source=../../../desktop/tofi/scripts/menu.sh" ]
+        [ "# shellcheck source=${../../desktop/tofi/scripts/menu.sh}" ]
         (builtins.readFile ./scripts/countdown-menu.sh);
   };
 in

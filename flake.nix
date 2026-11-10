@@ -62,8 +62,13 @@
                 inotify-tools
                 sway-unwrapped
                 foot
+                tofi
+                wtype
+                xdg-terminal-exec
               ];
               FONTCONFIG_FILE = pkgs.makeFontsConf { fontDirectories = [ pkgs.dejavu_fonts ]; };
+              TOFI_TEST_CONFIG =
+                self.nixosConfigurations.laptop.config.home-manager.users.${userName}.xdg.configFile."tofi/config".source;
             }
             ''
               cd ${self}
@@ -158,7 +163,7 @@
                 test -x "$script"
               done
               test -x "$runner"
-              shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/fuzzel/scripts/menu.sh}
+              shellcheck -s bash ${./home/shell/scripts/interactive.sh} ${./home/desktop/tofi/scripts/menu.sh}
               python3 ${./tests/check_session_units.py} ${sessionUnits} \
                 ${pkgs.systemd}/example/systemd/user \
                 ${homeConfig.home.file.".local/bin/countdown-engine".source}

@@ -14,12 +14,12 @@ let
   };
   screenshotMenu = pkgs.writeShellApplication {
     name = "screenshot-menu";
-    runtimeInputs = [ pkgs.fuzzel ];
+    runtimeInputs = [ pkgs.tofi ];
     extraShellCheckFlags = [ "--external-sources" ];
     text =
       builtins.replaceStrings
-        [ "# shellcheck source=../../fuzzel/scripts/menu.sh" ]
-        [ "# shellcheck source=${../fuzzel/scripts/menu.sh}" ]
+        [ "# shellcheck source=../../tofi/scripts/menu.sh" ]
+        [ "# shellcheck source=${../tofi/scripts/menu.sh}" ]
         (builtins.readFile ./scripts/screenshot-menu.sh);
   };
 in

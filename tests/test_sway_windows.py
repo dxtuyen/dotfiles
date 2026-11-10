@@ -91,6 +91,96 @@ class SwayWindowTests(unittest.TestCase):
         ))
         self.wait_for(lambda: self.windows(name))
 
+    def tofi_menu(self, function, arguments, items, keys):
+        helper = Path(__file__).resolve().parents[1] / "home/desktop/tofi/scripts/menu.sh"
+        return self.run_tofi(
+            ["bash", "-c", 'source "$1"; shift; "$@"', "menu-test",
+             str(helper), function, *arguments], items, keys)
+
+    def run_tofi(self, command, items, keys, **environment):
+        if not shutil.which("tofi") or not shutil.which("wtype"):
+            self.skipTest("Tofi and wtype are required")
+        # A headless seat has no keyboard until a virtual device connects.
+        # Keep one connected while the menu obtains keyboard focus.
+        keyboard = subprocess.Popen(["wtype", "-s", "60000"], env=self.env)
+        self.clients.append(keyboard)
+        self.wait_for(lambda: any(device["type"] == "keyboard"
+                                 for device in self.ipc("-t", "get_inputs")))
+        config = self.root / "config/tofi/config"
+        config.parent.mkdir(parents=True, exist_ok=True)
+        config.write_text(Path(os.environ["TOFI_TEST_CONFIG"]).read_text()
+                          if "TOFI_TEST_CONFIG" in os.environ else
+                          "font=DejaVu Sans\nfont-size=12\nwidth=640\n")
+        menu_input = self.root / "menu-input"
+        menu_input.write_text(items)
+        log_path = self.root / "tofi.log"
+        output_path = self.root / "tofi.stdout"
+        # A launched terminal can inherit stdout; wait for Tofi itself instead
+        # of waiting for every descendant to close a pipe.
+        with menu_input.open() as stdin, log_path.open("w") as stderr, output_path.open("w") as stdout:
+            menu = subprocess.Popen(
+                command,
+                env=dict(self.env, WAYLAND_DEBUG="1", XDG_STATE_HOME=str(self.root / "state"),
+                         XDG_CACHE_HOME=str(self.root / "cache"), **environment), stdin=stdin,
+                stdout=stdout, stderr=stderr, text=True,
+            )
+        self.clients.append(menu)
+        # Wait for keyboard focus rather than guessing a startup delay.
+        self.wait_for(lambda: any("wl_keyboard" in line and ".enter(" in line
+                                 for line in log_path.read_text().split('"launcher")')[-1].splitlines())
+                      or menu.poll() is not None)
+        self.assertIsNone(menu.poll(), log_path.read_text()[-2000:])
+        subprocess.run(["wtype", *keys], env=self.env, check=True, timeout=5)
+        menu.wait(timeout=5)
+        self.assertNotIn("[ERROR]", log_path.read_text())
+        return menu.returncode, output_path.read_text()
+
+    def test_tofi_filtered_selection_preserves_the_original_action(self):
+        self.assertEqual(self.tofi_menu(
+            "menu_pick", ["Display", "3"], "Warm\nCool\nNatural\n",
+            ["Natural", "-k", "Return"],
+        ), (0, "2\n"))
+
+    def test_tofi_current_row_is_selected_without_changing_its_action(self):
+        self.assertEqual(self.tofi_menu(
+            "menu_pick", ["Display", "3", "1"], "Warm\nCool\nNatural\n",
+            ["-k", "Return"],
+        ), (0, "1\n"))
+
+    def test_tofi_empty_task_is_accepted(self):
+        self.assertEqual(self.tofi_menu(
+            "menu_input", ["Task", "Optional", "Enter task"], "",
+            ["-k", "Return"],
+        ), (0, "\n"))
+
+    def test_tofi_escape_cancels_a_text_prompt(self):
+        self.assertEqual(self.tofi_menu(
+            "menu_input", ["Minutes", "1–480", "Enter minutes"], "",
+            ["25", "-k", "Escape"],
+        ), (1, ""))
+
+    def test_tofi_launcher_opens_terminal_apps_in_foot_and_saves_history(self):
+        if not shutil.which("xdg-terminal-exec"):
+            self.skipTest("xdg-terminal-exec is required")
+        applications = self.root / "data/applications"
+        applications.mkdir(parents=True)
+        foot = Path(shutil.which("foot")).resolve().parents[1] / "share/applications/foot.desktop"
+        shutil.copy(foot, applications / "foot.desktop")
+        (applications / "launcher-check.desktop").write_text(
+            "[Desktop Entry]\nType=Application\nName=Tofi terminal check\n"
+            "Exec=sleep 120\nTerminal=true\n")
+        config = self.root / "config"
+        config.mkdir(exist_ok=True)
+        (config / "xdg-terminals.list").write_text("foot.desktop\n")
+        self.addCleanup(self.ipc, '[app_id="foot"] kill')
+        self.assertEqual(self.run_tofi(
+            ["tofi-drun", "--drun-launch=true"], "", ["terminal check", "-k", "Return"],
+            XDG_DATA_HOME=str(applications.parent), XDG_DATA_DIRS="",
+        ), (0, ""))
+        self.wait_for(lambda: self.windows("foot"))
+        history = self.root / "state/tofi-drun-history"
+        self.assertIn("Tofi terminal check", history.read_text())
+
     def toggle(self, **environment):
         source = Path(__file__).resolve().parents[1] / "home/desktop/windows/scripts/popup-toggle.sh"
         return subprocess.run(

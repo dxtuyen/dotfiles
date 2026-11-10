@@ -1,4 +1,4 @@
-# Rofi launches Yazi in a regular tiled Foot window.
+# The application launcher opens Yazi in a regular tiled Foot window.
 { pkgs, ... }:
 
 let
