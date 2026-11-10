@@ -142,11 +142,41 @@ class SwayWindowTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(self.windows("popup-check"), [])
 
-    def test_unfocused_visible_popup_hides_with_native_toggle(self):
+    def test_unfocused_visible_popup_is_focused_before_hiding(self):
         self.start_window("popup-check")
         self.start_window("other-check")
+        self.assertFalse(self.windows("popup-check")[0].node["focused"])
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
+        self.assertTrue(self.windows("popup-check")[0].node["focused"])
         self.toggle()
         self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
+
+    def test_visible_floating_popup_outside_scratchpad_can_be_hidden(self):
+        self.start_window("popup-check")
+        self.ipc('[con_mark="^popup-check$"] floating disable, floating enable')
+        self.assertEqual(self.windows("popup-check")[0].node["scratchpad_state"], "none")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
+
+    def test_floating_popup_outside_scratchpad_is_recalled_from_other_workspace(self):
+        self.start_window("popup-check")
+        self.ipc('[con_mark="^popup-check$"] floating disable, floating enable')
+        self.ipc("workspace 2")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "2")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
+
+    def test_fullscreen_popup_can_be_hidden(self):
+        self.start_window("popup-check")
+        self.ipc('[con_mark="^popup-check$"] fullscreen enable')
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
 
     def test_resized_popup_keeps_dimensions_when_toggled(self):
         self.start_window("popup-check")

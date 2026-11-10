@@ -36,16 +36,20 @@ Subsequent window resizing and split layouts are owned by Sway.
 `Mod+B/V`, `Mod+S/W/E` and `Mod+Shift+Space` use native Sway commands.
 Splitting a floating window creates a group inside that floating popup.
 
-Application shortcuts use Sway's native `scratchpad show` behavior:
+Application shortcuts use Sway's native scratchpad commands:
 
 - Mod+O toggles Obsidian; Mod+I toggles TickTick.
 - Mod+G toggles GoldenDict, preserving its Qt theme when launched.
 - Mod+grave toggles the popup terminal.
 - If no matching window exists, the same shortcut launches the application.
 - Window rules assign popup marks and initial scratchpad placement.
-- Sway owns showing, hiding, focus, grouping and geometry. The helper sends a
-  toggle command and checks its response; it does not read the window tree,
-  start Python, poll for new windows or implement custom focus selection.
+- A visible popup on the current workspace is focused first; pressing again
+  while it is focused hides it with `move scratchpad`, even after it has left
+  the scratchpad through floating/tiling changes. A popup elsewhere is moved
+  into the scratchpad and shown on the current workspace.
+- Sway owns showing, hiding, focus, grouping and geometry. The helper checks
+  command responses; it does not read the window tree,
+  start Python or poll for new windows. Sway criteria select the focused window.
 - Shortcuts suppress automatic key repeats. There is no startup waiting lock;
   repeated manual presses before a window appears can request another launch.
 
