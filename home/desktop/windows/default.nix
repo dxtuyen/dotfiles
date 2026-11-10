@@ -4,19 +4,18 @@ let
   popupToggle = pkgs.writeShellApplication {
     name = "sway-popup";
     runtimeInputs = [
-      pkgs.python3
       pkgs.sway
     ];
-    text = ''exec python3 ${./scripts/popup-toggle.py} "$@"'';
+    text = builtins.readFile ./scripts/popup-toggle.sh;
   };
   obsidianToggle = pkgs.writeShellApplication {
     name = "obsidian-toggle";
-    text = ''exec ${popupToggle}/bin/sway-popup --match '(md\.obsidian\.)?obsidian' -- obsidian'';
+    text = ''exec ${popupToggle}/bin/sway-popup popup-obsidian -- obsidian'';
   };
   ticktickToggle = pkgs.writeShellApplication {
     name = "ticktick-toggle";
     text = ''
-      exec ${popupToggle}/bin/sway-popup --match '(com\.ticktick\.)?ticktick' -- \
+      exec ${popupToggle}/bin/sway-popup popup-ticktick -- \
         ${pkgs.flatpak}/bin/flatpak run --user com.ticktick.TickTick
     '';
   };
@@ -25,7 +24,7 @@ let
     runtimeInputs = [
       pkgs.foot
     ];
-    text = "exec ${popupToggle}/bin/sway-popup --match scratchpad-terminal -- foot --app-id=scratchpad-terminal";
+    text = "exec ${popupToggle}/bin/sway-popup popup-terminal -- foot --app-id=scratchpad-terminal";
   };
   dictToggle = pkgs.writeShellApplication {
     name = "dict-toggle";

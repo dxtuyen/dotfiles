@@ -100,20 +100,20 @@ in
 
       # Floating rules
       # Keep the popup terminal at Foot's default size, as before.
-      for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show
-      # Obsidian popup; Mod+o launches it or toggles its scratchpad window.
-      for_window [app_id="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}
-      for_window [class="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}
+      for_window [app_id="scratchpad-terminal"] move scratchpad, scratchpad show, mark --add popup-terminal
+      # Native scratchpad toggles; the helper launches an absent application.
+      for_window [app_id="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}, mark --add popup-obsidian
+      for_window [class="(?i)^(md\.obsidian\.)?obsidian$"] ${obsidianPopup.commands}, mark --add popup-obsidian
       # TickTick opens floating; Mod+i toggles it without quitting the app.
-      for_window [app_id="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}
-      for_window [class="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}
+      for_window [app_id="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}, mark --add popup-ticktick
+      for_window [class="(?i)^(com\.ticktick\.)?ticktick$"] ${ticktickPopup.commands}, mark --add popup-ticktick
       # WireMix runs inside Foot; keep the audio mixer in a compact floating window.
       for_window [app_id="wiremix"] floating enable, resize set width 50 ppt height 60 ppt
       for_window [app_id="bluetui"] floating enable, resize set 750 px 500 px
       for_window [title="htop"] floating enable, resize set width 50 ppt height 70 ppt
 
-      # GoldenDict uses the shared focus-first popup toggle on Mod+g.
-      for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, resize set width 50 ppt height 65 ppt
+      # GoldenDict joins the native scratchpad for Mod+g.
+      for_window [app_id="io.github.xiaoyifang.goldendict_ng"] floating enable, move scratchpad, scratchpad show, resize set width 50 ppt height 65 ppt, mark --add popup-dictionary
       # Sioyek: new windows open on the focused workspace.
       for_window [app_id="(?i)^sioyek$"] move container to workspace current
 
@@ -151,7 +151,7 @@ in
 
       # Keybindings - App & Session
       bindsym $mod+Return exec $term
-      bindsym $mod+grave exec ~/.local/bin/scratchpad-terminal
+      bindsym --no-repeat $mod+grave exec ~/.local/bin/scratchpad-terminal
       bindsym --no-repeat $mod+o exec ~/.local/bin/obsidian-toggle
       bindsym --no-repeat $mod+i exec ~/.local/bin/ticktick-toggle
       bindsym $mod+d exec $menu
@@ -255,8 +255,8 @@ in
       bindsym $mod+t exec ~/.local/bin/quick-lang vi-en
       bindsym $mod+Shift+t exec ~/.local/bin/quick-lang en-vi
       bindsym $mod+Ctrl+t exec ~/.local/bin/quick-lang fix
-      # Toggle the GoldenDict popup; closing it hides it to the tray.
-      bindsym $mod+g exec ~/.local/bin/dict-toggle
+      # Toggle the GoldenDict scratchpad window.
+      bindsym --no-repeat $mod+g exec ~/.local/bin/dict-toggle
       bindsym $mod+Mod1+t exec ~/.local/bin/toggle-touchpad
       bindsym $mod+Print exec ~/.local/bin/screenshot-menu
       bindsym --no-repeat Print exec ~/.local/bin/screenshot selection-clipboard

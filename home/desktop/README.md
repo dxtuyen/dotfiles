@@ -36,23 +36,21 @@ Subsequent window resizing and split layouts are owned by Sway.
 `Mod+B/V`, `Mod+S/W/E` and `Mod+Shift+Space` use native Sway commands.
 Splitting a floating window creates a group inside that floating popup.
 
-`sway-popup` handles application toggles:
+Application shortcuts use Sway's native `scratchpad show` behavior:
 
-- Mod+O hides/shows the entire floating group containing Obsidian.
-- Mod+I launches TickTick Flatpak or hides/shows its floating window group without quitting it.
-- Mod+G uses the same toggle for GoldenDict, with its Qt theme environment preserved.
-- Mod+grave hides/shows the entire floating group containing the popup terminal.
-- A visible unfocused popup is focused first; only a focused popup group is hidden.
-- Popups on another workspace are recalled to the current workspace and focused.
-- Split children stay together, including when recalled to another workspace.
-- Group geometry is left to Sway; the script never resizes or detaches members.
-- Before launching an absent popup, focus moves up to the workspace so its first
-  window starts separately from the existing floating split.
-- Repeated presses during startup are ignored until the window appears.
+- Mod+O toggles Obsidian; Mod+I toggles TickTick.
+- Mod+G toggles GoldenDict, preserving its Qt theme when launched.
+- Mod+grave toggles the popup terminal.
+- If no matching window exists, the same shortcut launches the application.
+- Window rules assign popup marks and initial scratchpad placement.
+- Sway owns showing, hiding, focus, grouping and geometry. The helper sends a
+  toggle command and checks its response; it does not read the window tree,
+  start Python, poll for new windows or implement custom focus selection.
+- Shortcuts suppress automatic key repeats. There is no startup waiting lock;
+  repeated manual presses before a window appears can request another launch.
 
-The script only finds the popup group, toggles it, or launches a new popup.
-There is no custom tiling behavior or saved geometry state. Headless Sway tests
-cover both grouped toggles and independent popup launches.
+After applying the configuration, reopen existing popup windows so the new
+window rules assign their marks. Headless Sway tests exercise native toggles.
 
 ## Display temperature
 

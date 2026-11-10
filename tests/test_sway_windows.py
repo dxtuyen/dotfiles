@@ -3,18 +3,23 @@
 import json
 import os
 from pathlib import Path
-import runpy
 import shutil
 import signal
 import subprocess
-import sys
 import tempfile
 import time
 import unittest
+from types import SimpleNamespace
 
 
-SOURCE = Path(__file__).resolve().parents[1] / "home/desktop/windows/scripts/popup-toggle.py"
-contexts = runpy.run_path(str(SOURCE))["contexts"]
+def contexts(node, workspace=None, floating_root=None):
+    if node.get("type") == "workspace":
+        workspace = node
+    yield SimpleNamespace(node=node, workspace=workspace, floating_root=floating_root)
+    for child in node.get("nodes", []):
+        yield from contexts(child, workspace, floating_root)
+    for child in node.get("floating_nodes", []):
+        yield from contexts(child, workspace, child)
 
 
 @unittest.skipUnless(shutil.which("sway") and shutil.which("foot"), "Sway and Foot are required")
@@ -27,8 +32,7 @@ class SwayWindowTests(unittest.TestCase):
         config.write_text(
             'xwayland disable\noutput * resolution 1280x800\n'
             'for_window [app_id="popup-check"] floating enable, move scratchpad, '
-            'scratchpad show, resize set width 70 ppt height 85 ppt, move position center\n'
-            'for_window [app_id="terminal-check"] floating enable, move scratchpad, scratchpad show\n'
+            'scratchpad show, resize set width 70 ppt height 85 ppt, move position center, mark --add popup-check\n'
         )
         self.env = dict(os.environ, HOME=str(self.root), XDG_RUNTIME_DIR=str(self.root),
                         XDG_CONFIG_HOME=str(self.root / "config"),
@@ -87,13 +91,12 @@ class SwayWindowTests(unittest.TestCase):
         ))
         self.wait_for(lambda: self.windows(name))
 
-    def action(self, *args):
-        subprocess.run([sys.executable, str(SOURCE), *args], env=self.env, check=True,
-                       capture_output=True, text=True, timeout=20)
-
-    def toggle(self):
-        self.action("--match", "popup-check",
-                    "--", "foot", "--app-id=popup-check", "sleep", "120")
+    def toggle(self, **environment):
+        source = Path(__file__).resolve().parents[1] / "home/desktop/windows/scripts/popup-toggle.sh"
+        return subprocess.run(
+            ["bash", str(source), "popup-check", "--", "foot", "--app-id=popup-check", "sleep", "120"],
+            env=dict(self.env, **environment), capture_output=True, text=True, timeout=5,
+        )
 
     def settled_size(self, name, group=False):
         last = None
@@ -109,85 +112,41 @@ class SwayWindowTests(unittest.TestCase):
         self.wait_for(unchanged)
         return last
 
-    def toggle_terminal(self):
-        self.action("--match", "terminal-check", "--", "foot", "--app-id=terminal-check", "sleep", "120")
-
-    def assert_same_group(self, first, second):
-        self.assertEqual(self.windows(first)[0].floating_root["id"],
-                         self.windows(second)[0].floating_root["id"])
-
-    def test_native_split_keeps_windows_floating_and_toggle_moves_whole_group(self):
+    def test_native_toggle_hides_and_shows_existing_window(self):
         self.start_window("popup-check")
-        self.ipc("splitv")
-        self.start_window("other-check")
-        self.assert_same_group("popup-check", "other-check")
-        before = self.settled_size("popup-check", group=True)
         self.toggle()
-        for name in ("popup-check", "other-check"):
-            self.assertEqual(self.windows(name)[0].workspace["name"], "__i3_scratch")
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
         self.toggle()
-        self.assert_same_group("popup-check", "other-check")
-        self.assertEqual(self.windows("other-check")[0].workspace["name"], "1")
-        self.assertEqual(self.settled_size("popup-check", group=True), before)
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
+        self.assertEqual(len(self.windows("popup-check")), 1)
 
-    def test_new_terminal_does_not_join_existing_popup_split(self):
+    def test_popup_on_another_workspace_is_recalled(self):
         self.start_window("popup-check")
-        self.ipc("splitv")
-        self.start_window("other-check")
-        self.toggle_terminal()
-        self.assert_same_group("popup-check", "other-check")
-        self.assertNotEqual(self.windows("terminal-check")[0].floating_root["id"],
-                            self.windows("popup-check")[0].floating_root["id"])
+        self.ipc("workspace 2")
         self.toggle()
-        self.assertEqual(self.windows("terminal-check")[0].workspace["name"], "1")
-        self.assertTrue(self.windows("popup-check")[0].node["focused"])
-        self.assertEqual(self.windows("other-check")[0].workspace["name"], "1")
-        self.toggle()
-        self.assertEqual(self.windows("other-check")[0].workspace["name"], "__i3_scratch")
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "2")
 
-    def test_split_then_terminal_shortcut_is_independent_for_both_directions(self):
+    def test_absent_popup_launches_then_toggles(self):
+        result = self.toggle()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.wait_for(lambda: self.windows("popup-check"))
+        self.assertEqual(len(self.windows("popup-check")), 1)
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
+        self.toggle()
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
+        self.assertEqual(len(self.windows("popup-check")), 1)
+
+    def test_ipc_failure_is_reported_without_launching(self):
+        result = self.toggle(SWAYSOCK=str(self.root / "missing.sock"))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.windows("popup-check"), [])
+
+    def test_unfocused_visible_popup_hides_with_native_toggle(self):
         self.start_window("popup-check")
-        for direction in ("splith", "splitv"):
-            with self.subTest(direction=direction):
-                self.ipc('[app_id="popup-check"] focus')
-                self.ipc(direction)
-                self.toggle_terminal()
-                self.assertNotEqual(self.windows("terminal-check")[0].floating_root["id"],
-                                    self.windows("popup-check")[0].floating_root["id"])
-                self.toggle_terminal()
-                self.assertEqual(self.windows("terminal-check")[0].workspace["name"], "__i3_scratch")
-                self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
-
-    def test_hidden_terminal_is_recalled_without_joining_popup_group(self):
-        self.toggle_terminal()
-        self.toggle_terminal()
-        self.start_window("popup-check")
-        self.ipc("splitv")
-        self.start_window("other-check")
-        self.toggle_terminal()
-        self.assert_same_group("popup-check", "other-check")
-        self.assertNotEqual(self.windows("terminal-check")[0].floating_root["id"],
-                            self.windows("popup-check")[0].floating_root["id"])
-
-    def test_new_popup_does_not_join_terminal_split(self):
-        self.toggle_terminal()
-        self.ipc("splith")
         self.start_window("other-check")
         self.toggle()
-        self.assert_same_group("terminal-check", "other-check")
-        self.assertNotEqual(self.windows("terminal-check")[0].floating_root["id"],
-                            self.windows("popup-check")[0].floating_root["id"])
-
-    def test_terminal_toggle_preserves_its_split_group(self):
-        self.toggle_terminal()
-        self.ipc("splith")
-        self.start_window("other-check")
-        before = self.settled_size("terminal-check", group=True)
-        self.toggle_terminal()
-        self.assertEqual(self.windows("other-check")[0].workspace["name"], "__i3_scratch")
-        self.toggle_terminal()
-        self.assert_same_group("terminal-check", "other-check")
-        self.assertEqual(self.settled_size("terminal-check", group=True), before)
+        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
 
     def test_resized_popup_keeps_dimensions_when_toggled(self):
         self.start_window("popup-check")
@@ -197,24 +156,6 @@ class SwayWindowTests(unittest.TestCase):
         self.toggle()
         self.assertEqual(self.settled_size("popup-check"), before)
 
-    def test_group_on_other_workspace_is_recalled_together(self):
-        self.start_window("popup-check")
-        self.ipc("splitv")
-        self.start_window("other-check")
-        self.ipc("workspace 2")
-        self.toggle()
-        for name in ("popup-check", "other-check"):
-            self.assertEqual(self.windows(name)[0].workspace["name"], "2")
-        self.assert_same_group("popup-check", "other-check")
-
-    def test_absent_popup_launches_then_toggles_one_window(self):
-        self.toggle()
-        self.assertEqual(len(self.windows("popup-check")), 1)
-        self.toggle()
-        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "__i3_scratch")
-        self.toggle()
-        self.assertEqual(len(self.windows("popup-check")), 1)
-        self.assertEqual(self.windows("popup-check")[0].workspace["name"], "1")
 
 
 if __name__ == "__main__":
