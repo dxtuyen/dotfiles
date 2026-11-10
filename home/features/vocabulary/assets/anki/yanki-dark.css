@@ -145,8 +145,8 @@
   font-size: 1em;
 }
 
-/* Leave centering to the outer wrapper so the start of a long equation remains
-   reachable. MathJax's own display margins are replaced by the wrapper spacing. */
+/* The wrapper centers the equation; left alignment keeps the start of long
+   equations reachable when scrolling. */
 .yanki .math-display > mjx-container[display="true"] {
   margin: 0;
   text-align: left;
