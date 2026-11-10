@@ -17,6 +17,8 @@ in
         exit-on-keyboard-focus-loss = false;
         prompt = "❯ ";
         placeholder = "Search applications…";
+        # Rank by match quality, then frequency from the launch history cache.
+        sort-result = true;
         width = 42;
         lines = 8;
         horizontal-pad = 16;
