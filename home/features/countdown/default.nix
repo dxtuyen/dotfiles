@@ -15,7 +15,13 @@ let
       pkgs.pulseaudio
     ];
     text =
-      builtins.replaceStrings [ "@flock@" "@jq@" ] [ "${pkgs.util-linux}/bin/flock" "${pkgs.jq}/bin/jq" ]
+      builtins.replaceStrings
+        [ "@flock@" "@jq@" "@alarmSound@" ]
+        [
+          "${pkgs.util-linux}/bin/flock"
+          "${pkgs.jq}/bin/jq"
+          "${pkgs.sound-theme-freedesktop}/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
+        ]
         (builtins.readFile ./scripts/countdown-engine.sh);
   };
   countdownMenu = pkgs.writeShellApplication {

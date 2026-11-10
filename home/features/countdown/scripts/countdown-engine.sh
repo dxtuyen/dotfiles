@@ -174,7 +174,11 @@ format_time() {
 }
 
 play_sound() {
-  paplay /run/current-system/sw/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga 2>/dev/null || true
+  # Use a dedicated stream at unity gain: follow the speaker volume rather than
+  # inheriting a quiet volume saved for unrelated paplay invocations.
+  timeout 15s paplay --client-name=countdown --stream-name="Countdown alarm" --volume=65536 \
+    "@alarmSound@" ||
+    echo "countdown-engine: failed to play the completion alarm" >&2
 }
 
 log_history() {
@@ -272,8 +276,10 @@ finalize_if_expired() {
 notify_finished() {
   [ -n "$finished_duration" ] || return 0
   notify_waybar
-  play_sound
-  notify-send -a countdown -i "chronometer" -t 10000 -u critical \
+  # Audio must not delay the popup or the worker's next tick. The child must not
+  # inherit the state-lock descriptor, including after its parent exits.
+  play_sound 9>&- &
+  notify-send -a countdown -c countdown.finished -i "chronometer" -t 10000 -u critical \
     "Focus" "Focus session finished! $finished_duration min 🍅"
 }
 

@@ -117,16 +117,39 @@
   background-color: rgba(128, 128, 128, 0.12);
 }
 
-/* Center equations that fit; let oversized equations scroll from the left edge. */
-.yanki p > .math-inline:only-child {
+/* Keep inline math in the text flow. :only-child also matches math surrounded
+   by text nodes, so it cannot identify a standalone equation. */
+.yanki .math-inline {
+  display: inline-grid;
+  align-items: baseline;
+  vertical-align: baseline;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.2em 0.1em;
+  margin-block: -0.2em;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Center display equations that fit; scroll oversized ones from the left edge. */
+.yanki .math-display {
   display: block;
   width: fit-content;
   max-width: 100%;
-  margin-inline: auto;
+  box-sizing: border-box;
+  margin: 1em auto;
+  padding: 0.2em 0.1em;
   overflow-x: auto;
   overflow-y: hidden;
   text-align: left;
   font-size: 1em;
+}
+
+/* Leave centering to the outer wrapper so the start of a long equation remains
+   reachable. MathJax's own display margins are replaced by the wrapper spacing. */
+.yanki .math-display > mjx-container[display="true"] {
+  margin: 0;
+  text-align: left;
 }
 
 .yanki pre.shiki {
@@ -174,12 +197,8 @@
   color: var(--shiki-dark, #e1e4e8) !important;
 }
 
-/* On narrow screens, wrap code and left-align long scrollable equations. */
+/* On narrow screens, wrap code; math keeps its size and scrolls when needed. */
 @media screen and (max-width: 600px) {
-  .yanki p > .math-inline:only-child {
-    font-size: clamp(0.68em, 3vw, 0.78em);
-  }
-
   .yanki pre.shiki {
     padding: 0.7rem;
     overflow-x: hidden;

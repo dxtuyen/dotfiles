@@ -119,6 +119,7 @@ class WorkflowTests(unittest.TestCase):
         )
         text = (SOURCE / "home/features/countdown/scripts/countdown-engine.sh").read_text()
         text = text.replace("@flock@", shutil.which("flock")).replace("@jq@", shutil.which("jq"))
+        text = text.replace("@alarmSound@", "/test/sounds/alarm-clock-elapsed.oga")
         self.engine_path = self.executable(self.home / ".local/bin/countdown-engine", text)
         self.menu = SOURCE / "home/features/countdown/scripts/countdown-menu.sh"
 
@@ -378,6 +379,36 @@ class WorkflowTests(unittest.TestCase):
             list(pool.map(lambda _: self.engine("status"), range(8)))
         self.assertEqual(len(self.history()), 1)
         self.assertEqual(self.field("DURATION"), "")
+        self.wait_until(lambda: len(self.recorded("paplay")) == 1)
+        finished = [args for args in self.recorded("notify-send") if "countdown.finished" in args]
+        self.assertEqual(len(finished), 1)
+
+    def test_slow_alarm_does_not_delay_notification_or_worker(self):
+        # A stalled audio server must not prevent a new session or clock ticks.
+        alarm_started = self.root / "alarm-started"
+        alarm_release = self.root / "alarm-release"
+        player = self.bin / "paplay"
+        player.unlink()
+        self.executable(player, '#!/usr/bin/env python3\n'
+                        'import os,pathlib,time\n'
+                        'root=pathlib.Path(os.environ["TEST_ROOT"])\n'
+                        '(root/"alarm-started").touch()\n'
+                        'while not (root/"alarm-release").exists(): time.sleep(0.02)\n')
+        self.engine("start", "1")
+        self.worker()
+        try:
+            self.advance(61)
+            self.wait_until(alarm_started.exists)
+            self.wait_until(lambda: any("countdown.finished" in args
+                                       for args in self.recorded("notify-send")))
+            self.engine("start", "2")
+            self.assertEqual(self.field("RUNNING"), "true")
+            before = len(self.recorded("pkill"))
+            self.wait_until(lambda: len(self.recorded("pkill")) > before)
+            self.assertFalse(alarm_release.exists())
+            self.assertEqual(len(self.history()), 1)
+        finally:
+            alarm_release.touch()
 
     def test_worker_restart_finishes_without_waybar(self):
         self.engine("start", "1")

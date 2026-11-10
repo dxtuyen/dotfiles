@@ -46,6 +46,9 @@ in
       # Countdown: border follows the shared Gruvbox beige accent.
       "app-name=countdown".border-color = theme.fg3;
       "app-name=countdown".default-timeout = 5000;
+      # Completion already plays its own alarm; other Countdown messages keep
+      # the normal notification sound.
+      "app-name=countdown category=countdown.finished".on-notify = "none";
       "app-name=screenshot".default-timeout = 2000;
       "app-name=power".default-timeout = 2000;
     };
